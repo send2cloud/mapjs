@@ -31,6 +31,7 @@
 		<input type="button" class="copy" value="copy"></input>
 		<input type="button" class="paste" value="paste"></input>
 		<input type="button" class="openAttachment" value="open attachment"></input>
+		<input type="button" id="toImage" value="to image"></input>
 		<input type="button" class="toggleAddLinkMode" value="add link"></input>
 		Background: <input type="text" class='updateStyle' data-mm-target-property='background'></input>
 	Frames: <span id="framerate"></span>
@@ -62,6 +63,7 @@
 		<script type="text/javascript" src="../src/dom-map-widget.js"></script>
 		<script type="text/javascript" src="../src/theme-css-widget.js"></script>
 		<script type="text/javascript" src="roy-map.js"></script>
+		<script type="text/javascript" src="../src/topng.js"></script>
 <script id="topdownTheme" type="text/json">
 	{
 		"name": "MindMup Top Down Straight Lines",
@@ -519,9 +521,11 @@
 				window.onerror = alert;
 				var container = jQuery('#container'),
 				idea = MAPJS.content(test_tree()),
+				layoutModel = new MAPJS.LayoutModel({nodes: {}, connectors: {}}),
+				imageBuilder = new MAPJS.MapImageBuilder(layoutModel),
 				imageInsertController = new MAPJS.ImageInsertController("http://localhost:4999?u="),
 				themeProvider = MAPJS.Themes,
-				mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []);
+				mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, [], undefined, undefined, {layoutModel: layoutModel});
 				themeProvider.compact = JSON.parse(compactTheme.innerHTML);
 				themeProvider.topdown = JSON.parse(topdownTheme.innerHTML);
 				$('#themecss').themeCssWidget(themeProvider, new MAPJS.ThemeProcessor(), mapModel);
@@ -535,7 +539,7 @@
 				});
 				mapModel.setIdea(idea);
 
-
+				jQuery('#toImage').toImageWidget(imageBuilder);
 				jQuery('#linkEditWidget').linkEditWidget(mapModel);
 				window.mapModel = mapModel;
 				jQuery('.arrow').click(function () {
