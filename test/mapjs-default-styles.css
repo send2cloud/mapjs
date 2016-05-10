@@ -1,6 +1,5 @@
 .mapjs-node {
 	margin: 0;
-	padding: 7px;
 	z-index: 2;
 	user-select: none;
 	-moz-user-select: none;
@@ -37,7 +36,6 @@
 	white-space: pre-wrap;
 	display: block;
 	max-width: 146px;
-	min-height: 1.5em;
 	min-width: 1em;
 	outline: none;
 }

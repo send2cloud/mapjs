@@ -522,10 +522,10 @@
 				var container = jQuery('#container'),
 				idea = MAPJS.content(test_tree()),
 				layoutModel = new MAPJS.LayoutModel({nodes: {}, connectors: {}}),
-				imageBuilder = new MAPJS.MapImageBuilder(layoutModel),
 				imageInsertController = new MAPJS.ImageInsertController("http://localhost:4999?u="),
 				themeProvider = MAPJS.Themes,
 				mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, [], undefined, undefined, {layoutModel: layoutModel});
+				imageBuilder = new MAPJS.MapImageBuilder(mapModel),
 				themeProvider.compact = JSON.parse(compactTheme.innerHTML);
 				themeProvider.topdown = JSON.parse(topdownTheme.innerHTML);
 				$('#themecss').themeCssWidget(themeProvider, new MAPJS.ThemeProcessor(), mapModel);
