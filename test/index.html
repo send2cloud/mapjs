@@ -525,7 +525,7 @@
 				imageInsertController = new MAPJS.ImageInsertController("http://localhost:4999?u="),
 				themeProvider = MAPJS.Themes,
 				mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, [], undefined, undefined, {layoutModel: layoutModel});
-				imageBuilder = new MAPJS.MapImageBuilder(mapModel),
+				imageBuilder = new MAPJS.MapImageBuilder(),
 				themeProvider.compact = JSON.parse(compactTheme.innerHTML);
 				themeProvider.topdown = JSON.parse(topdownTheme.innerHTML);
 				$('#themecss').themeCssWidget(themeProvider, new MAPJS.ThemeProcessor(), mapModel);
@@ -539,7 +539,7 @@
 				});
 				mapModel.setIdea(idea);
 
-				jQuery('#toImage').toImageWidget(imageBuilder);
+				jQuery('#toImage').toImageWidget(imageBuilder, mapModel);
 				jQuery('#linkEditWidget').linkEditWidget(mapModel);
 				window.mapModel = mapModel;
 				jQuery('.arrow').click(function () {

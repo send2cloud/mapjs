@@ -1,5 +1,5 @@
 /*global MAPJS, $, _*/
-MAPJS.MapImageBuilder = function (mapModel) {
+MAPJS.MapImageBuilder = function () {
 	'use strict';
 	var self = this,
 		toBox = function (node) {
@@ -10,24 +10,12 @@ MAPJS.MapImageBuilder = function (mapModel) {
 				height: node.height,
 				level: node.level
 			};
-		},
-		dummyTextBox = $('<div>').css({position: 'absolute', visibility: 'hidden'}),
-		themeProcessor = new MAPJS.ThemeProcessor(),
-		textSizer = function (title, maxWidth, fontInfo) {
-			var result;
-			dummyTextBox.appendTo('body').text(title).css({'max-width': maxWidth, font: themeProcessor.cssFont(fontInfo)});
-			result = {
-				width: dummyTextBox.outerWidth(true) + 1,
-				height: dummyTextBox.outerHeight(true) + 1
-			};
-			dummyTextBox.detach();
-			return result;
+		};
 
-		},
-		themeDimensionProvider = new MAPJS.ThemeDimensionProvider(textSizer);
-	self.generateSVG = function (theme) {
+	self.generateSVG = function (theme, idea, textSizer, themeProcessor) {
 		var deferred = $.Deferred(),
-			layout = MAPJS.calculateLayout(mapModel.getIdea(), themeDimensionProvider.dimensionProviderForTheme(theme), {theme: theme}),
+			themeDimensionProvider = new MAPJS.ThemeDimensionProvider(textSizer),
+			layout = MAPJS.calculateLayout(idea, themeDimensionProvider.dimensionProviderForTheme(theme), {theme: theme}),
 			initLayoutModel = function () {
 				var result = new MAPJS.LayoutModel();
 				result.setLayout(layout);
@@ -144,11 +132,24 @@ MAPJS.MapImageBuilder = function (mapModel) {
 };
 
 
-$.fn.toImageWidget = function (imageBuilder) {
+$.fn.toImageWidget = function (imageBuilder, mapModel) {
 	'use strict';
-	var widget = this;
+	var widget = this,
+		themeProcessor = new MAPJS.ThemeProcessor(),
+		dummyTextBox = $('<div>').css({position: 'absolute', visibility: 'hidden'}),
+		textSizer = function (title, maxWidth, fontInfo) {
+			var result;
+			dummyTextBox.appendTo('body').text(title).css({'max-width': maxWidth, font: themeProcessor.cssFont(fontInfo)});
+			result = {
+				width: dummyTextBox.outerWidth(true) + 1,
+				height: dummyTextBox.outerHeight(true) + 1
+			};
+			dummyTextBox.detach();
+			return result;
+
+		};
 	widget.click(function () {
-		imageBuilder.generateSVG(MAPJS.DOMRender.theme).then(function (svg) {
+		imageBuilder.generateSVG(MAPJS.DOMRender.theme, mapModel.getIdea(), textSizer, themeProcessor).then(function (svg) {
 			$('#container').empty().append(svg);
 		});
 	});
