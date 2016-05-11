@@ -1,4 +1,4 @@
-/*global MAPJS, $, _*/
+/*global MAPJS, $, _, XMLSerializer, Image*/
 MAPJS.MapImageBuilder = function () {
 	'use strict';
 	var self = this,
@@ -127,7 +127,7 @@ MAPJS.MapImageBuilder = function () {
 			g.append(writeNode(node));
 		});
 
-		return deferred.resolve(svg).promise();
+		return deferred.resolve({svg: svg, centerNode: layoutModel.getNode(idea.id), bounds: bounds}).promise();
 	};
 };
 
@@ -147,10 +147,59 @@ $.fn.toImageWidget = function (imageBuilder, mapModel) {
 			dummyTextBox.detach();
 			return result;
 
+		},
+		toSvgString = function (svgElement) {
+			var	svgString = new XMLSerializer().serializeToString(svgElement);
+			return 'data:image/svg+xml,' + svgString;
+
+		},
+		toCanvas = function (img, options) {
+			var scale = (options && options.scale) || 1,
+				srcWidth = img.width * scale,
+				srcHeight =  img.height * scale,
+				thumbnailRect = options && options.thumbnail,
+				width = (thumbnailRect && thumbnailRect.width) || srcWidth,
+				height = (thumbnailRect && thumbnailRect.height) || srcHeight,
+				unscaledWidth = width / scale,
+				unscaledHeight = height / scale,
+				unscaledImgCenter =  options && options.thumbnail && options && options.thumbnail.origin || {x: img.width / 2, y: img.height / 2},
+				canvas = $('<canvas>').attr({width: width, height: height})[0],
+				ctx = canvas.getContext('2d');
+
+
+			ctx.fillStyle = 'white';
+			ctx.fillRect(0, 0, width, height);
+
+			if (scale !== 1) {
+				ctx.scale(scale, scale);
+			}
+			ctx.drawImage(img, -1 * (unscaledImgCenter.x - (unscaledWidth  / 2)), -1 * (unscaledImgCenter.y - (unscaledHeight / 2)));
+			return canvas;
+		},
+		toPNGImage = function (svgImg, options) {
+			var canvas = toCanvas(svgImg, options),
+				png = canvas.toDataURL('image/png'),
+				pngImg = new Image();
+
+			pngImg.src = png;
+			return pngImg;
 		};
+
 	widget.click(function () {
-		imageBuilder.generateSVG(MAPJS.DOMRender.theme, mapModel.getIdea(), textSizer, themeProcessor).then(function (svg) {
-			$('#container').empty().append(svg);
+		imageBuilder.generateSVG(MAPJS.DOMRender.theme, mapModel.getIdea(), textSizer, themeProcessor).then(function (svgAndCenter) {
+			var intermediateImg = new Image(),
+				intermediateImageLoaded = function () {
+					var imgCenter = {
+							x: svgAndCenter.centerNode.x + (svgAndCenter.centerNode.width / 2) - svgAndCenter.bounds.minX,
+							y: svgAndCenter.centerNode.y + (svgAndCenter.centerNode.height / 2) - svgAndCenter.bounds.minY
+						},
+						pngImg = toPNGImage(intermediateImg, {scale: 2, thumbnail: {origin: imgCenter, width: 500, height: 500}});
+					$('#container').empty().append(pngImg);
+				};
+
+			intermediateImg.onload = intermediateImageLoaded;
+			intermediateImg.src = toSvgString(svgAndCenter.svg[0]); //domURL.createObjectURL(svgBlob);
+
 		});
 	});
 	return this;
