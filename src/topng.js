@@ -1,4 +1,4 @@
-/*global MAPJS, $, _, XMLSerializer, Image*/
+/*global MAPJS, $, _, Image*/
 MAPJS.MapImageBuilder = function () {
 	'use strict';
 	var self = this,
@@ -10,11 +10,109 @@ MAPJS.MapImageBuilder = function () {
 				height: node.height,
 				level: node.level
 			};
+		},
+		FakeJQ = function (tag, namespace) {
+			var self = this,
+				children = [],
+				attributes = {},
+				css = {},
+				text,
+				appendPx = ['top', 'left', 'width', 'height', 'stroke-width'];
+			self.FAKE = true;
+			self.text = function (newText) {
+				text = newText;
+				return self;
+			};
+			self.append = function (childFakeJQ) {
+				if (!childFakeJQ.FAKE) {
+					throw 'trying to add something stupid';
+				}
+				children.push(childFakeJQ);
+				return self;
+			};
+			self.appendTo = function (parentFakeJQ) {
+				parentFakeJQ.append(self);
+				return self;
+			};
+			self.attr = function (newAttribs, value) {
+				if (value) {
+					attributes[newAttribs] = value;
+				} else {
+					attributes = _.extend (attributes, newAttribs);
+				}
+				return self;
+			};
+			self.css = function (newCss, value) {
+				if (value) {
+					css[newCss] = value;
+				} else {
+					css = _.extend (css, newCss);
+				}
+				return self;
+			};
+			self.serialize = function (buffer, parentNamespace) {
+				var toString = false;
+				if (!buffer) {
+					buffer = [];
+					toString = true;
+				}
+				buffer.push('<');
+				buffer.push(tag);
+				if (parentNamespace !== namespace) {
+					buffer.push(' xmlns="');
+					buffer.push(namespace);
+					buffer.push('"');
+				}
+
+				_.each(attributes, function (v, k) {
+					buffer.push(' ');
+					buffer.push(k);
+					buffer.push('="');
+					buffer.push(String(v).replace(/"/g, '\''));
+					buffer.push('"');
+				});
+				if (!_.isEmpty(css)) {
+					buffer.push(' style="');
+					_.each(css, function (v, k) {
+						buffer.push(k);
+						buffer.push(':');
+						buffer.push(String(v).replace(/"/g, '\''));
+						if (_.contains(appendPx, k)) {
+							buffer.push('px');
+						}
+						buffer.push(';');
+					});
+					buffer.push('"');
+				}
+				if (text || !_.isEmpty(children)) {
+					buffer.push('>');
+					if (text) {
+						buffer.push(_.escape(text));
+					}
+					_.each(children, function (childJq) {
+						childJq.serialize(buffer, namespace);
+					});
+					buffer.push('</');
+					buffer.push(tag);
+					buffer.push('>');
+				} else {
+					buffer.push('/>');
+				}
+
+				if (toString) {
+					return buffer.join('');
+				}
+			};
 		};
 
 	self.generateSVG = function (theme, idea, textSizer, options) {
 		var deferred = $.Deferred(),
-
+			createSVG = function (tag) {
+				return new FakeJQ(tag, 'http://www.w3.org/2000/svg');
+			},
+			createDOM = function (tag) {
+				return new FakeJQ(tag, 'http://www.w3.org/1999/xhtml');
+			},
 			themeProcessor = new MAPJS.ThemeProcessor(),
 			themeDimensionProvider = new MAPJS.ThemeDimensionProvider(textSizer),
 			layout = MAPJS.calculateLayout(idea, themeDimensionProvider.dimensionProviderForTheme(theme), {theme: theme}),
@@ -52,30 +150,30 @@ MAPJS.MapImageBuilder = function () {
 			},
 			clipRect = calcBounds(),
 			nodeLayoutProvider = themeDimensionProvider.nodeLayoutProviderForTheme(theme),
-			svg =  MAPJS.createSVG().attr({'width': clipRect.width, 'height': clipRect.height}),
-			g = MAPJS.createSVG('g').attr('transform', 'translate(' + clipRect.x + ',' + clipRect.y + ')').css({fill: 'none'}).appendTo(svg),
+			svg =  createSVG('svg').attr({'width': clipRect.width, 'height': clipRect.height}),
+			g = createSVG('g').attr('transform', 'translate(' + clipRect.x + ',' + clipRect.y + ')').css({fill: 'none'}).appendTo(svg),
 			writeConnector = function (fromNode, toNode) {
 				var path = MAPJS.Connectors.themePath(toBox(fromNode), toBox(toNode), theme),
-					g = MAPJS.createSVG('g').attr('transform', 'translate(' + path.position.left + ',' + path.position.top + ')');
+					g = createSVG('g').attr('transform', 'translate(' + path.position.left + ',' + path.position.top + ')');
 
-				MAPJS.createSVG('path').attr({'d': path.d, stroke: path.color}).appendTo(g);
+				createSVG('path').attr({'d': path.d, stroke: path.color}).appendTo(g);
 				return g;
 			},
 			writeLink = function (link) {
 				var path = MAPJS.Connectors.linkPath(toBox(layoutModel.getNode(link.ideaIdFrom)), toBox(layoutModel.getNode(link.ideaIdTo)), link.attr.style.arrow),
-					g = MAPJS.createSVG('g').attr('transform', 'translate(' + path.position.left + ',' + path.position.top + ')'),
+					g = createSVG('g').attr('transform', 'translate(' + path.position.left + ',' + path.position.top + ')'),
 					dashes = {
 						dashed: '8, 8',
 						solid: ''
 					},
 					linkAttr = link.attr && link.attr.style;
 
-				MAPJS.createSVG('path').appendTo(g).attr({
+				createSVG('path').appendTo(g).attr({
 					'd': path.d,
 					'stroke-dasharray': dashes[linkAttr.lineStyle]
 				}).css('stroke', linkAttr.color);
 				if (path.arrow) {
-					MAPJS.createSVG('path').appendTo(g).attr({d: path.arrow, fill: linkAttr.color});
+					createSVG('path').appendTo(g).attr({d: path.arrow, fill: linkAttr.color});
 				}
 				return g;
 			},
@@ -86,10 +184,10 @@ MAPJS.MapImageBuilder = function () {
 					layout = nodeLayoutProvider(node),
 					backgroundColor = (node.attr && node.attr.style && node.attr.style.background) || nodeTheme.backgroundColor,
 					fontColor,
-					g = MAPJS.createSVG('g').attr({
+					g = createSVG('g').attr({
 						'transform': 'translate(' + node.x + ',' + node.y + ')'
 					}),
-					rect = MAPJS.createSVG('rect').attr({
+					rect = createSVG('rect').attr({
 						x: 0,
 						y:  0,
 						width: node.width,
@@ -97,7 +195,7 @@ MAPJS.MapImageBuilder = function () {
 						rx: nodeTheme.cornerRadius,
 						ry: nodeTheme.cornerRadius
 					}).appendTo(g),
-					foreignObject = MAPJS.createSVG('foreignObject').appendTo(g);
+					foreignObject = createSVG('foreignObject').appendTo(g);
 
 
 
@@ -116,7 +214,7 @@ MAPJS.MapImageBuilder = function () {
 					fontColor = backgroundColor || nodeTheme.text.color;
 				}
 				if (layout.image) {
-					$('<img>').attr({'src': node.attr.icon.url}).css({
+					createDOM('img').attr({'src': node.attr.icon.url}).css({
 						left: layout.image.x,
 						top: layout.image.y,
 						width: layout.image.width,
@@ -126,7 +224,7 @@ MAPJS.MapImageBuilder = function () {
 				}
 
 				if (title) {
-					$('<span>').css({
+					createDOM('span').css({
 						'text-align': align,
 						top: layout.text.y,
 						left: layout.text.x,
@@ -159,7 +257,7 @@ MAPJS.MapImageBuilder = function () {
 
 		});
 
-		return deferred.resolve(new XMLSerializer().serializeToString(svg[0])).promise();
+		return deferred.resolve(svg.serialize()).promise();
 	};
 };
 
@@ -212,8 +310,8 @@ $.fn.toImageWidget = function (imageBuilder, mapModel) {
 	widget.click(function () {
 		var scale = 1,
 			thumbnail = {width: 500, height: 500},
-			svgOnly = true,
-			svgOptions = {xclipRect: {width: thumbnail.width / scale, height: thumbnail.height / scale}};
+			svgOnly = false,
+			svgOptions = {clipRect: {width: thumbnail.width / scale, height: thumbnail.height / scale}};
 
 		imageBuilder.generateSVG(MAPJS.DOMRender.theme, mapModel.getIdea(), textSizer, svgOptions).then(function (svgString) {
 			var intermediateImg,
