@@ -140,25 +140,31 @@ describe('MapModel', function () {
 
 			expect(nodeMovedListener).toHaveBeenCalledWith(layoutAfter.nodes[2], undefined);
 		});
-		it('should dispatch nodeMoved event when a node width changes', function () {
-			var nodeMovedListener = jasmine.createSpy();
+		it('should dispatch nodeAttrChanged event when a node width changes', function () {
+			var nodeMovedListener = jasmine.createSpy('nodeMoved'),
+				nodeAttrChangedListener = jasmine.createSpy('nodeAttrChanged');
 			layoutAfter.nodes[2] = _.extend({}, layoutBefore.nodes[2]);
 			layoutAfter.nodes[2].width = 100;
 			underTest.addEventListener('nodeMoved', nodeMovedListener);
+			underTest.addEventListener('nodeAttrChanged', nodeAttrChangedListener);
 
 			anIdea.dispatchEvent('changed');
 
-			expect(nodeMovedListener).toHaveBeenCalledWith(layoutAfter.nodes[2], undefined);
+			expect(nodeMovedListener).not.toHaveBeenCalled();
+			expect(nodeAttrChangedListener).toHaveBeenCalledWith(layoutAfter.nodes[2], undefined);
 		});
-		it('should dispatch nodeMoved event when a node height changes', function () {
-			var nodeMovedListener = jasmine.createSpy();
+		it('should dispatch nodeAttrChanged event when a node height changes', function () {
+			var nodeMovedListener = jasmine.createSpy('nodeMoved'),
+				nodeAttrChangedListener = jasmine.createSpy('nodeAttrChanged');
 			layoutAfter.nodes[2] = _.extend({}, layoutBefore.nodes[2]);
 			layoutAfter.nodes[2].height = 100;
 			underTest.addEventListener('nodeMoved', nodeMovedListener);
+			underTest.addEventListener('nodeAttrChanged', nodeAttrChangedListener);
 
 			anIdea.dispatchEvent('changed');
 
-			expect(nodeMovedListener).toHaveBeenCalledWith(layoutAfter.nodes[2], undefined);
+			expect(nodeMovedListener).not.toHaveBeenCalled();
+			expect(nodeAttrChangedListener).toHaveBeenCalledWith(layoutAfter.nodes[2], undefined);
 		});
 		it('should dispatch nodeRemoved event when a node is removed because idea is changed', function () {
 			var nodeRemovedListener = jasmine.createSpy();
@@ -221,8 +227,16 @@ describe('MapModel', function () {
 			it('should not dispatch nodeEditRequested when input is disabled', function () {
 				var nodeEditRequestedListener = jasmine.createSpy();
 				underTest.addEventListener('nodeEditRequested', nodeEditRequestedListener);
-				underTest.selectNode(1);
+				underTest.selectNode(anIdea.id);
 				underTest.setInputEnabled(false);
+				underTest.editNode('toolbar', true);
+				expect(nodeEditRequestedListener).not.toHaveBeenCalled();
+			});
+			it('should not dispatch nodeEditRequested when node is contentLocked', function () {
+				var nodeEditRequestedListener = jasmine.createSpy();
+				underTest.addEventListener('nodeEditRequested', nodeEditRequestedListener);
+				anIdea.updateAttr(anIdea.id, 'contentLocked', true);
+				underTest.selectNode(anIdea.id);
 				underTest.editNode('toolbar', true);
 				expect(nodeEditRequestedListener).not.toHaveBeenCalled();
 			});
@@ -520,6 +534,83 @@ describe('MapModel', function () {
 				expect(nodeEditRequestedListener).not.toHaveBeenCalled();
 				expect(underTest.getSelectedNodeId()).toBe(3);
 			});
+		});
+		describe('addGroupSubidea', function () {
+			beforeEach(function () {
+				spyOn(anIdea, 'addSubIdea').and.callThrough();
+				underTest.selectNode(1);
+			});
+			it('should add a node to represent the group with currently selected idea as parentId', function () {
+				underTest.addGroupSubidea();
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith(1, 'group');
+			});
+			it('should add a contentLocked attribute to the group node', function () {
+				var groupId;
+
+				underTest.addGroupSubidea();
+
+				groupId = anIdea.addSubIdea.calls.mostRecent().args[0];
+				expect(anIdea.getAttrById(groupId, 'contentLocked')).toBeTruthy();
+			});
+			it('should add a group attribute to the group node', function () {
+				var groupId;
+
+				underTest.addGroupSubidea();
+
+				groupId = anIdea.addSubIdea.calls.mostRecent().args[0];
+				expect(anIdea.getAttrById(groupId, 'group')).toBeTruthy();
+			});
+			it('should add a typed group attribute to the group node', function () {
+				var groupId;
+
+				underTest.addGroupSubidea('source', {group: 'supporting'});
+
+				groupId = anIdea.addSubIdea.calls.mostRecent().args[0];
+				expect(anIdea.getAttrById(groupId, 'group')).toEqual('supporting');
+			});
+			it('should invoke idea.addSubIdea with argument idea as parentId if provided', function () {
+				underTest.addGroupSubidea('source', {parentId: 555});
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith(555, 'group');
+			});
+
+			it('should add a node with the group node as parentId, as a batched event', function () {
+				anIdea.addSubIdea.and.returnValues(22, 33);
+				spyOn(anIdea, 'dispatchEvent');
+
+				underTest.addGroupSubidea();
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith(22);
+			});
+			it('should add a node with the group node  as a batched event', function () {
+				spyOn(anIdea, 'dispatchEvent');
+
+				underTest.addGroupSubidea();
+				expect(anIdea.dispatchEvent.calls.count()).toBe(1);
+			});
+			it('should edit the child node of the group node', function () {
+				var listener = jasmine.createSpy('nodeEditRequested');
+
+				anIdea.addSubIdea.and.returnValues(22, 33);
+				underTest.addEventListener('nodeEditRequested', listener);
+
+				underTest.addGroupSubidea();
+				expect(listener.calls.count()).toBe(1);
+				expect(listener).toHaveBeenCalledWith(33, true, true);
+			});
+			it('should not invoke idea.addSubIdea when input is disabled', function () {
+				underTest.setInputEnabled(false);
+				underTest.addGroupSubidea();
+				expect(anIdea.addSubIdea).not.toHaveBeenCalled();
+			});
+			it('should expand the parent node when addSubIdea is called, as a batched event', function () {
+				underTest.selectNode(1);
+				underTest.collapse('source', true);
+				spyOn(anIdea, 'updateAttr').and.callThrough();
+				spyOn(anIdea, 'dispatchEvent');
+				underTest.addGroupSubidea();
+				expect(anIdea.updateAttr).toHaveBeenCalledWith(1, 'collapsed', false);
+				expect(anIdea.dispatchEvent.calls.count()).toBe(1);
+			});
+
 		});
 		describe('copy', function () {
 			beforeEach(function () {

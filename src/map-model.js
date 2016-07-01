@@ -77,17 +77,17 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 				if (!oldNode) {
 					self.dispatchEvent('nodeCreated', newNode, sessionId);
 				} else {
-					if (newNode.x !== oldNode.x || newNode.y !== oldNode.y || newNode.width !== oldNode.width || newNode.height !== oldNode.height) {
+					if (newNode.x !== oldNode.x || newNode.y !== oldNode.y) {
 						self.dispatchEvent('nodeMoved', newNode, sessionId);
+					}
+					if ((newNode.width !== oldNode.width || newNode.height !== oldNode.height) ||
+						(newNode.level !== oldNode.level) ||
+						(!_.isEqual(newNode.attr || {}, oldNode.attr || {})) ||
+						themeChanged) {
+						self.dispatchEvent('nodeAttrChanged', newNode, sessionId);
 					}
 					if (newNode.title !== oldNode.title) {
 						self.dispatchEvent('nodeTitleChanged', newNode, sessionId);
-					}
-					if (!_.isEqual(newNode.attr || {}, oldNode.attr || {})) {
-						self.dispatchEvent('nodeAttrChanged', newNode, sessionId);
-					}
-					if (newNode.level !== oldNode.level || themeChanged) {
-						self.dispatchEvent('nodeAttrChanged', newNode, sessionId);
 					}
 					if (newNode.label !== oldNode.label) {
 						self.dispatchEvent('nodeLabelChanged', newNode, sessionId);
@@ -360,6 +360,30 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		}
 
 	};
+	self.addGroupSubidea = function (source, options) {
+		var parentId = options && options.parentId,
+			group = (options && options.group) || true,
+			target = parentId || currentlySelectedIdeaId, newGroupId, newId;
+		if (!isEditingEnabled) {
+			return false;
+		}
+		analytic('addGroupSubidea', source);
+		if (isInputEnabled) {
+			idea.batch(function () {
+				ensureNodeIsExpanded(source, target);
+				newGroupId = idea.addSubIdea(target, 'group');
+				if (newGroupId) {
+					idea.updateAttr(newGroupId, 'contentLocked', true);
+					idea.updateAttr(newGroupId, 'group', group);
+					newId = idea.addSubIdea(newGroupId);
+				}
+			});
+			if (newId) {
+				editNewIdea(newId);
+			}
+		}
+
+	};
 	this.insertIntermediate = function (source) {
 		var activeNodes = [], newId;
 		if (!isEditingEnabled) {
@@ -485,7 +509,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		}
 	};
 	this.editNode = function (source, shouldSelectAll, editingNew) {
-		var title;
+		var title, currentIdea;
 		if (!isEditingEnabled) {
 			return false;
 		}
@@ -495,7 +519,11 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		if (!isInputEnabled) {
 			return false;
 		}
-		title = currentlySelectedIdea().title;
+		currentIdea = currentlySelectedIdea();
+		if (currentIdea.attr && currentIdea.attr.contentLocked) {
+			return false;
+		}
+		title = currentIdea.title;
 		if (_.include(selectAllTitles, title)) { // === 'Press Space or double-click to edit') {
 			shouldSelectAll = true;
 		}
