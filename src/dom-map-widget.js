@@ -1,18 +1,19 @@
 /*jslint nomen: true, newcap: true, browser: true*/
-/*global MAPJS, $, Hammer, _, jQuery*/
+/*global MAPJS, $, _, jQuery*/
 
-jQuery.fn.scrollWhenDragging = function () {
+jQuery.fn.scrollWhenDragging = function (scrollPredicate) {
 	/*jslint newcap:true*/
 	'use strict';
-	Hammer(this);
 	return this.each(function () {
 		var element = $(this),
 			dragOrigin;
 		element.on('dragstart', function () {
-			dragOrigin = {
-				top: element.scrollTop(),
-				left: element.scrollLeft()
-			};
+			if (scrollPredicate()) {
+				dragOrigin = {
+					top: element.scrollTop(),
+					left: element.scrollLeft()
+				};
+			}
 		}).on('drag', function (e) {
 			if (e.gesture && dragOrigin) {
 				element.scrollTop(dragOrigin.top - e.gesture.deltaY);
@@ -23,18 +24,23 @@ jQuery.fn.scrollWhenDragging = function () {
 		});
 	});
 };
-$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
+$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController, dragContainer, resourceTranslator, centerSelectedNodeOnOrientationChange, options) {
 	'use strict';
 	var hotkeyEventHandlers = {
-			'return': 'addSiblingIdea',
-			'shift+return': 'addSiblingIdeaBefore',
+			'return': 'insertDown',
+			'shift+return': 'insertUp',
+			'shift+tab': 'insertLeft',
+			'tab insert': 'insertRight',
 			'del backspace': 'removeSubIdea',
-			'tab insert': 'addSubIdea',
 			'left': 'selectNodeLeft',
 			'up': 'selectNodeUp',
 			'right': 'selectNodeRight',
 			'shift+right': 'activateNodeRight',
 			'shift+left': 'activateNodeLeft',
+			'meta+right ctrl+right': 'moveRight',
+			'meta+left ctrl+left': 'moveLeft',
+			'meta+up ctrl+up': 'moveUp',
+			'meta+down ctrl+down': 'moveDown',
 			'shift+up': 'activateNodeUp',
 			'shift+down': 'activateNodeDown',
 			'down': 'selectNodeDown',
@@ -44,13 +50,10 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 			'p meta+v ctrl+v': 'paste',
 			'y meta+c ctrl+c': 'copy',
 			'u meta+z ctrl+z': 'undo',
-			'shift+tab': 'insertIntermediate',
 			'Esc 0 meta+0 ctrl+0': 'resetView',
 			'r meta+shift+z ctrl+shift+z meta+y ctrl+y': 'redo',
 			'meta+plus ctrl+plus z': 'scaleUp',
 			'meta+minus ctrl+minus shift+z': 'scaleDown',
-			'meta+up ctrl+up': 'moveUp',
-			'meta+down ctrl+down': 'moveDown',
 			'ctrl+shift+v meta+shift+v': 'pasteStyle',
 			'Esc': 'cancelCurrentAction'
 		},
@@ -63,9 +66,13 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 			'a' : 'openAttachment',
 			'i' : 'editIcon'
 		},
-		actOnKeys = true;
-	mapModel.addEventListener('inputEnabledChanged', function (canInput) {
+		actOnKeys = true,
+		self = this;
+	mapModel.addEventListener('inputEnabledChanged', function (canInput, holdFocus) {
 		actOnKeys = canInput;
+		if (canInput && !holdFocus) {
+			self.focus();
+		}
 	});
 
 	return this.each(function () {
@@ -75,26 +82,115 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 			}).attr('data-mapjs-role', 'stage').appendTo(element).data({
 				'offsetX': element.innerWidth() / 2,
 				'offsetY': element.innerHeight() / 2,
-				'width': element.innerWidth(),
-				'height': element.innerHeight(),
+				'width': element.innerWidth() - 20,
+				'height': element.innerHeight() - 20,
 				'scale': 1
-			}).updateStage();
-		element.css('overflow', 'auto');
+			}).updateStage(),
+			previousPinchScale = false;
+		element.css('overflow', 'auto').attr('tabindex', 1);
 		if (mapModel.isEditingEnabled()) {
-			element.simpleDraggableContainer();
+			(dragContainer || element).simpleDraggableContainer();
 		}
+
 		if (!touchEnabled) {
-			element.scrollWhenDragging(); //no need to do this for touch, this is native
+			element.scrollWhenDragging(mapModel.getInputEnabled); //no need to do this for touch, this is native
+			element.on('mousedown', function (e) {
+				if (e.target !== element[0]) {
+					element.css('overflow', 'hidden');
+				}
+			});
+			jQuery(document).on('mouseup', function () {
+				if (element.css('overflow') !== 'auto') {
+					element.css('overflow', 'auto');
+				}
+			});
+			element.imageDropWidget(imageInsertController);
+		} else {
+			element.on('doubletap', function (event) {
+				if (mapModel.requestContextMenu(event.gesture.center.pageX, event.gesture.center.pageY)) {
+					event.preventDefault();
+					event.gesture.preventDefault();
+					return false;
+				}
+			}).on('pinch', function (event) {
+				if (!event || !event.gesture || !event.gesture.scale) {
+					return;
+				}
+				event.preventDefault();
+				event.gesture.preventDefault();
+
+				var scale = event.gesture.scale;
+				if (previousPinchScale) {
+					scale = scale / previousPinchScale;
+				}
+				if (Math.abs(scale - 1) < 0.05) {
+					return;
+				}
+				previousPinchScale = event.gesture.scale;
+
+				mapModel.scale('touch', scale, {
+					x: event.gesture.center.pageX - stage.data('offsetX'),
+					y: event.gesture.center.pageY - stage.data('offsetY')
+				});
+			}).on('gestureend', function () {
+				previousPinchScale = false;
+			});
+
 		}
-		MAPJS.DOMRender.viewController(mapModel, stage);
+		MAPJS.DOMRender.viewController(mapModel, stage, touchEnabled, imageInsertController, resourceTranslator, options);
 		_.each(hotkeyEventHandlers, function (mappedFunction, keysPressed) {
 			element.keydown(keysPressed, function (event) {
 				if (actOnKeys) {
+					event.stopImmediatePropagation();
 					event.preventDefault();
 					mapModel[mappedFunction]('keyboard');
 				}
 			});
 		});
+		if (!touchEnabled) {
+			jQuery(window).on('resize', function () {
+				mapModel.resetView();
+			});
+		}
+
+		jQuery(window).on('orientationchange', function () {
+			if (centerSelectedNodeOnOrientationChange) {
+				mapModel.centerOnNode(mapModel.getSelectedNodeId());
+			} else {
+				mapModel.resetView();
+			}
+
+		});
+		jQuery(document).on('keydown', function (e) {
+			var functions = {
+				'U+003D': 'scaleUp',
+				'U+002D': 'scaleDown',
+				61: 'scaleUp',
+				173: 'scaleDown'
+			}, mappedFunction;
+			if (e && !e.altKey && (e.ctrlKey || e.metaKey)) {
+				if (e.originalEvent && e.originalEvent.keyIdentifier) { /* webkit */
+					mappedFunction = functions[e.originalEvent.keyIdentifier];
+				} else if (e.key === 'MozPrintableKey') {
+					mappedFunction = functions[e.which];
+				}
+				if (mappedFunction) {
+					if (actOnKeys) {
+						e.preventDefault();
+						mapModel[mappedFunction]('keyboard');
+					}
+				}
+			}
+		}).on('wheel mousewheel', function (e) {
+			var scroll = e.originalEvent.deltaX || (-1 * e.originalEvent.wheelDeltaX);
+			if (scroll < 0 && element.scrollLeft() === 0) {
+				e.preventDefault();
+			}
+			if (scroll > 0 && (element[0].scrollWidth - element.width() - element.scrollLeft() === 0)) {
+				e.preventDefault();
+			}
+		});
+
 		element.on('keypress', function (evt) {
 			if (!actOnKeys) {
 				return;
@@ -115,54 +211,3 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled) {
 		});
 	});
 };
-
-
-// --------- editing --------------
-// + activated
-// + mapwidget keyboard bindings
-// + editing as span or as textarea - grow automatically
-// - enable drag & drop
-//		only if mapmodel allows it
-// drop
-// MAPJS.dragdrop equivalent!
-// collaboration avatars
-// test for break-all when text is different from node text during edit
-// drag & drop at scale
-// focus after drop if going off screen
-// mouse events
-
-// mapwidget mouse bindings
-// html export
-// drag and drop images?
-
-//- v2 -
-// collaboration - collaborator images
-// straight lines extension
-// prevent scrolling so the screen is blank
-// support for multiple stages so that eg stage ID is prepended to the node and connector IDs
-// support for selectAll when editing nodes or remove that from the mapModel - do we still use it?
-//
-// remaining kinetic mediator events
-//
-// viewing
-// +	mapModel.addEventListener('nodeCreated', function (n) {
-// +	mapModel.addEventListener('connectorRemoved', function (n) {
-// +	mapModel.addEventListener('linkCreated', function (l) {
-// +	mapModel.addEventListener('linkRemoved', function (l) {
-// +	mapModel.addEventListener('nodeMoved', function (n, reason) {
-// +	mapModel.addEventListener('nodeRemoved', function (n) {
-// +	mapModel.addEventListener('connectorCreated', function (n) {
-// +	mapModel.addEventListener('nodeFocusRequested', function (ideaId)  {
-// +	mapModel.addEventListener('layoutChangeComplete', function () {
-// +	mapModel.addEventListener('mapScaleChanged', function (scaleMultiplier, zoomPoint) {
-// +	mapModel.addEventListener('mapViewResetRequested', function () {
-// editing
-// -	mapModel.addEventListener('mapMoveRequested', function (deltaX, deltaY) {
-//		- do we need this? it was used onscroll and onswipe
-// +	mapModel.addEventListener('addLinkModeToggled', function (isOn) {
-// +	mapModel.addEventListener('nodeEditRequested', function (nodeId, shouldSelectAll, editingNew) {
-// +	mapModel.addEventListener('nodeAttrChanged', function (n) {
-// -	mapModel.addEventListener('nodeDroppableChanged', function (ideaId, isDroppable) {
-// +	mapModel.addEventListener('nodeTitleChanged', function (n) {
-// +	mapModel.addEventListener('activatedNodesChanged', function (activatedNodes, deactivatedNodes) {
-// +	mapModel.addEventListener('linkAttrChanged', function (l) {

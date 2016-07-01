@@ -1,10 +1,9 @@
 .DS_Store
 pub
 lib
-
 #grunt and jasmine artificats
 node_modules/
 SpecRunner.html
 .grunt
-
-
+.sublime*
+npm-debug.log

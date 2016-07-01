@@ -8,10 +8,11 @@ MAPJS.getDataURIAndDimensions = function (src, corsProxyUrl) {
 			if (isDataUri(img.src)) {
 				return img.src;
 			}
-			var canvas = document.createElement('canvas');
+			var canvas = document.createElement('canvas'),
+				ctx;
 			canvas.width = img.width;
 			canvas.height = img.height;
-			var ctx = canvas.getContext('2d');
+			ctx = canvas.getContext('2d');
 			ctx.drawImage(img, 0, 0);
 			return canvas.toDataURL('image/png');
 		},
@@ -39,7 +40,7 @@ MAPJS.getDataURIAndDimensions = function (src, corsProxyUrl) {
 	domImg.src = src;
 	return deferred.promise();
 };
-MAPJS.ImageInsertController = function (corsProxyUrl) {
+MAPJS.ImageInsertController = function (corsProxyUrl, resourceConverter) {
 	'use strict';
 	var self = observable(this),
 		readFileIntoDataUrl = function (fileInfo) {
@@ -57,7 +58,11 @@ MAPJS.ImageInsertController = function (corsProxyUrl) {
 		self.dispatchEvent('imageLoadStarted');
 		MAPJS.getDataURIAndDimensions(dataUrl, corsProxyUrl).then(
 			function (result) {
-				self.dispatchEvent('imageInserted', result.dataUri, result.width, result.height, evt);
+				var storeUrl = result.dataUri;
+				if (resourceConverter) {
+					storeUrl = resourceConverter(storeUrl);
+				}
+				self.dispatchEvent('imageInserted', storeUrl, result.width, result.height, evt);
 			},
 			function (reason) {
 				self.dispatchEvent('imageInsertError', reason);
@@ -67,14 +72,18 @@ MAPJS.ImageInsertController = function (corsProxyUrl) {
 	self.insertFiles = function (files, evt) {
 		jQuery.each(files, function (idx, fileInfo) {
 			if (/^image\//.test(fileInfo.type)) {
-				jQuery.when(readFileIntoDataUrl(fileInfo)).done(function (dataUrl) { self.insertDataUrl(dataUrl, evt); });
+				jQuery.when(readFileIntoDataUrl(fileInfo)).done(function (dataUrl) {
+					self.insertDataUrl(dataUrl, evt);
+				});
 			}
 		});
 	};
 	self.insertHtmlContent = function (htmlContent, evt) {
 		var images = htmlContent.match(/img[^>]*src="([^"]*)"/);
 		if (images && images.length > 0) {
-			_.each(images.slice(1), function (dataUrl) { self.insertDataUrl(dataUrl, evt); });
+			_.each(images.slice(1), function (dataUrl) {
+				self.insertDataUrl(dataUrl, evt);
+			});
 		}
 	};
 };

@@ -9,9 +9,8 @@ install grunt cli:
 	npm install -g grunt-cli
 
 - per project
-npm install grunt-contrib-jasmine --save-dev
-npm install grunt-notify --save-dev
-npm install grunt-contrib-watch --save-dev
+
+npm install
 
 */
 
@@ -43,32 +42,82 @@ module.exports = function (grunt) {
 
 			}
 		},
+		jscs: {
+			src: ['src/*.js', 'test/*-spec.js'],
+			options: {
+				config: '.jscsrc',
+				reporter: 'inline'
+			}
+		},
+		jshint: {
+			all: ['src/*.js', 'test/*-spec.js'],
+			options: {
+				jshintrc: true
+			}
+		},
 		jasmine: {
 			all: {
 				src: ['src/*.js'],
 				options: {
 					template: 'test-lib/grunt.tmpl',
 					outfile: 'SpecRunner.html',
+					summary: true,
+					display: 'short',
 					keepRunner: true,
 					specs: [
-						'test/*-spec.js',
+						'test/*-spec.js'
 					],
 					vendor: [
 						'src/mapjs.js',
-						grunt.option('external-scripts') || 'http://static.mindmup.com/20131204091534/external.js',
+						'lib/dependencies.js'
 					],
 					helpers: [
-						'test-lib/describe-batch.js'
+						'test-lib/describe-batch.js',
+						'test-lib/jquery-extension-matchers.js'
 					]
+				}
+			}
+		},
+		concat: {
+			dist: {
+				files: {
+					'dist/mindmup-mapjs.js': ['src/mapjs.js', 'src/observable.js', 'src/url-helper.js', 'src/content.js', 'src/layout.js', 'src/clipboard.js', 'src/hammer-draggable.js', 'src/map-model.js', 'src/map-toolbar-widget.js', 'src/link-edit-widget.js', 'src/image-drop-widget.js', 'src/dom-map-view.js', 'src/dom-map-widget.js', 'src/theme-css-widget.js','src/theme-processor.js', 'src/theme.js']
+				}
+			}
+		},
+		uglify: {
+			dist: {
+				options: {
+					sourceMap: true
+				},
+				files: {
+					'dist/mindmup-mapjs.min.js': ['dist/mindmup-mapjs.js'],
+					'dist/index.js': ['dist/npm-dependencies.js', 'dist/mindmup-mapjs.js', 'dist/npm-export.js']
+				}
+			}
+		},
+		browserify: {
+			dependencies: {
+				files: {
+
+					'lib/dependencies.js': ['dist/browserify-dependencies.js']
 				}
 			}
 		}
 	});
+	grunt.registerTask('checkstyle', ['jshint', 'jscs']);
+	grunt.registerTask('precommit', ['checkstyle', 'jasmine']);
+	grunt.registerTask('dist', ['checkstyle', 'jasmine', 'browserify:dependencies', 'concat:dist', 'uglify:dist']);
 
 	// Load local tasks.
 	grunt.loadNpmTasks('grunt-contrib-jasmine');
 	grunt.loadNpmTasks('grunt-notify');
 	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-jscs');
+	grunt.loadNpmTasks('grunt-contrib-jshint');
+	grunt.loadNpmTasks('grunt-contrib-uglify');
+	grunt.loadNpmTasks('grunt-contrib-concat');
+	grunt.loadNpmTasks('grunt-browserify');
 	grunt.event.on('watch', function (action, filepath, target) {
 		grunt.log.writeln(target + ': ' + filepath + ' has ' + action);
 		var options = grunt.config(['jasmine', 'all']);

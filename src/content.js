@@ -80,31 +80,41 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 				return false;
 			};
 			contentIdea.sortedSubIdeas = function () {
+				var result = [],
+					childKeys,
+					sortedChildKeys;
 				if (!contentIdea.ideas) {
 					return [];
 				}
-				var result = [],
-					childKeys = _.groupBy(_.map(_.keys(contentIdea.ideas), parseFloat), function (key) { return key > 0; }),
-					sortedChildKeys = _.sortBy(childKeys[true], Math.abs).concat(_.sortBy(childKeys[false], Math.abs));
+				childKeys = _.groupBy(_.map(_.keys(contentIdea.ideas), parseFloat), function (key) {
+					return key > 0;
+				});
+				sortedChildKeys = _.sortBy(childKeys[true], Math.abs).concat(_.sortBy(childKeys[false], Math.abs));
 				_.each(sortedChildKeys, function (key) {
 					result.push(contentIdea.ideas[key]);
 				});
 				return result;
 			};
-			contentIdea.traverse = function (iterator) {
-				iterator(contentIdea);
+			contentIdea.traverse = function (iterator, postOrder) {
+				if (!postOrder) {
+					iterator(contentIdea);
+				}
 				_.each(contentIdea.sortedSubIdeas(), function (subIdea) {
-					subIdea.traverse(iterator);
+					subIdea.traverse(iterator, postOrder);
 				});
+				if (postOrder) {
+					iterator(contentIdea);
+				}
 			};
 			return contentIdea;
 		},
 		maxKey = function (kvMap, sign) {
+			var currentKeys;
 			sign = sign || 1;
 			if (_.size(kvMap) === 0) {
 				return 0;
 			}
-			var currentKeys = _.keys(kvMap);
+			currentKeys = _.keys(kvMap);
 			currentKeys.push(0); /* ensure at least 0 is there for negative ranks */
 			return _.max(_.map(currentKeys, parseFloat), function (x) {
 				return x * sign;
@@ -134,7 +144,9 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			return contentAggregate.id == ideaId ? contentAggregate : contentAggregate.findSubIdeaById(ideaId);
 		},
 		sameSideSiblingRanks = function (parentIdea, ideaRank) {
-			return _(_.map(_.keys(parentIdea.ideas), parseFloat)).reject(function (k) {return k * ideaRank < 0; });
+			return _(_.map(_.keys(parentIdea.ideas), parseFloat)).reject(function (k) {
+				return k * ideaRank < 0;
+			});
 		},
 		sign = function (number) {
 			/* intentionally not returning 0 case, to help with split sorting into 2 groups */
@@ -208,9 +220,10 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			delete parentIdea.ideas[oldRank];
 		},
 		upgrade = function (idea) {
+			var collapsed;
 			if (idea.style) {
 				idea.attr = {};
-				var collapsed = idea.style.collapsed;
+				collapsed = idea.style.collapsed;
 				delete idea.style.collapsed;
 				idea.attr.style = idea.style;
 				if (collapsed) {
@@ -226,7 +239,46 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			var dotIndex = String(id).indexOf('.');
 			return dotIndex > 0 && id.substr(dotIndex + 1);
 		},
-		commandProcessors = {};
+		commandProcessors = {},
+		configuration = {},
+		uniqueResourcePostfix = '/xxxxxxxx-yxxx-yxxx-yxxx-xxxxxxxxxxxx/'.replace(/[xy]/g, function (c) {
+			/*jshint bitwise: false*/
+			// jscs:disable
+			var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r&0x3|0x8);
+			// jscs:enable
+			return v.toString(16);
+		}) + (sessionKey || ''),
+		updateAttr = function (object, attrName, attrValue) {
+			var oldAttr;
+			if (!object) {
+				return false;
+			}
+			oldAttr = _.extend({}, object.attr);
+			object.attr = _.extend({}, object.attr);
+			if (!attrValue || attrValue === 'false' || (_.isObject(attrValue) && _.isEmpty(attrValue))) {
+				if (!object.attr[attrName]) {
+					return false;
+				}
+				delete object.attr[attrName];
+			} else {
+				if (_.isEqual(object.attr[attrName], attrValue)) {
+					return false;
+				}
+				object.attr[attrName] = JSON.parse(JSON.stringify(attrValue));
+			}
+			if (_.size(object.attr) === 0) {
+				delete object.attr;
+			}
+			return function () {
+				object.attr = oldAttr;
+			};
+		};
+
+
+
+	contentAggregate.setConfiguration = function (config) {
+		configuration = config || {};
+	};
 	contentAggregate.getSessionKey = function () {
 		return sessionKey;
 	};
@@ -235,17 +287,25 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			currentRank,
 			candidateSiblingRanks,
 			siblingsAfter;
-		if (!parentIdea) { return false; }
+		if (!parentIdea) {
+			return false;
+		}
 		currentRank = parentIdea.findChildRankById(subIdeaId);
 		candidateSiblingRanks = sameSideSiblingRanks(parentIdea, currentRank);
-		siblingsAfter = _.reject(candidateSiblingRanks, function (k) { return Math.abs(k) <= Math.abs(currentRank); });
-		if (siblingsAfter.length === 0) { return false; }
+		siblingsAfter = _.reject(candidateSiblingRanks, function (k) {
+			return Math.abs(k) <= Math.abs(currentRank);
+		});
+		if (siblingsAfter.length === 0) {
+			return false;
+		}
 		return parentIdea.ideas[_.min(siblingsAfter, Math.abs)].id;
 	};
 	contentAggregate.sameSideSiblingIds = function (subIdeaId) {
 		var parentIdea = contentAggregate.findParent(subIdeaId),
 			currentRank = parentIdea.findChildRankById(subIdeaId);
-		return _.without(_.map(_.pick(parentIdea.ideas, sameSideSiblingRanks(parentIdea, currentRank)), function (i) { return i.id; }), subIdeaId);
+		return _.without(_.map(_.pick(parentIdea.ideas, sameSideSiblingRanks(parentIdea, currentRank)), function (i) {
+			return i.id;
+		}), subIdeaId);
 	};
 	contentAggregate.getAttrById = function (ideaId, attrName) {
 		var idea = findIdeaById(ideaId);
@@ -256,11 +316,17 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			currentRank,
 			candidateSiblingRanks,
 			siblingsBefore;
-		if (!parentIdea) { return false; }
+		if (!parentIdea) {
+			return false;
+		}
 		currentRank = parentIdea.findChildRankById(subIdeaId);
 		candidateSiblingRanks = sameSideSiblingRanks(parentIdea, currentRank);
-		siblingsBefore = _.reject(candidateSiblingRanks, function (k) { return Math.abs(k) >= Math.abs(currentRank); });
-		if (siblingsBefore.length === 0) { return false; }
+		siblingsBefore = _.reject(candidateSiblingRanks, function (k) {
+			return Math.abs(k) >= Math.abs(currentRank);
+		});
+		if (siblingsBefore.length === 0) {
+			return false;
+		}
 		return parentIdea.ideas[_.max(siblingsBefore, Math.abs)].id;
 	};
 	contentAggregate.clone = function (subIdeaId) {
@@ -338,8 +404,12 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 				return [event.eventMethod].concat(event.eventArgs);
 			});
 			batchUndoFunctions = _.sortBy(
-				_.map(inBatch, function (event) { return event.undoFunction; }),
-				function (f, idx) { return -1 * idx; }
+				_.map(inBatch, function (event) {
+					return event.undoFunction;
+				}),
+				function (f, idx) {
+					return -1 * idx;
+				}
 			);
 			undo = function () {
 				_.each(batchUndoFunctions, function (eventUndo) {
@@ -378,8 +448,9 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		}
 	};
 	contentAggregate.pasteMultiple = function (parentIdeaId, jsonArrayToPaste) {
+		var results;
 		contentAggregate.startBatch();
-		var results = _.map(jsonArrayToPaste, function (json) {
+		results = _.map(jsonArrayToPaste, function (json) {
 			return contentAggregate.paste(parentIdeaId, json);
 		});
 		contentAggregate.endBatch();
@@ -392,9 +463,15 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 	commandProcessors.paste = function (originSession, parentIdeaId, jsonToPaste, initialId) {
 		var pasteParent = (parentIdeaId == contentAggregate.id) ?  contentAggregate : contentAggregate.findSubIdeaById(parentIdeaId),
 			cleanUp = function (json) {
-				var result =  _.omit(json, 'ideas', 'id'), index = 1, childKeys, sortedChildKeys;
+				var result =  _.omit(json, 'ideas', 'id', 'attr'), index = 1, childKeys, sortedChildKeys;
+				result.attr = _.omit(json.attr, configuration.nonClonedAttributes);
+				if (_.isEmpty(result.attr)) {
+					delete result.attr;
+				}
 				if (json.ideas) {
-					childKeys = _.groupBy(_.map(_.keys(json.ideas), parseFloat), function (key) { return key > 0; });
+					childKeys = _.groupBy(_.map(_.keys(json.ideas), parseFloat), function (key) {
+						return key > 0;
+					});
 					sortedChildKeys = _.sortBy(childKeys[true], Math.abs).concat(_.sortBy(childKeys[false], Math.abs));
 					result.ideas = {};
 					_.each(sortedChildKeys, function (key) {
@@ -497,8 +574,9 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		return idea.id;
 	};
 	contentAggregate.removeMultiple = function (subIdeaIdArray) {
+		var results;
 		contentAggregate.startBatch();
-		var results = _.map(subIdeaIdArray, contentAggregate.removeSubIdea);
+		results = _.map(subIdeaIdArray, contentAggregate.removeSubIdea);
 		contentAggregate.endBatch();
 		return results;
 	};
@@ -512,7 +590,9 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			oldIdea = parent.ideas[oldRank];
 			delete parent.ideas[oldRank];
 			oldLinks = contentAggregate.links;
-			contentAggregate.links = _.reject(contentAggregate.links, function (link) { return link.ideaIdFrom == subIdeaId || link.ideaIdTo == subIdeaId; });
+			contentAggregate.links = _.reject(contentAggregate.links, function (link) {
+				return link.ideaIdFrom == subIdeaId || link.ideaIdTo == subIdeaId;
+			});
 			logChange('removeSubIdea', [subIdeaId], function () {
 				parent.ideas[oldRank] = oldIdea;
 				contentAggregate.links = oldLinks;
@@ -522,8 +602,9 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		return false;
 	};
 	contentAggregate.insertIntermediateMultiple = function (idArray) {
+		var newId;
 		contentAggregate.startBatch();
-		var newId = contentAggregate.insertIntermediate(idArray[0]);
+		newId = contentAggregate.insertIntermediate(idArray[0]);
 		_.each(idArray.slice(1), function (id) {
 			contentAggregate.changeParent(id, newId);
 		});
@@ -534,10 +615,11 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		return contentAggregate.execCommand('insertIntermediate', arguments);
 	};
 	commandProcessors.insertIntermediate = function (originSession, inFrontOfIdeaId, title, optionalNewId) {
+		var childRank, oldIdea, newIdea, parentIdea;
 		if (contentAggregate.id == inFrontOfIdeaId) {
 			return false;
 		}
-		var childRank, oldIdea, newIdea, parentIdea = contentAggregate.findParent(inFrontOfIdeaId);
+		parentIdea = contentAggregate.findParent(inFrontOfIdeaId);
 		if (!parentIdea) {
 			return false;
 		}
@@ -599,31 +681,6 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		}, originSession);
 		return true;
 	};
-	var updateAttr = function (object, attrName, attrValue) {
-		var oldAttr;
-		if (!object) {
-			return false;
-		}
-		oldAttr = _.extend({}, object.attr);
-		object.attr = _.extend({}, object.attr);
-		if (!attrValue || attrValue === 'false' || (_.isObject(attrValue) && _.isEmpty(attrValue))) {
-			if (!object.attr[attrName]) {
-				return false;
-			}
-			delete object.attr[attrName];
-		} else {
-			if (_.isEqual(object.attr[attrName], attrValue)) {
-				return false;
-			}
-			object.attr[attrName] = JSON.parse(JSON.stringify(attrValue));
-		}
-		if (_.size(object.attr) === 0) {
-			delete object.attr;
-		}
-		return function () {
-			object.attr = oldAttr;
-		};
-	};
 	contentAggregate.mergeAttrProperty = function (ideaId, attrName, attrPropertyName, attrPropertyValue) {
 		var val = contentAggregate.getAttrById(ideaId, attrName) || {};
 		if (attrPropertyValue) {
@@ -631,7 +688,9 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		} else {
 			delete val[attrPropertyName];
 		}
-		if (_.isEmpty(val)) { val = false; }
+		if (_.isEmpty(val)) {
+			val = false;
+		}
 		return contentAggregate.updateAttr(ideaId, attrName, val);
 	};
 	contentAggregate.updateAttr = function (ideaId, attrName, attrValue) {
@@ -645,25 +704,70 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		}
 		return !!undoAction;
 	};
-	contentAggregate.moveRelative = function (ideaId, relativeMovement) {
+	contentAggregate.getOrderedSiblingRanks = function (ideaId, options) {
 		var parentIdea = contentAggregate.findParent(ideaId),
-			currentRank = parentIdea && parentIdea.findChildRankById(ideaId),
-			siblingRanks = currentRank && _.sortBy(sameSideSiblingRanks(parentIdea, currentRank), Math.abs),
-			currentIndex = siblingRanks && siblingRanks.indexOf(currentRank),
-			/* we call positionBefore, so movement down is actually 2 spaces, not 1 */
-			newIndex = currentIndex + (relativeMovement > 0 ? relativeMovement + 1 : relativeMovement),
-			beforeSibling = (newIndex >= 0) && parentIdea && siblingRanks && parentIdea.ideas[siblingRanks[newIndex]];
-		if (newIndex < 0 || !parentIdea) {
+			currentRank = parentIdea && parentIdea.findChildRankById(ideaId);
+		if (!currentRank) {
 			return false;
 		}
-		return contentAggregate.positionBefore(ideaId, beforeSibling && beforeSibling.id, parentIdea);
+		if (options && options.ignoreRankSide) {
+			return _.sortBy(_.map(_.keys(parentIdea.ideas), parseFloat));
+		} else {
+			return _.sortBy(sameSideSiblingRanks(parentIdea, currentRank), Math.abs);
+		}
+	};
+	contentAggregate.moveRelative = function (ideaId, relativeMovement, options) {
+		var parentIdea = contentAggregate.findParent(ideaId),
+			currentRank = parentIdea && parentIdea.findChildRankById(ideaId),
+			siblingRanks = contentAggregate.getOrderedSiblingRanks(ideaId, options),
+			currentIndex = siblingRanks && siblingRanks.indexOf(currentRank),
+			calcNewIndex = function () {
+				var calcIndex = currentIndex + (relativeMovement > 0 ? relativeMovement + 1 : relativeMovement);
+				if (options && options.ignoreRankSide) {
+					if (currentRank < 0) {
+						calcIndex = currentIndex + (relativeMovement < 0 ? relativeMovement - 1 : relativeMovement);
+						if (siblingRanks[calcIndex] > 0) {
+							calcIndex = calcIndex + 1;
+						}
+					} else if (siblingRanks[calcIndex] < 0) {
+						calcIndex = calcIndex - 1;
+					}
+				}
+				return calcIndex;
+
+			},
+			/* we call positionBefore, so movement down is actually 2 spaces, not 1 */
+			newIndex = calcNewIndex(),
+			beforeRank = newIndex >= 0 && siblingRanks && siblingRanks.length && siblingRanks[newIndex],
+			beforeSibling = beforeRank && parentIdea && parentIdea.ideas[beforeRank],
+			shouldNotPosition = function () {
+				if (!parentIdea) {
+					return false;
+				}
+				if (options && options.ignoreRankSide && currentRank < 0) {
+					return newIndex	> (siblingRanks.length - 1);
+				}
+				return (newIndex < 0);
+			}, result;
+		if (shouldNotPosition()) {
+			return false;
+		}
+		contentAggregate.startBatch();
+		//handle reordering on top down maps where moving from positive to negative or vice versa
+		if (options && options.ignoreRankSide && beforeRank && beforeSibling && ((beforeRank * currentRank) < 0)) {
+			contentAggregate.flip(ideaId);
+		}
+		result =  contentAggregate.positionBefore(ideaId, beforeSibling && beforeSibling.id, parentIdea);
+		contentAggregate.endBatch();
+		return result;
 	};
 	contentAggregate.positionBefore = function (ideaId, positionBeforeIdeaId, parentIdea) {
 		return contentAggregate.execCommand('positionBefore', arguments);
 	};
 	commandProcessors.positionBefore = function (originSession, ideaId, positionBeforeIdeaId, parentIdea) {
-		parentIdea = parentIdea || contentAggregate;
 		var newRank, afterRank, siblingRanks, candidateSiblings, beforeRank, maxRank, currentRank;
+		parentIdea = parentIdea || contentAggregate;
+
 		currentRank = parentIdea.findChildRankById(ideaId);
 		if (!currentRank) {
 			return _.reduce(
@@ -822,12 +926,18 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		};
 	}());
 	/* undo/redo */
+	contentAggregate.canUndo = function () {
+		return !!(eventStacks[sessionKey] && eventStacks[sessionKey].length > 0);
+	};
+	contentAggregate.canRedo = function () {
+		return !!(redoStacks[sessionKey] && redoStacks[sessionKey].length > 0);
+	};
 	contentAggregate.undo = function () {
 		return contentAggregate.execCommand('undo', arguments);
 	};
 	commandProcessors.undo = function (originSession) {
-		contentAggregate.endBatch();
 		var topEvent;
+		contentAggregate.endBatch();
 		topEvent = eventStacks[originSession] && eventStacks[originSession].pop();
 		if (topEvent && topEvent.undoFunction) {
 			topEvent.undoFunction();
@@ -844,8 +954,8 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 		return contentAggregate.execCommand('redo', arguments);
 	};
 	commandProcessors.redo = function (originSession) {
-		contentAggregate.endBatch();
 		var topEvent;
+		contentAggregate.endBatch();
 		topEvent = redoStacks[originSession] && redoStacks[originSession].pop();
 		if (topEvent) {
 			isRedoInProgress = true;
@@ -854,6 +964,55 @@ MAPJS.content = function (contentAggregate, sessionKey) {
 			return true;
 		}
 		return false;
+	};
+	contentAggregate.storeResource = function (/*resourceBody, optionalKey*/) {
+		return contentAggregate.execCommand('storeResource', arguments);
+	};
+	commandProcessors.storeResource = function (originSession, resourceBody, optionalKey) {
+		var existingId, id,
+			maxIdForSession = function () {
+				var toInt = function (string) {
+						return parseInt(string, 10);
+					},
+					keys, filteredKeys, intKeys;
+
+				if (_.isEmpty(contentAggregate.resources)) {
+					return 0;
+				}
+				keys = _.keys(contentAggregate.resources);
+				filteredKeys = sessionKey ? _.filter(keys, RegExp.prototype.test.bind(new RegExp('\\/' + sessionKey + '$'))) : keys;
+				intKeys = _.map(filteredKeys, toInt);
+				return _.isEmpty(intKeys) ? 0 : _.max(intKeys);
+			},
+			nextResourceId = function () {
+				var intId = maxIdForSession() + 1;
+				return intId + uniqueResourcePostfix;
+			};
+
+		if (!optionalKey && contentAggregate.resources) {
+			existingId = _.find(_.keys(contentAggregate.resources), function (key) {
+				return contentAggregate.resources[key] === resourceBody;
+			});
+			if (existingId) {
+				return existingId;
+			}
+		}
+		id = optionalKey || nextResourceId();
+		contentAggregate.resources = contentAggregate.resources || {};
+		contentAggregate.resources[id] = resourceBody;
+		contentAggregate.dispatchEvent('resourceStored', resourceBody, id, originSession);
+		return id;
+	};
+	contentAggregate.getResource = function (id) {
+		return contentAggregate.resources && contentAggregate.resources[id];
+	};
+	contentAggregate.hasSiblings = function (id) {
+		var parent;
+		if (id === contentAggregate.id) {
+			return false;
+		}
+		parent = contentAggregate.findParent(id);
+		return parent && _.size(parent.ideas) > 1;
 	};
 	if (contentAggregate.formatVersion != 2) {
 		upgrade(contentAggregate);
