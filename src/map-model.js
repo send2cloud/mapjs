@@ -340,7 +340,8 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		}
 	};
 	this.addSubIdea = function (source, parentId, initialTitle) {
-		var target = parentId || currentlySelectedIdeaId, newId;
+		var target = parentId || currentlySelectedIdeaId, newId,
+			targetNode = idea.findSubIdeaById(target) || idea;
 		if (!isEditingEnabled) {
 			return false;
 		}
@@ -352,6 +353,11 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 					newId = idea.addSubIdea(target, initialTitle);
 				} else {
 					newId = idea.addSubIdea(target);
+				}
+				if (layoutModel.getOrientation() === 'top-down') {
+					if (targetNode.findChildRankById(newId) < 0) {
+						idea.flip(newId);
+					}
 				}
 			});
 			if (newId) {
@@ -1140,7 +1146,7 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			nodeBeingDragged = layoutModel.getNode(nodeId),
 			closestNodeToRight, closestNodeToLeft,
 			isRoot = function () {
-				return nodeBeingDragged.level <= 2;
+				return nodeBeingDragged.level < 2;
 			},
 			manuallyPositionRootNode = function () {
 				return idea.updateAttr(
@@ -1153,7 +1159,10 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 			if (isRoot()) {
 				return manuallyPositionRootNode();
 			} else {
-				return false;
+				return idea.batch(function () {
+					idea.changeParent(nodeId, 'root');
+					return manuallyPositionRootNode();
+				});
 			}
 		}
 		if (!parentNode) {
@@ -1377,12 +1386,20 @@ MAPJS.MapModel = function (layoutCalculatorArg, selectAllTitles, clipboardProvid
 		idea.updateAttr(idea.id, 'theme', themeId);
 	};
 	self.makeSelectedNodeRoot = function () {
-		var nodeId = self.getSelectedNodeId();
+		var nodeId = self.getSelectedNodeId(),
+			node = nodeId && layoutModel.getNode(nodeId);
 		if (!nodeId || idea.isRootNode(nodeId)) {
 			return false;
 		}
 		if (isInputEnabled && isEditingEnabled) {
-			return idea.changeParent(nodeId, 'root');
+			return idea.batch(function () {
+				var result;
+				result = idea.changeParent(nodeId, 'root');
+				if (layoutModel.getOrientation() === 'top-down') {
+					result = idea.updateAttr(nodeId, 'position', [node.x, node.y, 1]);
+				}
+				return result;
+			});
 		}
 	};
 	self.setNodeWidth = function (source, id, width) {
