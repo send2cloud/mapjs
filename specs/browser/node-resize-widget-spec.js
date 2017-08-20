@@ -1,7 +1,7 @@
 /*global beforeEach, describe, afterEach, expect, it,jasmine, spyOn, require */
 const jQuery = require('jquery');
-require('../src/node-resize-widget');
-require('./helpers/jquery-extension-matchers');
+require('../../src/browser/node-resize-widget');
+require('../helpers/jquery-extension-matchers');
 describe('nodeResizeWidget', function () {
 	'use strict';
 	let element, mapModel, stagePositionForPointEvent, underTest, textElement;

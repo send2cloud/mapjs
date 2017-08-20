@@ -1,6 +1,0 @@
-- make tests run in Firefox and Safari
-- revisit `= false` in let assignments, refactor to const
-- create an example that initialises widgets
-- remove/refactor DOMRender references
-- break up widgets into separate files
-- update readme

@@ -1,11 +1,11 @@
 /*global jasmine, beforeEach, describe, expect, it, spyOn, require*/
 const _ = require('underscore'),
-	MapModel = require('../src/map-model'),
+	MapModel = require('../../src/core/map-model'),
 	content = require('mindmup-mapjs-model').content,
 	jQuery = require('jquery');
 
-require('./helpers/jquery-extension-matchers');
-require('../src/map-toolbar-widget');
+require('../helpers/jquery-extension-matchers');
+require('../../src/browser/map-toolbar-widget');
 describe('mapToolbarWidget', function () {
 	'use strict';
 	let mapModel, element;

@@ -3,17 +3,18 @@ const path = require('path'),
 	fs = require('fs'),
 	entries = {},
 	testFilter = process.env.npm_package_config_test_filter,
-	buildEntries = function () {
+	buildEntries = function (subdir) {
 		'use strict';
-		const startPath = path.resolve(__dirname, 'specs');
+		const startPath = path.resolve(__dirname, 'specs', subdir);
 		fs.readdirSync(startPath).filter(name => /.+-spec.js/.test(name)).map(x =>path.basename(x, '.js')).forEach(function (f) {
 			if (!testFilter || f.indexOf(testFilter) >= 0) {
-				entries[f] = `${startPath}/${f}.js`;
+				entries[`${subdir}-${f}`] = `${startPath}/${f}.js`;
 			}
 		});
 	};
 console.log('testFilter', testFilter);
-buildEntries();
+buildEntries('core');
+buildEntries('browser');
 
 module.exports = {
 	entry: entries,

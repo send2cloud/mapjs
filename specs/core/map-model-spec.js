@@ -1,5 +1,5 @@
 /*global beforeEach, describe, expect, it, jasmine, spyOn, require */
-const MapModel = require('../src/map-model'),
+const MapModel = require('../../src/core/map-model'),
 	_ = require('underscore'),
 	content = require('mindmup-mapjs-model').content,
 	observable = require('mindmup-mapjs-model').observable,

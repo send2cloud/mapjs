@@ -1,13 +1,13 @@
 /*global describe, it, beforeEach, afterEach, expect, navigator, jasmine, spyOn, window, document, require */
 const jQuery = require('jquery'),
 	_ = require('underscore'),
-	createSVG = require('../src/create-svg'),
-	DOMRender = require('../src/dom-render'),
+	createSVG = require('../../src/browser/create-svg'),
+	DOMRender = require('../../src/browser/dom-render'),
 	Theme = require('mindmup-mapjs-layout').Theme,
 	observable = require('mindmup-mapjs-model').observable;
 
-require('./helpers/jquery-extension-matchers');
-require('../src/dom-map-view');
+require('../helpers/jquery-extension-matchers');
+require('../../src/browser/dom-map-view');
 
 describe('innerText', function () {
 	'use strict';

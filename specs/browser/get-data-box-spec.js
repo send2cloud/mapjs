@@ -1,6 +1,6 @@
 /*global describe, it, beforeEach, afterEach, expect, require */
 const jQuery = require('jquery');
-require('../src/get-data-box');
+require('../../src/browser/get-data-box');
 describe('getDataBox', function () {
 	'use strict';
 	let underTest, stage;

@@ -7,7 +7,7 @@ const jQuery = require('jquery'),
 	foregroundStyle = require('mindmup-mapjs-layout').foregroundStyle,
 	formattedNodeTitle = require('mindmup-mapjs-model').formattedNodeTitle,
 	createSVG = require('./create-svg'),
-	cleanDOMId = require('./clean-dom-id'),
+	cleanDOMId = require('../core/util/clean-dom-id'),
 	connectorKey = function (connectorObj) {
 		'use strict';
 		return cleanDOMId('connector_' + connectorObj.from + '_' + connectorObj.to);
@@ -16,7 +16,7 @@ const jQuery = require('jquery'),
 		'use strict';
 		return cleanDOMId('link_' + linkObj.ideaIdFrom + '_' + linkObj.ideaIdTo);
 	},
-	nodeKey = require('./node-key');
+	nodeKey = require('../core/util/node-key');
 
 
 require('./hammer-draggable');

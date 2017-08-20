@@ -1,12 +1,12 @@
 /*global describe, it, beforeEach, afterEach, expect, require, spyOn */
 const jQuery = require('jquery'),
-	createSVG = require('../src/create-svg'),
-	DOMRender = require('../src/dom-render'),
+	createSVG = require('../../src/browser/create-svg'),
+	DOMRender = require('../../src/browser/dom-render'),
 	Theme = require('mindmup-mapjs-layout').Theme,
 	Connectors = require('mindmup-mapjs-layout').Connectors;
 
-require('./helpers/jquery-extension-matchers');
-require('../src/update-connector');
+require('../helpers/jquery-extension-matchers');
+require('../../src/browser/update-connector');
 
 describe('updateConnector', function () {
 	'use strict';

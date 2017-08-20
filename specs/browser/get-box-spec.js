@@ -1,6 +1,6 @@
 /*global describe, it, beforeEach, afterEach, expect, require */
 const jQuery = require('jquery');
-require('../src/get-box');
+require('../../src/browser/get-box');
 
 describe('getBox', function () {
 	'use strict';

@@ -3,10 +3,10 @@ const jQuery = require('jquery'),
 	createSVG = require('./create-svg'),
 	Connectors = require('mindmup-mapjs-layout').Connectors,
 	//defaultTheme = require('mindmup-mapjs-layout').Themes.default,
-	convertPositionToTransform = require('./convert-position-to-transform'),
+	convertPositionToTransform = require('../core/util/convert-position-to-transform'),
 	updateConnectorText = require('./update-connector-text'),
 	_ = require('underscore'),
-	calcLabelCenterPont = require('./calc-label-center-point'),
+	calcLabelCenterPont = require('../core/util/calc-label-center-point'),
 	DOMRender = require('./dom-render');
 
 

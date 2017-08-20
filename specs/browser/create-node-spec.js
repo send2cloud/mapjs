@@ -1,6 +1,6 @@
 /*global require, describe, it, expect, beforeEach, afterEach*/
 const jQuery = require('jquery');
-require('../src/create-node');
+require('../../src/browser/create-node');
 
 describe('createNode', () => {
 	'use strict';
