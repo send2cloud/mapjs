@@ -3,7 +3,7 @@ const MapModel = require('../../src/core/map-model'),
 	_ = require('underscore'),
 	content = require('mindmup-mapjs-model').content,
 	observable = require('mindmup-mapjs-model').observable,
-	LayoutModel = require('mindmup-mapjs-layout').LayoutModel;
+	LayoutModel = require('../../src/core/layout/layout-model');
 describe('MapModel', function () {
 	'use strict';
 	let layoutCalculator, underTest;

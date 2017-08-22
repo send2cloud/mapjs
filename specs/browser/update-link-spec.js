@@ -1,12 +1,11 @@
-/*global describe, it, beforeEach, afterEach, expect, require, spyOn */
+/*global describe, it, beforeEach, afterEach, expect, require, jasmine */
 
 const jQuery = require('jquery'),
-	createSVG = require('../../src/browser/create-svg'),
 	_ = require('underscore'),
+	createSVG = require('../../src/browser/create-svg'),
 	DOMRender = require('../../src/browser/dom-render'),
-	Theme = require('mindmup-mapjs-layout').Theme,
-	Connectors = require('mindmup-mapjs-layout').Connectors,
-	colorToRGB = require('mindmup-mapjs-layout').colorToRGB;
+	Theme = require('../../src/core/theme/theme'),
+	colorToRGB = require('../../src/core/theme/color-to-rgb');
 
 require('../../src/browser/update-link');
 
@@ -168,6 +167,7 @@ describe('updateLink', function () {
 	describe('painting labels', function () {
 		let linkPath,
 			textField,
+			builder,
 			rectField;
 		beforeEach(() => {
 			linkPath = {
@@ -197,12 +197,12 @@ describe('updateLink', function () {
 					height: 60
 				}
 			};
-			spyOn(Connectors, 'linkPath').and.returnValue(linkPath);
+			builder = jasmine.createSpy('linkBuilder').and.returnValue(linkPath);
 			underTest.data('attr', {label: 'blah blah blah'});
 
 		});
 		it('uses the color attribute to set the line stroke', function () {
-			underTest.updateLink();
+			underTest.updateLink({linkBuilder: builder});
 			textField = underTest.find('text');
 			expect(textField.length).toEqual(1);
 			expect(textField.text()).toEqual('blah blah blah');
@@ -212,25 +212,25 @@ describe('updateLink', function () {
 			expect(textField[0].style.fontWeight).toEqual('bold');
 		});
 		it('positions the label according to the center point', function () {
-			underTest.updateLink();
+			underTest.updateLink({linkBuilder: builder});
 			textField = underTest.find('text');
 			const textDims = textField[0].getClientRects()[0];
 			expect(parseInt(textField.attr('x'))).toEqual(Math.round(20 - textDims.width / 2));
 			expect(parseInt(textField.attr('y'))).toEqual(Math.round(20 - textDims.height));
 		});
 		it('appends the active label theme to the attributes so they can be used for editor widgets', function () {
-			underTest.updateLink();
+			underTest.updateLink({linkBuilder: builder});
 			expect(underTest.data('theme')).toEqual(linkPath.theme);
 		});
 		it('appends the label-center-point', function () {
-			underTest.updateLink();
+			underTest.updateLink({linkBuilder: builder});
 			expect(underTest.data('label-center-point').x).toEqual(20);
 			expect(underTest.data('label-center-point').y).toEqual(20);
 		});
 		it('paints the rect element 2 pixels above the text element', function () {
 			linkPath.theme.label.backgroundColor = 'rgb(1, 2, 3)';
 			linkPath.theme.label.borderColor = 'rgb(4, 5, 6)';
-			underTest.updateLink();
+			underTest.updateLink({linkBuilder: builder});
 			textField = underTest.find('text');
 			const textDims = textField[0].getClientRects()[0];
 			rectField = underTest.find('rect');

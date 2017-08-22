@@ -3,7 +3,7 @@ const jQuery = require('jquery'),
 	_ = require('underscore'),
 	createSVG = require('../../src/browser/create-svg'),
 	DOMRender = require('../../src/browser/dom-render'),
-	Theme = require('mindmup-mapjs-layout').Theme,
+	Theme = require('../../src/core/theme/theme'),
 	observable = require('mindmup-mapjs-model').observable;
 
 require('../helpers/jquery-extension-matchers');

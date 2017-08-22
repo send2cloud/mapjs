@@ -1,7 +1,7 @@
 /*global require, document, module */
 const _ = require('underscore'),
 	jQuery = require('jquery'),
-	calculateLayout = require('mindmup-mapjs-layout').calculateLayout,
+	calculateLayout = require('../core/layout/calculate-layout'),
 	DOMRender = {
 		svgPixel: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>',
 		nodeCacheMark: function (idea, levelOverride) {

@@ -1,13 +1,13 @@
 /*global require */
 
 const jQuery = require('jquery'),
+	_ = require('underscore'),
 	createSVG = require('./create-svg'),
-	Connectors = require('mindmup-mapjs-layout').Connectors,
-	defaultTheme = require('mindmup-mapjs-layout').Themes.default,
-	lineStrokes = require('mindmup-mapjs-layout').lineStrokes,
+	themeConnector = require('../core/theme/connector'),
+	defaultTheme = require('../core/theme/default-theme'),
+	lineStrokes = require('../core/theme/line-strokes'),
 	convertPositionToTransform = require('../core/util/convert-position-to-transform'),
 	updateConnectorText = require('./update-connector-text'),
-	_ = require('underscore'),
 	calcLabelCenterPont = require('../core/util/calc-label-center-point'),
 	DOMRender = require('./dom-render');
 
@@ -15,8 +15,9 @@ const jQuery = require('jquery'),
 require('./get-box');
 require('./get-data-box');
 
-jQuery.fn.updateConnector = function (canUseData) {
+jQuery.fn.updateConnector = function (canUseData, optional) {
 	'use strict';
+	const connectorBuilder = optional && optional.connectorBuilder || themeConnector;
 	return jQuery.each(this, function () {
 		let connection = false, pathElement, hitElement, fromBox, toBox,
 			changeCheck = false;
@@ -73,7 +74,7 @@ jQuery.fn.updateConnector = function (canUseData) {
 		}
 		element.data('changeCheck', changeCheck);
 
-		connection = _.extend(Connectors.themePath(fromBox, toBox, DOMRender.theme), connectorAttr);
+		connection = _.extend(connectorBuilder(fromBox, toBox, DOMRender.theme), connectorAttr);
 		element.data('theme', connection.theme);
 		pathElement = element.find('path.mapjs-connector');
 		hitElement = element.find('path.mapjs-link-hit');

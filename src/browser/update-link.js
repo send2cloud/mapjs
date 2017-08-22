@@ -1,11 +1,10 @@
 /*global require */
 const jQuery = require('jquery'),
+	_ = require('underscore'),
 	createSVG = require('./create-svg'),
-	Connectors = require('mindmup-mapjs-layout').Connectors,
-	//defaultTheme = require('mindmup-mapjs-layout').Themes.default,
 	convertPositionToTransform = require('../core/util/convert-position-to-transform'),
 	updateConnectorText = require('./update-connector-text'),
-	_ = require('underscore'),
+	themeLink = require('../core/theme/link'),
 	calcLabelCenterPont = require('../core/util/calc-label-center-point'),
 	DOMRender = require('./dom-render');
 
@@ -13,8 +12,9 @@ const jQuery = require('jquery'),
 require('./get-box');
 require('./get-data-box');
 
-jQuery.fn.updateLink = function () {
+jQuery.fn.updateLink = function (optional) {
 	'use strict';
+	const linkBuilder = (optional && optional.linkBuilder) || themeLink;
 	return jQuery.each(this, function () {
 		const element = jQuery(this),
 			shapeFrom = element.data('nodeFrom'),
@@ -50,7 +50,7 @@ jQuery.fn.updateLink = function () {
 
 		element.data('changeCheck', changeCheck);
 
-		connection = Connectors.linkPath(fromBox, toBox, attrs, DOMRender.theme);
+		connection = linkBuilder(fromBox, toBox, attrs, DOMRender.theme);
 		element.data('theme', connection.theme);
 		element.css(_.extend(convertPositionToTransform(connection.position), {stroke: connection.lineProps.color}));
 

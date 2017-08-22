@@ -1,6 +1,6 @@
 /*global require */
 const $ = require('jquery'),
-	Theme = require('mindmup-mapjs-layout').Theme,
+	Theme = require('../core/theme/theme'),
 	DOMRender = require('./dom-render');
 $.fn.themeCssWidget = function (themeProvider, themeProcessor, mapModel) {
 	'use strict';
