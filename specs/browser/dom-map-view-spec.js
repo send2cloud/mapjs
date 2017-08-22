@@ -4,7 +4,7 @@ const jQuery = require('jquery'),
 	createSVG = require('../../src/browser/create-svg'),
 	DOMRender = require('../../src/browser/dom-render'),
 	Theme = require('../../src/core/theme/theme'),
-	observable = require('mindmup-mapjs-model').observable;
+	observable = require('../../src/core/util/observable');
 
 require('../helpers/jquery-extension-matchers');
 require('../../src/browser/dom-map-view');

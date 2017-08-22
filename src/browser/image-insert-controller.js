@@ -1,7 +1,7 @@
 /*global module, require, FileReader */
-const observable = require('mindmup-mapjs-model').observable,
-	jQuery = require('jquery'),
+const jQuery = require('jquery'),
 	_ = require('underscore'),
+	observable = require('../core/util/observable'),
 	getDataURIAndDimensions = require('./get-data-uri-and-dimensions');
 module.exports = function ImageInsertController(corsProxyUrl, resourceConverter) {
 	'use strict';

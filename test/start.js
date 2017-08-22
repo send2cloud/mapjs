@@ -2,9 +2,9 @@
 const MAPJS = require('../src/npm-main'),
 	jQuery = require('jquery'),
 	themeProvider = require('./theme'),
-	ThemeProcessor = require('mindmup-mapjs-layout').ThemeProcessor,
+	ThemeProcessor = require('../src/core/theme/theme-processor'),
 	testMap = require('./example-map'),
-	content = require('mindmup-mapjs-model').content,
+	content = MAPJS.content,
 	init = function () {
 		'use strict';
 		const container = jQuery('#container'),

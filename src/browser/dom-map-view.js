@@ -2,12 +2,12 @@
 require('./create-node');
 const jQuery = require('jquery'),
 	_ = require('underscore'),
-	DOMRender = require('./dom-render'),
-	URLHelper = require('mindmup-mapjs-model').URLHelper,
+	URLHelper = require('../core/util/url-helper'),
 	foregroundStyle = require('../core/theme/foreground-style'),
-	formattedNodeTitle = require('mindmup-mapjs-model').formattedNodeTitle,
-	createSVG = require('./create-svg'),
+	formattedNodeTitle = require('../core/content/formatted-node-title'),
 	cleanDOMId = require('../core/util/clean-dom-id'),
+	DOMRender = require('./dom-render'),
+	createSVG = require('./create-svg'),
 	connectorKey = function (connectorObj) {
 		'use strict';
 		return cleanDOMId('connector_' + connectorObj.from + '_' + connectorObj.to);

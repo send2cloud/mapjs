@@ -1,8 +1,8 @@
 /*global jasmine, beforeEach, describe, expect, it, spyOn, require*/
 const _ = require('underscore'),
+	jQuery = require('jquery'),
 	MapModel = require('../../src/core/map-model'),
-	content = require('mindmup-mapjs-model').content,
-	jQuery = require('jquery');
+	content = require('../../src/core/content/content');
 
 require('../helpers/jquery-extension-matchers');
 require('../../src/browser/map-toolbar-widget');

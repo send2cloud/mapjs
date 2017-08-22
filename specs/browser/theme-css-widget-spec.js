@@ -1,6 +1,6 @@
 /*global describe, it, expect, beforeEach, jasmine, require */
 const $ = require('jquery'),
-	observable = require('mindmup-mapjs-model').observable,
+	observable = require('../../src/core/util/observable'),
 	DOMRender = require('../../src/browser/dom-render');
 require('../../src/browser/theme-css-widget');
 require('../helpers/jquery-extension-matchers');

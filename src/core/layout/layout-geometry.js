@@ -1,4 +1,4 @@
-/*global module, require, isNaN, console*/
+/*global module, require */
 const _ = require('underscore'),
 	PolyBool = require('polybooljs'),
 	convexHull = require('monotone-convex-hull-2d'),
@@ -182,7 +182,7 @@ const _ = require('underscore'),
 		const x = vector1[0] + vector2[0],
 			y = vector1[1] + vector2[1];
 		if (isNaN(x) || isNaN(y)) {
-			console.log('addVectors invalid-args x', x, 'y', y, 'vector1', vector1, 'vector2', vector2);
+			//console.log('addVectors invalid-args x', x, 'y', y, 'vector1', vector1, 'vector2', vector2);
 			throw 'invalid-args';
 		}
 		return [x, y];
@@ -192,7 +192,7 @@ const _ = require('underscore'),
 		const x = vector1[0] - vector2[0],
 			y = vector1[1] - vector2[1];
 		if (isNaN(x) || isNaN(y)) {
-			console.log('subtractVectors invalid-args vector1', vector1, 'vector2', vector2);
+			//console.log('subtractVectors invalid-args vector1', vector1, 'vector2', vector2);
 			throw 'invalid-args';
 		}
 		return [x, y];
@@ -253,7 +253,8 @@ const _ = require('underscore'),
 					return translatePolyToNotOverlap(polyTranslation.translatedPoly, existingRegions, polyRootCenter, vector, previousTranslation, (depth + 1));
 				}
 			} else {
-				console.log('unable to translate poly', polyToFit, 'to intersectionPoint', intersectionPoint, 'with vector', vector);
+				throw 'invalid-args';
+				//console.log('unable to translate poly', polyToFit, 'to intersectionPoint', intersectionPoint, 'with vector', vector);
 			}
 		}
 		return {

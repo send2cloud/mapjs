@@ -1,7 +1,7 @@
 /*global require, module */
 const _ = require('underscore'),
 	LayoutModel = require('./layout/layout-model'),
-	observable = require('mindmup-mapjs-model').observable;
+	observable = require('../core/util/observable');
 module.exports = function MapModel(layoutCalculatorArg, selectAllTitles, defaultReorderMargin, optional) {
 	'use strict';
 	let idea,

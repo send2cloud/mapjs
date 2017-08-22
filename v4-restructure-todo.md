@@ -22,11 +22,9 @@
 - [ ] review all files and break into individual function files (eg hammer-draggable)
 
 
-# process renames
+# check with dave
 
-- [ ] mapjs-layout/connectors.connectorPath -> mapjs-layout/core/themes/connector
-- [ ] mapjs-layout/connectors.linkPath -> mapjs-layout/core/themes/link
-
+layout-geometry:257 console log -> throw?
 
 # write specs for files without currently
 

@@ -1,5 +1,5 @@
 /*global module, require*/
-const contentUpgrade = require('mindmup-mapjs-model').contentUpgrade,
+const contentUpgrade = require('../content/content-upgrade'),
 	Theme = require('../theme/theme'),
 	extractConnectors = require('./extract-connectors'),
 	extractLinks = require('./extract-links'),

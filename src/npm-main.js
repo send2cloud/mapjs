@@ -10,5 +10,7 @@ module.exports = {
 	MapModel: require('./core/map-model'),
 	ImageInsertController: require('./browser/image-insert-controller'),
 	DOMRender: require('./browser/dom-render'),
-	version: 3
+	content: require('./core/content/content'),
+	observable: require('./core/util/observable'),
+	version: 4
 };
