@@ -21,3 +21,13 @@
   - [ ] check theme css widget
 - [ ] review all files and break into individual function files (eg hammer-draggable)
 
+
+# process renames
+
+- [ ] mapjs-layout/connectors.connectorPath -> mapjs-layout/core/themes/connector
+- [ ] mapjs-layout/connectors.linkPath -> mapjs-layout/core/themes/link
+
+
+# write specs for files without currently
+
+- [ ] mapjs-layout/core/theme/color-parser

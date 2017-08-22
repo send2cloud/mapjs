@@ -1,21 +1,21 @@
 /*global require, module, __dirname, process, console */
 const path = require('path'),
-	fs = require('fs'),
+	recursiveLs = require('fs-readdir-recursive'),
 	entries = {},
 	testFilter = process.env.npm_package_config_test_filter,
-	buildEntries = function (subdir) {
+	buildEntries = function (dir) {
 		'use strict';
-		const startPath = path.resolve(__dirname, 'specs', subdir);
-		fs.readdirSync(startPath).filter(name => /.+-spec.js/.test(name)).map(x =>path.basename(x, '.js')).forEach(function (f) {
+		recursiveLs(dir).filter(name => /.+-spec\.js/.test(name)).forEach(function (f) {
 			if (!testFilter || f.indexOf(testFilter) >= 0) {
-				entries[`${subdir}-${f}`] = `${startPath}/${f}.js`;
+				entries[f] = path.join(dir, f);
 			}
 		});
+
 	};
 console.log('testFilter', testFilter);
-buildEntries('core');
-buildEntries('browser');
-
+//buildEntries('core');
+buildEntries(path.resolve(__dirname, 'specs'));
+console.log('entries', entries);
 module.exports = {
 	entry: entries,
 	devtool: 'source-map',

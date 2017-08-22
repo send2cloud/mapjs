@@ -1,7 +1,7 @@
 {
   "test_page": "./testem/jasmine2runner.mustache",
 	"serve_files": [
-		"./testem/compiled/*.js"
+		"./testem/compiled/**/*.js"
 	],
   "src_files": [
         "src/**/*.js",
