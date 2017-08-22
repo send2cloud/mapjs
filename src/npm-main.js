@@ -12,5 +12,6 @@ module.exports = {
 	DOMRender: require('./browser/dom-render'),
 	content: require('./core/content/content'),
 	observable: require('./core/util/observable'),
+	domLayoutCalculator: require('./browser/dom-layout-calculator'),
 	version: 4
 };

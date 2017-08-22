@@ -10,7 +10,7 @@ const MAPJS = require('../src/npm-main'),
 		const container = jQuery('#container'),
 			idea = content(testMap),
 			imageInsertController = new MAPJS.ImageInsertController('http://localhost:4999?u='),
-			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []);
+			mapModel = new MAPJS.MapModel(MAPJS.domLayoutCalculator, []);
 
 		jQuery.fn.attachmentEditorWidget = function (mapModel) {
 			return this.each(function () {

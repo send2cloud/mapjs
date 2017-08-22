@@ -4,10 +4,11 @@ const jQuery = require('jquery'),
 	createSVG = require('../../src/browser/create-svg'),
 	DOMRender = require('../../src/browser/dom-render'),
 	Theme = require('../../src/core/theme/theme'),
-	observable = require('../../src/core/util/observable');
+	observable = require('../../src/core/util/observable'),
+	domMapViewController = require('../../src/browser/dom-map-view');
 
 require('../helpers/jquery-extension-matchers');
-require('../../src/browser/dom-map-view');
+
 
 describe('innerText', function () {
 	'use strict';
@@ -1137,140 +1138,6 @@ describe('updateNodeContent', function () {
 });
 describe('DOMRender', function () {
 	'use strict';
-	describe('nodeCacheMark', function () {
-
-		describe('returns the same value for two nodes if they have the same title, icon sizes, levels and positions, groups and collapsed attribute', function () {
-			[
-				['no icons, just titles', {level: 1, title: 'zeka', x: 1, attr: {ignored: 1}}, {level: 1, title: 'zeka', x: 2, attr: {ignored: 2}}],
-				['titles and collapsed', {level: 1, title: 'zeka', x: 1, attr: {ignored: 1, collapsed: true}}, {level: 1, title: 'zeka', x: 2, attr: {ignored: 2, collapsed: true}}],
-				['titles and icon', {level: 1, title: 'zeka', x: 1, attr: { ignored: 1, icon: {width: 100, height: 120, position: 'top', url: '1'} }}, {level: 1, title: 'zeka', x: 2, attr: {ignored: 2, icon: {width: 100, height: 120, position: 'top', url: '2'}}}],
-				['titles and groups', {level: 1, title: 'zeka', x: 1, attr: {group: 'xx', ignored: 1}}, {level: 1, title: 'zeka', x: 2, attr: {ignored: 2, group: 'xx'}}]
-			].forEach(function (testCase) {
-				const testName = testCase[0],
-					first = testCase[1],
-					second = testCase[2];
-				it(testName, function () {
-					expect(DOMRender.nodeCacheMark(first)).toEqual(DOMRender.nodeCacheMark(second));
-				});
-			});
-		});
-		describe('returns different values for two nodes if they differ', function () {
-			[
-				['titles', {title: 'zeka'}, {title: 'zeka2'}],
-				['levels', {title: 'zeka', level: 2}, {title: 'zeka', level: 1}],
-				['groups', {title: 'zeka', level: 3, attr: {group: 's1'}}, {title: 'zeka', level: 3, attr: { group: 's2' }}],
-				['collapsed', {title: 'zeka', attr: {collapsed: true}}, {title: 'zeka', attr: {collapsed: false}}],
-				['icon width', {title: 'zeka', attr: { icon: {width: 100, height: 120, position: 'top'} }}, {title: 'zeka', attr: { icon: {width: 101, height: 120, position: 'top'}}}],
-				['icon height', {title: 'zeka', attr: { icon: {width: 100, height: 120, position: 'top'} }}, {title: 'zeka', attr: { icon: {width: 100, height: 121, position: 'top'}}}],
-				['icon position', {title: 'zeka', attr: { icon: {width: 100, height: 120, position: 'left'} }}, {title: 'zeka', attr: {icon: {width: 100, height: 120, position: 'top'}}}]
-			].forEach(function (testCase) {
-				const testName = testCase[0],
-					first = testCase[1],
-					second = testCase[2];
-
-				it(testName, function () {
-					DOMRender.theme = new Theme({});
-					expect(DOMRender.nodeCacheMark(first)).not.toEqual(DOMRender.nodeCacheMark(second));
-				});
-			});
-		});
-	});
-	describe('dimensionProvider', function () {
-		let newElement, oldUpdateNodeContent, idea;
-		beforeEach(function () {
-			oldUpdateNodeContent = jQuery.fn.updateNodeContent;
-			idea = {id: 'foo.1', title: 'zeka'};
-		});
-		afterEach(function () {
-			if (newElement) {
-				newElement.remove();
-			}
-			jQuery.fn.updateNodeContent = oldUpdateNodeContent;
-		});
-		it('calculates the width and height of node by drawing an invisible box with .mapjs-node and detaching it after', function () {
-			newElement = jQuery('<style type="text/css">.mapjs-node { width:456px !important; min-height:789px !important}</style>').appendTo('body');
-			expect(DOMRender.dimensionProvider(idea)).toEqual({width: 456, height: 789});
-			expect(jQuery('.mapjs-node').length).toBe(0);
-		});
-		describe('when ideas has a width attribute', function () {
-			beforeEach(function () {
-				newElement = jQuery('<style type="text/css">.mapjs-node span { min-height:789px; display: inline-block;}</style>').appendTo('body');
-			});
-			it('should use the width if greater than than the text width', function () {
-				idea.attr = {
-					style: {
-						width: 500
-					}
-				};
-				expect(DOMRender.dimensionProvider(idea)).toEqual({width: 500, height: 789});
-			});
-			it('should use the width if greater than than the max unwrappable text width', function () {
-				idea.attr = {
-					style: {
-						width: 500
-					}
-				};
-				idea.title = 'some short words are in this title that is still a quite long piece of text';
-				expect(DOMRender.dimensionProvider(idea)).toEqual({width: 500, height: 789});
-			});
-			it('should use max unwrappable text width if greater than the prefferred width', function () {
-				idea.attr = {
-					style: {
-						width: 500
-					}
-				};
-				idea.title = 'someWshortWwordsWareWinWthisWtitleWthatWisWstillWaWquiteWlongWpieceWofWtext';
-				expect(DOMRender.dimensionProvider(idea).width).toBeGreaterThan(500);
-			});
-		});
-		it('takes level into consideration when calculating node dimensions', function () {
-			newElement = jQuery('<style type="text/css">' +
-								'.mapjs-node { width:356px !important; min-height:389px !important} ' +
-								'.mapjs-node[mapjs-level="1"] { width:456px !important; min-height:789px !important} ' +
-								'</style>').appendTo('body');
-			expect(DOMRender.dimensionProvider(idea, 1)).toEqual({width: 456, height: 789});
-			expect(DOMRender.dimensionProvider(idea, 2)).toEqual({width: 356, height: 389});
-
-		});
-		it('applies the updateNodeContent function while calculating dimensions', function () {
-			jQuery.fn.updateNodeContent = function () {
-				this.css('width', '654px');
-				this.css('height', '786px');
-				return this;
-			};
-			expect(DOMRender.dimensionProvider(idea)).toEqual({width: 654, height: 786});
-		});
-		describe('caching', function () {
-			beforeEach(function () {
-				jQuery.fn.updateNodeContent = jasmine.createSpy();
-				jQuery.fn.updateNodeContent.and.callFake(function () {
-					this.css('width', '654px');
-					this.css('height', '786px');
-					return this;
-				});
-			});
-			it('looks up a DOM object with the matching node ID and if the node cache mark matches, returns the DOM width without re-applying content', function () {
-				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo('body');
-				newElement.addNodeCacheMark(idea);
-				expect(DOMRender.dimensionProvider(idea)).toEqual({width: 111, height: 222});
-				expect(jQuery.fn.updateNodeContent).not.toHaveBeenCalled();
-			});
-			it('ignores DOM objects where the cache mark does not match', function () {
-				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo('body');
-				newElement.addNodeCacheMark(idea);
-				expect(DOMRender.dimensionProvider(_.extend(idea, {title: 'not zeka'}))).toEqual({width: 654, height: 786});
-				expect(jQuery.fn.updateNodeContent).toHaveBeenCalled();
-			});
-			it('passes the level as an override when finding the cache mark', function () {
-				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo('body');
-				idea.level = 5;
-				newElement.addNodeCacheMark(idea);
-				idea.level = undefined;
-				expect(DOMRender.dimensionProvider(idea, 5)).toEqual({width: 111, height: 222});
-				expect(jQuery.fn.updateNodeContent).not.toHaveBeenCalled();
-			});
-		});
-	});
 	describe('viewController', function () {
 		let stage,
 			viewPort,
@@ -1285,7 +1152,7 @@ describe('DOMRender', function () {
 			viewPort = jQuery('<div>').appendTo('body');
 			stage = jQuery('<div>').css('overflow', 'scroll').appendTo(viewPort);
 			resourceTranslator = jasmine.createSpy('resourceTranslator');
-			DOMRender.viewController(mapModel, stage, false, imageInsertController, resourceTranslator);
+			domMapViewController(mapModel, stage, false, imageInsertController, resourceTranslator);
 			spyOn(jQuery.fn, 'queueFadeIn').and.callThrough();
 		});
 		afterEach(function () {
@@ -1452,7 +1319,7 @@ describe('DOMRender', function () {
 				it('on touch devices sends clickNode message to map model and requests the context menu to be shown', function () {
 					stage.remove();
 					stage = jQuery('<div>').css('overflow', 'scroll').appendTo(viewPort);
-					DOMRender.viewController(mapModel, stage, true);
+					domMapViewController(mapModel, stage, true);
 					mapModel.dispatchEvent('nodeCreated', {x: 20, y: -120, width: 20, height: 10, title: 'zeka', id: 1});
 					underTest = stage.children('[data-mapjs-role=node]').first();
 
@@ -2101,15 +1968,15 @@ describe('DOMRender', function () {
 						resourceTranslator = jasmine.createSpy('resourceTranslator');
 					});
 					it('should subscribe to mapModel nodeEditRequested event when no options supplied', function () {
-						DOMRender.viewController(mapModel, stage, false, imageInsertController, resourceTranslator);
+						domMapViewController(mapModel, stage, false, imageInsertController, resourceTranslator);
 						expect(mapModel.addEventListener).toHaveBeenCalledWith('nodeEditRequested', jasmine.any(Function));
 					});
 					it('should subscribe to mapModel nodeEditRequested event when no options.inlineEditingDisabled is false', function () {
-						DOMRender.viewController(mapModel, stage, false, imageInsertController, resourceTranslator, {inlineEditingDisabled: false});
+						domMapViewController(mapModel, stage, false, imageInsertController, resourceTranslator, {inlineEditingDisabled: false});
 						expect(mapModel.addEventListener).toHaveBeenCalledWith('nodeEditRequested', jasmine.any(Function));
 					});
 					it('should not subscribe to mapModel nodeEditRequested event when true', function () {
-						DOMRender.viewController(mapModel, stage, false, imageInsertController, resourceTranslator, {inlineEditingDisabled: true});
+						domMapViewController(mapModel, stage, false, imageInsertController, resourceTranslator, {inlineEditingDisabled: true});
 						expect(mapModel.addEventListener).not.toHaveBeenCalledWith('nodeEditRequested', jasmine.any(Function));
 					});
 				});

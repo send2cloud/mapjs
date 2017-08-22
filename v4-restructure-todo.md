@@ -1,11 +1,11 @@
 # Restructure for v4
 
-- [ ] break source into core and widgets
-- [ ] move specs for core into plain jasmine
+- [x] break source into core and widgets
+- [x] move specs for core into plain jasmine
 - [ ] review dependencies and minimise where possible
   - [ ] underscore
   - [ ] jquery (move away from widgets for sharing code)
-- [ ] include layout and model as part of core
+- [x] include layout and model as part of core
 - [ ] figure out how to publish a separate core module
   - [ ] figure out how to deal with dependencies only for core (eg convex-hull)
 - [ ] remove DOMRender
@@ -22,9 +22,10 @@
 - [ ] review all files and break into individual function files (eg hammer-draggable)
 
 
-# check with dave
+# discuss with dave
 
-layout-geometry:257 console log -> throw?
+- layout-geometry:257 console log -> throw?
+- `npm run sourcemap testem/compiled/browser/dom-map-view-spec.js.js:20811:44`
 
 # write specs for files without currently
 

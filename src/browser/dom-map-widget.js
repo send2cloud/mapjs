@@ -1,7 +1,7 @@
 /*global require, document, window */
 const $ = require('jquery'),
 	_ = require('underscore'),
-	DOMRender = require('./dom-render'),
+	domMapViewController = require('./dom-map-view'),
 	createSVG = require('./create-svg');
 
 
@@ -151,7 +151,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 			});
 
 		}
-		DOMRender.viewController(mapModel, stage, touchEnabled, imageInsertController, resourceTranslator, options);
+		domMapViewController(mapModel, stage, touchEnabled, imageInsertController, resourceTranslator, options);
 		_.each(hotkeyEventHandlers, function (mappedFunction, keysPressed) {
 			element.keydown(keysPressed, function (event) {
 				if (actOnKeys) {
