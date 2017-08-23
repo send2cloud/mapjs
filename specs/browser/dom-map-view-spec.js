@@ -407,13 +407,13 @@ describe('DomMapController', function () {
 			jQuery.fn.updateNodeContent = oldUpdateNodeContent;
 		});
 		it('calculates the width and height of node by drawing an invisible box with .mapjs-node and detaching it after', function () {
-			newElement = jQuery('<style type="text/css">.mapjs-node { width:456px !important; min-height:789px !important}</style>').appendTo('body');
+			newElement = jQuery('<style type="text/css">.mapjs-node { width:456px !important; min-height:789px !important}</style>').appendTo(stage);
 			expect(domMapController.dimensionProvider(idea)).toEqual({width: 456, height: 789});
 			expect(jQuery('.mapjs-node').length).toBe(0);
 		});
 		describe('when ideas has a width attribute', function () {
 			beforeEach(function () {
-				newElement = jQuery('<style type="text/css">.mapjs-node span { min-height:789px; display: inline-block;}</style>').appendTo('body');
+				newElement = jQuery('<style type="text/css">.mapjs-node span { min-height:789px; display: inline-block;}</style>').appendTo(stage);
 			});
 			it('should use the width if greater than than the text width', function () {
 				idea.attr = {
@@ -446,7 +446,7 @@ describe('DomMapController', function () {
 			newElement = jQuery('<style type="text/css">' +
 				'.mapjs-node { width:356px !important; min-height:389px !important} ' +
 				'.mapjs-node[mapjs-level="1"] { width:456px !important; min-height:789px !important} ' +
-				'</style>').appendTo('body');
+				'</style>').appendTo(stage);
 			expect(domMapController.dimensionProvider(idea, 1)).toEqual({width: 456, height: 789});
 			expect(domMapController.dimensionProvider(idea, 2)).toEqual({width: 356, height: 389});
 
@@ -469,19 +469,19 @@ describe('DomMapController', function () {
 				});
 			});
 			it('looks up a DOM object with the matching node ID and if the node cache mark matches, returns the DOM width without re-applying content', function () {
-				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo('body');
+				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo(stage);
 				newElement.data('nodeCacheMark', nodeCacheMark(idea));
 				expect(domMapController.dimensionProvider(idea)).toEqual({width: 111, height: 222});
 				expect(jQuery.fn.updateNodeContent).not.toHaveBeenCalled();
 			});
 			it('ignores DOM objects where the cache mark does not match', function () {
-				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo('body');
+				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo(stage);
 				newElement.data('nodeCacheMark', nodeCacheMark(idea));
 				expect(domMapController.dimensionProvider(_.extend(idea, {title: 'not zeka'}))).toEqual({width: 654, height: 786});
 				expect(jQuery.fn.updateNodeContent).toHaveBeenCalled();
 			});
 			it('passes the level as an override when finding the cache mark', function () {
-				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo('body');
+				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo(stage);
 				idea.level = 5;
 				newElement.data('nodeCacheMark', nodeCacheMark(idea));
 				idea.level = undefined;

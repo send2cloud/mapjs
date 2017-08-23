@@ -525,7 +525,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 
 	self.dimensionProvider = function (idea, level) {
 		let result = false,
-			textBox = jQuery(document).nodeWithId(idea.id); // TODO: limit to stage
+			textBox = stageElement.nodeWithId(idea.id);
 		if (textBox && textBox.length > 0) {
 			if (_.isEqual(textBox.data('nodeCacheMark'), nodeCacheMark(idea, {level: level, theme: theme}))) {
 				return _.pick(textBox.data(), 'width', 'height');
