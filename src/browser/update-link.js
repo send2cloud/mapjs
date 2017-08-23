@@ -5,8 +5,7 @@ const jQuery = require('jquery'),
 	convertPositionToTransform = require('../core/util/convert-position-to-transform'),
 	updateConnectorText = require('./update-connector-text'),
 	themeLink = require('../core/theme/link'),
-	calcLabelCenterPont = require('../core/util/calc-label-center-point'),
-	DOMRender = require('./dom-render');
+	calcLabelCenterPont = require('../core/util/calc-label-center-point');
 
 
 require('./get-box');
@@ -14,7 +13,8 @@ require('./get-data-box');
 
 jQuery.fn.updateLink = function (optional) {
 	'use strict';
-	const linkBuilder = (optional && optional.linkBuilder) || themeLink;
+	const linkBuilder = (optional && optional.linkBuilder) || themeLink,
+		theme = (optional && optional.theme);
 	return jQuery.each(this, function () {
 		const element = jQuery(this),
 			shapeFrom = element.data('nodeFrom'),
@@ -43,14 +43,14 @@ jQuery.fn.updateLink = function (optional) {
 		fromBox = shapeFrom.getBox();
 		toBox = shapeTo.getBox();
 
-		changeCheck = {from: fromBox, to: toBox, attrs: attrs, theme: DOMRender.theme &&  DOMRender.theme.name};
+		changeCheck = {from: fromBox, to: toBox, attrs: attrs, theme: theme &&  theme.name};
 		if (_.isEqual(changeCheck, element.data('changeCheck'))) {
 			return;
 		}
 
 		element.data('changeCheck', changeCheck);
 
-		connection = linkBuilder(fromBox, toBox, attrs, DOMRender.theme);
+		connection = linkBuilder(fromBox, toBox, attrs, theme);
 		element.data('theme', connection.theme);
 		element.css(_.extend(convertPositionToTransform(connection.position), {stroke: connection.lineProps.color}));
 

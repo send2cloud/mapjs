@@ -3,7 +3,6 @@
 const jQuery = require('jquery'),
 	_ = require('underscore'),
 	createSVG = require('../../src/browser/create-svg'),
-	DOMRender = require('../../src/browser/dom-render'),
 	Theme = require('../../src/core/theme/theme'),
 	colorToRGB = require('../../src/core/theme/color-to-rgb');
 
@@ -11,7 +10,7 @@ require('../../src/browser/update-link');
 
 describe('updateLink', function () {
 	'use strict';
-	let path, underTest, fromNode, toNode, third, anotherLink;
+	let path, underTest, fromNode, toNode, third, anotherLink, theme;
 	const setAttr = function (attrName, attrVal) {
 		let attrs = underTest.data('attr') || {};
 		if (typeof attrName === 'string') {
@@ -19,7 +18,6 @@ describe('updateLink', function () {
 		} else {
 			attrs = _.extend(attrs, attrName);
 		}
-
 		return underTest.data('attr', attrs).updateLink();
 	};
 	beforeEach(function () {
@@ -137,12 +135,9 @@ describe('updateLink', function () {
 			expect(underTest.find('path').attr('d')).toBe('');
 		});
 		it('will update if the shapes did not move, but the theme changed', function () {
-			underTest.updateLink();
+			underTest.updateLink({theme: theme});
 			underTest.find('path').attr('d', '');
-
-			DOMRender.theme = new Theme({name: 'new'});
-
-			underTest.updateLink();
+			underTest.updateLink({theme: new Theme({name: 'another'})});
 			expect(underTest.find('path').attr('d')).toBe('M100,20L136,120');
 		});
 

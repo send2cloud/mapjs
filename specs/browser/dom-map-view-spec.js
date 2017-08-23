@@ -2176,12 +2176,14 @@ describe('DOMRender', function () {
 
 
 		describe('link events', function () {
-			let nodeFrom, nodeTo, underTest, link, svgContainer;
+			let nodeFrom, nodeTo, underTest, link, svgContainer, theme;
 			beforeEach(function () {
 				svgContainer = createSVG().attr({
 					'data-mapjs-role': 'svg-container',
 					'class': 'mapjs-draw-container'
 				});
+				theme = new Theme({name: 'new'});
+				DOMRender.theme = theme;
 				stage.append(svgContainer);
 				stage.attr('data-mapjs-role', 'stage');
 				link = {type: 'link', ideaIdFrom: '1.from', ideaIdTo: '1.to', attr: {style: {color: 'blue', lineStyle: 'solid', arrow: true}}};
@@ -2213,6 +2215,7 @@ describe('DOMRender', function () {
 				});
 				it('updates the link content', function () {
 					expect(jQuery.fn.updateLink).toHaveBeenCalledOnJQueryObject(underTest);
+					expect(jQuery.fn.updateLink.calls.mostRecent().args).toEqual([{theme: theme}]);
 				});
 				it('passes the style properties as data attributes to the DOM object', function () {
 					expect(underTest.data('attr')).toEqual({
@@ -2222,9 +2225,11 @@ describe('DOMRender', function () {
 					});
 				});
 				describe('event wiring for node updates', function () {
+
 					beforeEach(function () {
 						jQuery.fn.updateLink.calls.reset();
 						spyOn(jQuery.fn, 'animateConnectorToPosition');
+
 					});
 					_.each(['from', 'to'], function (node) {
 						describe('moving node ' + node, function () {
@@ -2233,6 +2238,7 @@ describe('DOMRender', function () {
 							});
 							it('updates link', function () {
 								expect(jQuery.fn.updateLink).toHaveBeenCalledOnJQueryObject(underTest);
+								expect(jQuery.fn.updateLink.calls.mostRecent().args).toEqual([{theme: theme}]);
 							});
 							it('does not add links to animation list', function () {
 								mapModel.dispatchEvent('layoutChangeComplete');
@@ -2242,7 +2248,7 @@ describe('DOMRender', function () {
 						it('updates the connector immediately on theme change', function () {
 							mapModel.dispatchEvent('layoutChangeComplete', {themeChanged: true});
 							expect(jQuery.fn.updateLink).toHaveBeenCalledOnJQueryObject(underTest);
-							expect(jQuery.fn.updateLink.calls.mostRecent().args).toEqual([true]);
+							expect(jQuery.fn.updateLink.calls.mostRecent().args).toEqual([{theme: theme, canUseData: true}]);
 						});
 
 						describe('animating node ' + node, function () {
@@ -2268,7 +2274,7 @@ describe('DOMRender', function () {
 
 								jQuery.fn.animate.calls.mostRecent().args[1].progress();
 								expect(jQuery.fn.updateLink).toHaveBeenCalledOnJQueryObject(underTest);
-
+								expect(jQuery.fn.updateLink.calls.mostRecent().args).toEqual([{theme: theme}]);
 							});
 						});
 					});
@@ -2302,6 +2308,7 @@ describe('DOMRender', function () {
 					jQuery.fn.updateLink.calls.reset();
 					mapModel.dispatchEvent('linkAttrChanged', {type: 'link', ideaIdFrom: '1.from', ideaIdTo: '1.to', attr: {style: {color: 'yellow', lineStyle: 'dashed'}}});
 					expect(jQuery.fn.updateLink).toHaveBeenCalledOnJQueryObject(underTest);
+					expect(jQuery.fn.updateLink.calls.mostRecent().args).toEqual([{theme: theme}]);
 				});
 			});
 			describe('addLinkModeToggled', function () {
@@ -2351,7 +2358,11 @@ describe('DOMRender', function () {
 			});
 		});
 		describe('mapViewResetRequested', function () {
+			let theme;
 			beforeEach(function () {
+				theme = new Theme({name: 'new'});
+				DOMRender.theme = theme;
+
 				spyOn(jQuery.fn, 'updateStage').and.callThrough();
 				spyOn(jQuery.fn, 'updateConnector').and.callThrough();
 				spyOn(jQuery.fn, 'updateLink').and.callThrough();
@@ -2390,7 +2401,7 @@ describe('DOMRender', function () {
 				jQuery.fn.updateLink.calls.reset();
 				mapModel.dispatchEvent('mapViewResetRequested');
 				expect(jQuery.fn.updateLink).toHaveBeenCalledOnJQueryObject(jQuery('[data-mapjs-role=link]'));
-				expect(jQuery.fn.updateLink.calls.mostRecent().args).toEqual([true]);
+				expect(jQuery.fn.updateLink.calls.mostRecent().args).toEqual([{theme: theme}]);
 			});
 			it('centers the view', function () {
 				mapModel.dispatchEvent('mapViewResetRequested');

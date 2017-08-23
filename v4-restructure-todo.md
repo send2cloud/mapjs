@@ -20,7 +20,7 @@
   - [ ] move link-edit-widget
   - [ ] check theme css widget
 - [ ] review all files and break into individual function files (eg hammer-draggable)
-
+- [ ] investigate if canUseData for connectors/links can be replaced with just theme changed? (is that the only case?)
 
 # discuss with dave
 
