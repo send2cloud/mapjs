@@ -11,8 +11,6 @@ require('./update-connector');
 require('./update-link');
 require('./node-with-id');
 require('./update-node-content');
-require('./set-theme-class-list');
-
 require('./update-stage');
 require('./animate-connector-to-position');
 require('./queue-fade-in');
