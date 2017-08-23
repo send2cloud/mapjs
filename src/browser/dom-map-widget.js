@@ -3,9 +3,7 @@ const $ = require('jquery'),
 	_ = require('underscore'),
 	createSVG = require('./create-svg');
 
-
 require('imports-loader?jQuery=jquery!jquery.hotkeys');
-require('./dom-map-view');
 
 $.fn.scrollWhenDragging = function (scrollPredicate) {
 	'use strict';

@@ -5,7 +5,7 @@ const jQuery = require('jquery'),
 	nodeCacheMark = require('../../src/browser/node-cache-mark'),
 	Theme = require('../../src/core/theme/theme'),
 	observable = require('../../src/core/util/observable'),
-	DomMapController = require('../../src/browser/dom-map-view');
+	DomMapController = require('../../src/browser/dom-map-controller');
 
 require('../helpers/jquery-extension-matchers');
 

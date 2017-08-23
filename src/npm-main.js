@@ -11,7 +11,7 @@ module.exports = {
 	ImageInsertController: require('./browser/image-insert-controller'),
 	content: require('./core/content/content'),
 	observable: require('./core/util/observable'),
-	DomMapController: require('./browser/dom-map-view'),
+	DomMapController: require('./browser/dom-map-controller'),
 	ThemeProcessor: require('./core/theme/theme-processor'),
 	version: 4
 };
