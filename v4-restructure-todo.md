@@ -31,7 +31,17 @@
 
 # write specs for files without currently
 
-- [ ] mapjs-layout/core/theme/color-parser
+- [ ] core/theme/color-parser
+- [ ] browser/place-caret-at-end
+- [ ] browser/queue-fade-in
+- [ ] browser/queue-fade-out
+- [ ] browser/select-all
+- [ ] core/util/connector-key
+- [ ] core/util/link-key
+- [ ] browser/create-connector
+- [ ] browser/create-link
+- [ ] browser/find-line
+- [ ] browser/create-reorder-margin
 
 
 # propagate to mindmup

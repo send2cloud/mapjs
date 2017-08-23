@@ -1,298 +1,31 @@
-/*global document, window, require, module */
-require('./create-node');
+/*global require, module */
 const jQuery = require('jquery'),
 	_ = require('underscore'),
 	calculateLayout = require('../core/layout/calculate-layout'),
-	cleanDOMId = require('../core/util/clean-dom-id'),
-	nodeCacheMark = require('./node-cache-mark'),
-	createSVG = require('./create-svg'),
-	connectorKey = function (connectorObj) {
-		'use strict';
-		return cleanDOMId('connector_' + connectorObj.from + '_' + connectorObj.to);
-	},
-	linkKey = function (linkObj) {
-		'use strict';
-		return cleanDOMId('link_' + linkObj.ideaIdFrom + '_' + linkObj.ideaIdTo);
-	};
+	nodeCacheMark = require('./node-cache-mark');
 
-
+require('./create-node');
 require('./hammer-draggable');
 require('./node-resize-widget');
 require('./update-connector');
 require('./update-link');
-require('./get-box');
-require('./get-data-box');
 require('./node-with-id');
 require('./update-node-content');
 require('./set-theme-class-list');
 
+require('./update-stage');
+require('./animate-connector-to-position');
+require('./queue-fade-in');
+require('./queue-fade-out');
+require('./edit-node');
+require('./update-reorder-bounds');
+require('./create-connector');
+require('./create-link');
+require('./find-line');
+require('./create-reorder-bounds');
 
 
-jQuery.fn.animateConnectorToPosition = function (animationOptions, tolerance) {
-	'use strict';
-	const element = jQuery(this),
-		shapeFrom = element.data('nodeFrom'),
-		shapeTo = element.data('nodeTo'),
-		fromBox = shapeFrom && shapeFrom.getDataBox(),
-		toBox = shapeTo && shapeTo.getDataBox(),
-		oldBox = {
-			from: shapeFrom && shapeFrom.getBox(),
-			to: shapeTo && shapeTo.getBox()
-		};
-	tolerance = tolerance || 1;
-	if (fromBox && toBox && oldBox && oldBox.from.width === fromBox.width &&
-		oldBox.to.width   === toBox.width   &&
-		oldBox.from.height  === fromBox.height    &&
-		oldBox.to.height  === toBox.height    &&
-		Math.abs(oldBox.from.top - oldBox.to.top - (fromBox.top - toBox.top)) < tolerance &&
-		Math.abs(oldBox.from.left - oldBox.to.left - (fromBox.left - toBox.left)) < tolerance) {
 
-		element.animate({
-			left: Math.round(Math.min(fromBox.left, toBox.left)),
-			top: Math.round(Math.min(fromBox.top, toBox.top))
-		}, animationOptions);
-		return true;
-	}
-	return false;
-};
-jQuery.fn.queueFadeOut = function (options) {
-	'use strict';
-	const element = this;
-	return element.fadeOut(_.extend({
-		complete: function () {
-			if (element.is(':focus')) {
-				element.parents('[tabindex]').focus();
-			}
-			element.remove();
-		}
-	}, options));
-};
-jQuery.fn.queueFadeIn = function (options) {
-	'use strict';
-	const element = this;
-	return element
-		.css('opacity', 0)
-		.animate(
-			{'opacity': 1},
-			_.extend({ complete: function () {
-				element.css('opacity', '');
-			}}, options)
-		);
-};
-
-
-jQuery.fn.updateStage = function () {
-	'use strict';
-	const data = this.data(),
-		size = {
-			'min-width': Math.round(data.width - data.offsetX),
-			'min-height': Math.round(data.height - data.offsetY),
-			'width': Math.round(data.width - data.offsetX),
-			'height': Math.round(data.height - data.offsetY),
-			'transform-origin': 'top left',
-			'transform': 'translate3d(' + Math.round(data.offsetX) + 'px, ' + Math.round(data.offsetY) + 'px, 0)'
-		},
-		svgContainer = this.find('[data-mapjs-role=svg-container]')[0];
-	if (data.scale && data.scale !== 1) {
-		size.transform = 'scale(' + data.scale + ') translate(' + Math.round(data.offsetX) + 'px, ' + Math.round(data.offsetY) + 'px)';
-	}
-	this.css(size);
-	if (svgContainer) {
-		svgContainer.setAttribute('viewBox',
-			'' + Math.round(-1 * data.offsetX) + ' ' +  Math.round(-1 * data.offsetY) + ' ' + Math.round(data.width) + ' ' + Math.round(data.height)
-		);
-		svgContainer.setAttribute('style',
-			'top:' + Math.round(-1 * data.offsetY) + 'px; ' +
-			'left:' + Math.round(-1 * data.offsetX) + 'px; ' +
-			'width:' +  Math.round(data.width) + 'px; ' +
-			'height:' +  Math.round(data.height) + 'px;'
-		);
-	}
-	return this;
-};
-
-
-jQuery.fn.placeCaretAtEnd = function () {
-	'use strict';
-	const el = this[0];
-	let range, sel, textRange;
-	if (window.getSelection && document.createRange) {
-		range = document.createRange();
-		range.selectNodeContents(el);
-		range.collapse(false);
-		sel = window.getSelection();
-		sel.removeAllRanges();
-		sel.addRange(range);
-	} else if (document.body.createTextRange) {
-		textRange = document.body.createTextRange();
-		textRange.moveToElementText(el);
-		textRange.collapse(false);
-		textRange.select();
-	}
-};
-jQuery.fn.selectAll = function () {
-	'use strict';
-	const el = this[0];
-	let range, sel, textRange;
-	if (window.getSelection && document.createRange) {
-		range = document.createRange();
-		range.selectNodeContents(el);
-		sel = window.getSelection();
-		sel.removeAllRanges();
-		sel.addRange(range);
-	} else if (document.body.createTextRange) {
-		textRange = document.body.createTextRange();
-		textRange.moveToElementText(el);
-		textRange.select();
-	}
-};
-jQuery.fn.innerText = function () {
-	'use strict';
-	const htmlContent = this.html(),
-		containsBr = /<br\/?>/.test(htmlContent),
-		containsDiv = /<div>/.test(htmlContent);
-	if (containsDiv && this[0].innerText) { /* broken safari jquery text */
-		return this[0].innerText.trim();
-	} else if (containsBr) { /*broken firefox innerText */
-		return htmlContent.replace(/<br\/?>/gi, '\n').replace(/(<([^>]+)>)/gi, '');
-	}
-	return this.text();
-};
-jQuery.fn.editNode = function (shouldSelectAll) {
-	'use strict';
-	const node = this,
-		textBox = this.find('[data-mapjs-role=title]'),
-		unformattedText = this.data('title'),
-		originalText = textBox.text(),
-		result = jQuery.Deferred(),
-		clear = function () {
-			detachListeners(); //eslint-disable-line no-use-before-define
-			textBox.css('word-break', '');
-			textBox.removeAttr('contenteditable');
-			node.shadowDraggable();
-		},
-		finishEditing = function () {
-			const content = textBox.innerText();
-			if (content === unformattedText) {
-				return cancelEditing(); //eslint-disable-line no-use-before-define
-			}
-			clear();
-			result.resolve(content);
-		},
-		cancelEditing = function () {
-			clear();
-			textBox.text(originalText);
-			result.reject();
-		},
-		keyboardEvents = function (e) {
-			const ENTER_KEY_CODE = 13,
-				ESC_KEY_CODE = 27,
-				TAB_KEY_CODE = 9,
-				S_KEY_CODE = 83,
-				Z_KEY_CODE = 90;
-			if (e.shiftKey && e.which === ENTER_KEY_CODE) {
-				return; // allow shift+enter to break lines
-			} else if (e.which === ENTER_KEY_CODE) {
-				finishEditing();
-				e.stopPropagation();
-			} else if (e.which === ESC_KEY_CODE) {
-				cancelEditing();
-				e.stopPropagation();
-			} else if (e.which === TAB_KEY_CODE || (e.which === S_KEY_CODE && (e.metaKey || e.ctrlKey) && !e.altKey)) {
-				finishEditing();
-				e.preventDefault(); /* stop focus on another object */
-			} else if (!e.shiftKey && e.which === Z_KEY_CODE && (e.metaKey || e.ctrlKey) && !e.altKey) { /* undo node edit on ctrl+z if text was not changed */
-				if (textBox.text() === unformattedText) {
-					cancelEditing();
-				}
-				e.stopPropagation();
-			}
-		},
-		attachListeners = function () {
-			textBox.on('blur', finishEditing).on('keydown', keyboardEvents);
-		},
-		detachListeners = function () {
-			textBox.off('blur', finishEditing).off('keydown', keyboardEvents);
-		};
-	attachListeners();
-	if (unformattedText !== originalText) { /* links or some other potential formatting issues */
-		textBox.css('word-break', 'break-all');
-	}
-	textBox.text(unformattedText).attr('contenteditable', true).focus();
-	if (shouldSelectAll) {
-		textBox.selectAll();
-	} else if (unformattedText) {
-		textBox.placeCaretAtEnd();
-	}
-	node.shadowDraggable({disable: true});
-	return result.promise();
-};
-jQuery.fn.updateReorderBounds = function (border, box, dropCoords) {
-	'use strict';
-	const element = this;
-	if (!border) {
-		element.hide();
-		return;
-	}
-	element.show();
-	element.attr('mapjs-edge', border.edge);
-	if (border.edge === 'top') {
-		element.css({
-			top: border.minY,
-			left: Math.round(dropCoords.x - element.width() / 2)
-		});
-	} else {
-		element.css({
-			top: Math.round(dropCoords.y - element.height() / 2),
-			left: border.x - (border.edge === 'left' ? element.width() : 0)
-		});
-	}
-
-};
-
-jQuery.fn.createConnector = function (connector) {
-	'use strict';
-	const stage = this.parent('[data-mapjs-role=stage]');
-	return createSVG('g')
-		.attr({'id': connectorKey(connector), 'data-mapjs-role': 'connector'})
-		.data({'nodeFrom': stage.nodeWithId(connector.from), 'nodeTo': stage.nodeWithId(connector.to), attr: connector.attr})
-		.appendTo(this);
-};
-jQuery.fn.createLink = function (l) {
-	'use strict';
-	const stage = this.parent('[data-mapjs-role=stage]');
-	return createSVG('g')
-		.attr({
-			'id': linkKey(l),
-			'data-mapjs-role': 'link'
-		})
-		.data({
-			'nodeFrom': stage.nodeWithId(l.ideaIdFrom),
-			'nodeTo': stage.nodeWithId(l.ideaIdTo),
-			attr: l.attr && l.attr.style
-		})
-		.appendTo(this);
-};
-
-
-jQuery.fn.findLine = function (line) {
-	'use strict';
-	if (line && line.type === 'connector') {
-		return this.find('#' + connectorKey(line));
-	} else if (line && line.type === 'link') {
-		return this.find('#' + linkKey(line));
-	}
-	console.log('invalid.line', line); //eslint-disable-line
-	throw 'invalid-args';
-};
-jQuery.fn.createReorderBounds = function () {
-	'use strict';
-	const result = jQuery('<div>').attr({
-		'data-mapjs-role': 'reorder-bounds',
-		'class': 'mapjs-reorder-bounds'
-	}).hide().css('position', 'absolute').appendTo(this);
-	return result;
-};
 
 module.exports = function DomMapController(mapModel, stageElement, touchEnabled, imageInsertController, resourceTranslator, options) {
 	'use strict';
