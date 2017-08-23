@@ -20,7 +20,7 @@ module.exports = function domDimensionProvider(idea, level) {
 		}
 	}
 	textBox = DOMRender.dummyTextBox;
-	textBox.appendTo('body').updateNodeContent(idea, translateToPixel, level);
+	textBox.appendTo('body').updateNodeContent(idea, {resourceTranslator: translateToPixel, level: level});
 	result = {
 		width: textBox.outerWidth(true),
 		height: textBox.outerHeight(true)

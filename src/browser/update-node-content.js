@@ -9,9 +9,11 @@ const jQuery = require('jquery'),
 
 require('./set-theme-class-list');
 
-jQuery.fn.updateNodeContent = function (nodeContent, resourceTranslator, forcedLevel) {
+jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 	'use strict';
-	const self = jQuery(this),
+	const resourceTranslator = optional && optional.resourceTranslator,
+		forcedLevel = optional && optional.level,
+		self = jQuery(this),
 		textSpan = function () {
 			let span = self.find('[data-mapjs-role=title]');
 			if (span.length === 0) {

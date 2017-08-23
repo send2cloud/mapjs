@@ -150,7 +150,7 @@ describe('updateNodeContent', function () {
 		});
 		it('updates the level class to the forcred level', function () {
 			underTest.updateNodeContent(nodeContent);
-			underTest.updateNodeContent(nodeContent, undefined, 2);
+			underTest.updateNodeContent(nodeContent, {level: 2});
 			expect(underTest.hasClass('level_3')).toBeFalsy();
 			expect(underTest.hasClass('level_2')).toBeTruthy();
 		});
@@ -281,7 +281,7 @@ describe('updateNodeContent', function () {
 			it('translates the URL using the resource translator if provided', function () {
 				const translator = jasmine.createSpy('translator');
 				translator.and.returnValue('data:xxx');
-				underTest.updateNodeContent(nodeContent, translator);
+				underTest.updateNodeContent(nodeContent, { resourceTranslator: translator});
 				expect(translator).toHaveBeenCalledWith('http://iconurl/');
 				expect(underTest.css('background-image')).toMatch(/url\("?data:xxx"?\)/);
 			});

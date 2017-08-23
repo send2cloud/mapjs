@@ -1,4 +1,4 @@
-/*global describe, it, beforeEach, afterEach, expect, navigator, jasmine, spyOn, window, document, require */
+/*global describe, it, beforeEach, afterEach, expect, jasmine, spyOn, window, document, require */
 const jQuery = require('jquery'),
 	_ = require('underscore'),
 	createSVG = require('../../src/browser/create-svg'),
@@ -429,7 +429,7 @@ describe('DOMRender', function () {
 					expect(underTest.hasClass('mapjs-node')).toBeTruthy();
 				});
 				it('updates the node content', function () {
-					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node, resourceTranslator);
+					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node, {resourceTranslator: resourceTranslator});
 					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledOnJQueryObject(underTest);
 					expect(jQuery.fn.updateNodeContent.calls.count()).toBe(1);
 				});
@@ -1179,7 +1179,7 @@ describe('DOMRender', function () {
 
 				mapModel.dispatchEvent(eventType, node);
 				expect(jQuery.fn.updateNodeContent).toHaveBeenCalledOnJQueryObject(underTest);
-				expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node, resourceTranslator);
+				expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node, {resourceTranslator: resourceTranslator});
 			});
 		});
 		describe('nodeEditRequested', function () {
