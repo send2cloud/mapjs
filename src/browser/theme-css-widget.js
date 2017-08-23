@@ -1,8 +1,7 @@
 /*global require */
 const $ = require('jquery'),
-	Theme = require('../core/theme/theme'),
-	DOMRender = require('./dom-render');
-$.fn.themeCssWidget = function (themeProvider, themeProcessor, mapModel) {
+	Theme = require('../core/theme/theme');
+$.fn.themeCssWidget = function (themeProvider, themeProcessor, mapModel, domMapController) {
 	'use strict';
 	const element = $(this),
 		activateTheme =	function (theme) {
@@ -10,7 +9,7 @@ $.fn.themeCssWidget = function (themeProvider, themeProcessor, mapModel) {
 			if (!themeJson) {
 				return;
 			}
-			DOMRender.theme = new Theme(themeJson);
+			domMapController.setTheme(new Theme(themeJson));
 			element.text(themeProcessor.process(themeJson).css);
 		};
 	activateTheme('default');

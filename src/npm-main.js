@@ -9,9 +9,9 @@ require('./browser/image-drop-widget');
 module.exports = {
 	MapModel: require('./core/map-model'),
 	ImageInsertController: require('./browser/image-insert-controller'),
-	DOMRender: require('./browser/dom-render'),
 	content: require('./core/content/content'),
 	observable: require('./core/util/observable'),
-	domLayoutCalculator: require('./browser/dom-layout-calculator'),
+	DomMapController: require('./browser/dom-map-view'),
+	ThemeProcessor: require('./core/theme/theme-processor'),
 	version: 4
 };

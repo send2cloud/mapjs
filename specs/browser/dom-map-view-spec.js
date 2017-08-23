@@ -2,10 +2,10 @@
 const jQuery = require('jquery'),
 	_ = require('underscore'),
 	createSVG = require('../../src/browser/create-svg'),
-	DOMRender = require('../../src/browser/dom-render'),
+	nodeCacheMark = require('../../src/browser/node-cache-mark'),
 	Theme = require('../../src/core/theme/theme'),
 	observable = require('../../src/core/util/observable'),
-	domMapViewController = require('../../src/browser/dom-map-view');
+	DomMapController = require('../../src/browser/dom-map-view');
 
 require('../helpers/jquery-extension-matchers');
 
@@ -371,35 +371,133 @@ describe('animateConnectorToPosition', function () {
 
 });
 
-describe('DOMRender', function () {
+describe('DomMapController', function () {
 	'use strict';
-	describe('viewController', function () {
-		let stage,
-			viewPort,
-			mapModel,
-			imageInsertController,
-			resourceTranslator;
+	let stage,
+		viewPort,
+		mapModel,
+		imageInsertController,
+		domMapController,
+		resourceTranslator;
+	beforeEach(function () {
+		mapModel = observable(jasmine.createSpyObj('mapModel', ['setLayoutCalculator', 'selectConnector', 'getReorderBoundary', 'dropImage', 'clickNode', 'positionNodeAt', 'dropNode', 'openAttachment', 'toggleCollapse', 'undo', 'editNode', 'isEditingEnabled', 'editNode', 'setInputEnabled', 'getInputEnabled', 'updateTitle', 'getNodeIdAtPosition', 'selectNode', 'getCurrentlySelectedIdeaId', 'requestContextMenu', 'setNodeWidth']));
+		mapModel.getInputEnabled.and.returnValue(true);
+		mapModel.isEditingEnabled.and.returnValue(true);
+		imageInsertController = observable({});
+		viewPort = jQuery('<div>').appendTo('body');
+		stage = jQuery('<div>').css('overflow', 'scroll').appendTo(viewPort);
+		resourceTranslator = jasmine.createSpy('resourceTranslator');
+		domMapController = new DomMapController(mapModel, stage, false, imageInsertController, resourceTranslator);
+		spyOn(jQuery.fn, 'queueFadeIn').and.callThrough();
+	});
+	afterEach(function () {
+		viewPort.remove();
+	});
+
+	describe('dimensionProvider', function () {
+		let newElement, oldUpdateNodeContent, idea;
 		beforeEach(function () {
-			mapModel = observable(jasmine.createSpyObj('mapModel', ['selectConnector', 'getReorderBoundary', 'dropImage', 'clickNode', 'positionNodeAt', 'dropNode', 'openAttachment', 'toggleCollapse', 'undo', 'editNode', 'isEditingEnabled', 'editNode', 'setInputEnabled', 'getInputEnabled', 'updateTitle', 'getNodeIdAtPosition', 'selectNode', 'getCurrentlySelectedIdeaId', 'requestContextMenu', 'setNodeWidth']));
-			mapModel.getInputEnabled.and.returnValue(true);
-			mapModel.isEditingEnabled.and.returnValue(true);
-			imageInsertController = observable({});
-			viewPort = jQuery('<div>').appendTo('body');
-			stage = jQuery('<div>').css('overflow', 'scroll').appendTo(viewPort);
-			resourceTranslator = jasmine.createSpy('resourceTranslator');
-			domMapViewController(mapModel, stage, false, imageInsertController, resourceTranslator);
-			spyOn(jQuery.fn, 'queueFadeIn').and.callThrough();
+			oldUpdateNodeContent = jQuery.fn.updateNodeContent;
+			idea = {id: 'foo.1', title: 'zeka'};
 		});
 		afterEach(function () {
-			viewPort.remove();
+			if (newElement) {
+				newElement.remove();
+			}
+			jQuery.fn.updateNodeContent = oldUpdateNodeContent;
 		});
+		it('calculates the width and height of node by drawing an invisible box with .mapjs-node and detaching it after', function () {
+			newElement = jQuery('<style type="text/css">.mapjs-node { width:456px !important; min-height:789px !important}</style>').appendTo('body');
+			expect(domMapController.dimensionProvider(idea)).toEqual({width: 456, height: 789});
+			expect(jQuery('.mapjs-node').length).toBe(0);
+		});
+		describe('when ideas has a width attribute', function () {
+			beforeEach(function () {
+				newElement = jQuery('<style type="text/css">.mapjs-node span { min-height:789px; display: inline-block;}</style>').appendTo('body');
+			});
+			it('should use the width if greater than than the text width', function () {
+				idea.attr = {
+					style: {
+						width: 500
+					}
+				};
+				expect(domMapController.dimensionProvider(idea)).toEqual({width: 500, height: 789});
+			});
+			it('should use the width if greater than than the max unwrappable text width', function () {
+				idea.attr = {
+					style: {
+						width: 500
+					}
+				};
+				idea.title = 'some short words are in this title that is still a quite long piece of text';
+				expect(domMapController.dimensionProvider(idea)).toEqual({width: 500, height: 789});
+			});
+			it('should use max unwrappable text width if greater than the prefferred width', function () {
+				idea.attr = {
+					style: {
+						width: 500
+					}
+				};
+				idea.title = 'someWshortWwordsWareWinWthisWtitleWthatWisWstillWaWquiteWlongWpieceWofWtext';
+				expect(domMapController.dimensionProvider(idea).width).toBeGreaterThan(500);
+			});
+		});
+		it('takes level into consideration when calculating node dimensions', function () {
+			newElement = jQuery('<style type="text/css">' +
+				'.mapjs-node { width:356px !important; min-height:389px !important} ' +
+				'.mapjs-node[mapjs-level="1"] { width:456px !important; min-height:789px !important} ' +
+				'</style>').appendTo('body');
+			expect(domMapController.dimensionProvider(idea, 1)).toEqual({width: 456, height: 789});
+			expect(domMapController.dimensionProvider(idea, 2)).toEqual({width: 356, height: 389});
+
+		});
+		it('applies the updateNodeContent function while calculating dimensions', function () {
+			jQuery.fn.updateNodeContent = function () {
+				this.css('width', '654px');
+				this.css('height', '786px');
+				return this;
+			};
+			expect(domMapController.dimensionProvider(idea)).toEqual({width: 654, height: 786});
+		});
+		describe('caching', function () {
+			beforeEach(function () {
+				jQuery.fn.updateNodeContent = jasmine.createSpy();
+				jQuery.fn.updateNodeContent.and.callFake(function () {
+					this.css('width', '654px');
+					this.css('height', '786px');
+					return this;
+				});
+			});
+			it('looks up a DOM object with the matching node ID and if the node cache mark matches, returns the DOM width without re-applying content', function () {
+				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo('body');
+				newElement.data('nodeCacheMark', nodeCacheMark(idea));
+				expect(domMapController.dimensionProvider(idea)).toEqual({width: 111, height: 222});
+				expect(jQuery.fn.updateNodeContent).not.toHaveBeenCalled();
+			});
+			it('ignores DOM objects where the cache mark does not match', function () {
+				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo('body');
+				newElement.data('nodeCacheMark', nodeCacheMark(idea));
+				expect(domMapController.dimensionProvider(_.extend(idea, {title: 'not zeka'}))).toEqual({width: 654, height: 786});
+				expect(jQuery.fn.updateNodeContent).toHaveBeenCalled();
+			});
+			it('passes the level as an override when finding the cache mark', function () {
+				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo('body');
+				idea.level = 5;
+				newElement.data('nodeCacheMark', nodeCacheMark(idea));
+				idea.level = undefined;
+				expect(domMapController.dimensionProvider(idea, 5)).toEqual({width: 111, height: 222});
+				expect(jQuery.fn.updateNodeContent).not.toHaveBeenCalled();
+			});
+		});
+	});
+	describe('event actions', function () {
 		describe('nodeCreated', function () {
 			describe('adds a DIV for the node to the stage', function () {
 				let underTest, node, theme;
 
 				beforeEach(function () {
 					theme = new Theme({name: 'test'});
-					DOMRender.theme = theme;
+					domMapController.setTheme(theme);
 					node = {id: '11.12^13#AB-c', title: 'zeka', x: 10, y: 20, width: 30, height: 40};
 					spyOn(jQuery.fn, 'updateNodeContent').and.callFake(function () {
 						this.data(node);
@@ -556,7 +654,7 @@ describe('DOMRender', function () {
 				it('on touch devices sends clickNode message to map model and requests the context menu to be shown', function () {
 					stage.remove();
 					stage = jQuery('<div>').css('overflow', 'scroll').appendTo(viewPort);
-					domMapViewController(mapModel, stage, true);
+					domMapController = new DomMapController(mapModel, stage, true);
 					mapModel.dispatchEvent('nodeCreated', {x: 20, y: -120, width: 20, height: 10, title: 'zeka', id: 1});
 					underTest = stage.children('[data-mapjs-role=node]').first();
 
@@ -1054,10 +1152,7 @@ describe('DOMRender', function () {
 			});
 			describe('expands the stage if needed - using a margin', function () {
 				beforeEach(function () {
-					DOMRender.stageMargin = {top: 10, left: 11, bottom: 12, right: 13};
-				});
-				afterEach(function () {
-					DOMRender.stageMargin = false;
+					domMapController.setStageMargin({top: 10, left: 11, bottom: 12, right: 13});
 				});
 				it('grows the stage from the top if y would be negative', function () {
 					mapModel.dispatchEvent('nodeMoved', {x: 20, y: -120, width: 20, height: 10, title: 'zeka', id: 1});
@@ -1176,7 +1271,7 @@ describe('DOMRender', function () {
 			it('updates node content on ' + eventType, function () {
 				const node = {id: '11', title: 'zeka', x: -80, y: -35, width: 30, height: 20},
 					theme = new Theme({name: 'test'});
-				DOMRender.theme = theme;
+				domMapController.setTheme(theme);
 				mapModel.dispatchEvent('nodeCreated', node);
 				underTest = stage.children('[data-mapjs-role=node]').first();
 				spyOn(jQuery.fn, 'updateNodeContent');
@@ -1211,15 +1306,15 @@ describe('DOMRender', function () {
 						resourceTranslator = jasmine.createSpy('resourceTranslator');
 					});
 					it('should subscribe to mapModel nodeEditRequested event when no options supplied', function () {
-						domMapViewController(mapModel, stage, false, imageInsertController, resourceTranslator);
+						domMapController = new DomMapController(mapModel, stage, false, imageInsertController, resourceTranslator);
 						expect(mapModel.addEventListener).toHaveBeenCalledWith('nodeEditRequested', jasmine.any(Function));
 					});
 					it('should subscribe to mapModel nodeEditRequested event when no options.inlineEditingDisabled is false', function () {
-						domMapViewController(mapModel, stage, false, imageInsertController, resourceTranslator, {inlineEditingDisabled: false});
+						domMapController = new DomMapController(mapModel, stage, false, imageInsertController, resourceTranslator, {inlineEditingDisabled: false});
 						expect(mapModel.addEventListener).toHaveBeenCalledWith('nodeEditRequested', jasmine.any(Function));
 					});
 					it('should not subscribe to mapModel nodeEditRequested event when true', function () {
-						domMapViewController(mapModel, stage, false, imageInsertController, resourceTranslator, {inlineEditingDisabled: true});
+						domMapController = new DomMapController(mapModel, stage, false, imageInsertController, resourceTranslator, {inlineEditingDisabled: true});
 						expect(mapModel.addEventListener).not.toHaveBeenCalledWith('nodeEditRequested', jasmine.any(Function));
 					});
 				});
@@ -1294,7 +1389,7 @@ describe('DOMRender', function () {
 				});
 				stage.append(svgContainer);
 				theme = new Theme({name: 'fromTest'});
-				DOMRender.theme = theme;
+				domMapController.setTheme(theme);
 				stage.attr('data-mapjs-role', 'stage');
 				connector = {type: 'connector', from: '1.from', to: '1.to', attr: {lovely: true}};
 				mapModel.dispatchEvent('nodeCreated', {id: '1.from', title: 'zeka', x: -80, y: -35, width: 30, height: 20});
@@ -1432,7 +1527,7 @@ describe('DOMRender', function () {
 					'class': 'mapjs-draw-container'
 				});
 				theme = new Theme({name: 'new'});
-				DOMRender.theme = theme;
+				domMapController.setTheme(theme);
 				stage.append(svgContainer);
 				stage.attr('data-mapjs-role', 'stage');
 				link = {type: 'link', ideaIdFrom: '1.from', ideaIdTo: '1.to', attr: {style: {color: 'blue', lineStyle: 'solid', arrow: true}}};
@@ -1610,7 +1705,7 @@ describe('DOMRender', function () {
 			let theme;
 			beforeEach(function () {
 				theme = new Theme({name: 'new'});
-				DOMRender.theme = theme;
+				domMapController.setTheme(theme);
 
 				spyOn(jQuery.fn, 'updateStage').and.callThrough();
 				spyOn(jQuery.fn, 'updateConnector').and.callThrough();

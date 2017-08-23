@@ -8,7 +8,7 @@
 - [x] include layout and model as part of core
 - [ ] figure out how to publish a separate core module
   - [ ] figure out how to deal with dependencies only for core (eg convex-hull)
-- [ ] remove DOMRender
+- [x] remove DOMRender
 - [ ] break down dom-map-view into separate files
 - [ ] break down dom-map-view-spec into separate files
 - [ ] remove editing widgets and move to @mindmup
@@ -21,12 +21,22 @@
   - [ ] check theme css widget
 - [ ] review all files and break into individual function files (eg hammer-draggable)
 - [ ] investigate if canUseData for connectors/links can be replaced with just theme changed? (is that the only case?)
+- [ ] move theme updating directly to domMapController listening on mapModel, instead of the widget intermediating
 
 # discuss with dave
 
 - layout-geometry:257 console log -> throw?
 - `npm run sourcemap testem/compiled/browser/dom-map-view-spec.js.js:20811:44`
+- mapModel.layoutCalculator dependency
 
 # write specs for files without currently
 
 - [ ] mapjs-layout/core/theme/color-parser
+
+
+# propagate to mindmup
+
+- theme css widget changes
+- dommapcontroller init
+- mapmodel init
+- dom map widget init

@@ -2,15 +2,16 @@
 const MAPJS = require('../src/npm-main'),
 	jQuery = require('jquery'),
 	themeProvider = require('./theme'),
-	ThemeProcessor = require('../src/core/theme/theme-processor'),
 	testMap = require('./example-map'),
 	content = MAPJS.content,
 	init = function () {
 		'use strict';
+		let domMapController = false;
 		const container = jQuery('#container'),
 			idea = content(testMap),
+			touchEnabled = false,
 			imageInsertController = new MAPJS.ImageInsertController('http://localhost:4999?u='),
-			mapModel = new MAPJS.MapModel(MAPJS.domLayoutCalculator, []);
+			mapModel = new MAPJS.MapModel([]);
 
 		jQuery.fn.attachmentEditorWidget = function (mapModel) {
 			return this.each(function () {
@@ -27,8 +28,12 @@ const MAPJS = require('../src/npm-main'),
 		window.onerror = window.alert;
 		window.jQuery = jQuery;
 
-		jQuery('#themecss').themeCssWidget(themeProvider, new ThemeProcessor(), mapModel);
-		container.domMapWidget(console, mapModel, false, imageInsertController);
+		container.domMapWidget(console, mapModel, touchEnabled, imageInsertController);
+
+		domMapController = new MAPJS.DomMapController(mapModel, container.find('[data-mapjs-role=stage]'), touchEnabled, imageInsertController /*, resourceTranslator*/);
+		jQuery('#themecss').themeCssWidget(themeProvider, new MAPJS.ThemeProcessor(), mapModel, domMapController);
+		// activityLog, mapModel, touchEnabled, imageInsertController, dragContainer, centerSelectedNodeOnOrientationChange
+
 		jQuery('body').mapToolbarWidget(mapModel);
 		jQuery('body').attachmentEditorWidget(mapModel);
 		mapModel.setIdea(idea);

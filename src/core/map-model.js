@@ -2,7 +2,7 @@
 const _ = require('underscore'),
 	LayoutModel = require('./layout/layout-model'),
 	observable = require('../core/util/observable');
-module.exports = function MapModel(layoutCalculatorArg, selectAllTitles, defaultReorderMargin, optional) {
+module.exports = function MapModel(selectAllTitles, defaultReorderMargin, optional) {
 	'use strict';
 	let idea,
 		isAddLinkMode,
@@ -13,7 +13,7 @@ module.exports = function MapModel(layoutCalculatorArg, selectAllTitles, default
 		revertActivatedForUndo,
 		paused = false,
 		activatedNodes = [],
-		layoutCalculator = layoutCalculatorArg,
+		layoutCalculator,
 		currentlySelectedIdeaId;
 
 	const self = this,
@@ -225,6 +225,9 @@ module.exports = function MapModel(layoutCalculatorArg, selectAllTitles, default
 		updateCurrentLayout(self.reactivate(layoutCalculator(idea)), sessionId);
 	};
 	this.setIdea = function (anIdea) {
+		if (!layoutCalculator) {
+			throw new Error('layout calculator not set');
+		};
 		if (idea) {
 			idea.removeEventListener('changed', onIdeaChanged);
 			paused = false;

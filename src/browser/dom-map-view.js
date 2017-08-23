@@ -2,8 +2,9 @@
 require('./create-node');
 const jQuery = require('jquery'),
 	_ = require('underscore'),
+	calculateLayout = require('../core/layout/calculate-layout'),
 	cleanDOMId = require('../core/util/clean-dom-id'),
-	DOMRender = require('./dom-render'),
+	nodeCacheMark = require('./node-cache-mark'),
 	createSVG = require('./create-svg'),
 	connectorKey = function (connectorObj) {
 		'use strict';
@@ -293,16 +294,22 @@ jQuery.fn.createReorderBounds = function () {
 	return result;
 };
 
-module.exports = function domMapViewController(mapModel, stageElement, touchEnabled, imageInsertController, resourceTranslator, options) {
+module.exports = function DomMapController(mapModel, stageElement, touchEnabled, imageInsertController, resourceTranslator, options) {
 	'use strict';
-	let currentDroppable = false,
+	let theme = (options && options.theme),
+		stageMargin = (options && options.stageMargin),
+		stageVisibilityMargin = (options && options.stageVisibilityMargin),
+		currentDroppable = false,
 		connectorsForAnimation = jQuery(),
 		linksForAnimation = jQuery(),
 		viewPortDimensions;
 
-	const viewPort = stageElement.parent(),
+	const self = this,
+		viewPort = stageElement.parent(),
 		nodeAnimOptions = { duration: 400, queue: 'nodeQueue', easing: 'linear' },
 		reorderBounds = mapModel.isEditingEnabled() ? stageElement.createReorderBounds() : jQuery('<div>'),
+		svgPixel = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>',
+		dummyTextBox = jQuery('<div>').addClass('mapjs-node').css({position: 'absolute', visibility: 'hidden'}),
 		getViewPortDimensions = function () {
 			if (viewPortDimensions) {
 				return viewPortDimensions;
@@ -379,7 +386,7 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 		ensureSpaceForNode = function () {
 			return jQuery(this).each(function () {
 				const node = jQuery(this).data(),
-					margin = DOMRender.stageMargin || {top: 0, left: 0, bottom: 0, right: 0};
+					margin = stageMargin || {top: 0, left: 0, bottom: 0, right: 0};
 				/* sequence of calculations is important because maxX and maxY take into consideration the new offsetX snd offsetY */
 				ensureSpaceForPoint(node.x - margin.left, node.y - margin.top);
 				ensureSpaceForPoint(node.x + node.width + margin.right, node.y + node.height + margin.bottom);
@@ -391,7 +398,7 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 					x: Math.round(viewPort.innerWidth() / 2),
 					y: Math.round(viewPort.innerHeight() / 2)
 				},
-				margin = DOMRender.stageVisibilityMargin || {top: 0, left: 0, bottom: 0, right: 0};
+				margin = stageVisibilityMargin || {top: 0, left: 0, bottom: 0, right: 0};
 			let newLeftScroll = false, newTopScroll = false;
 
 			ensureSpaceForPoint(x - viewPortCenter.x / stage.scale, y - viewPortCenter.y / stage.scale);
@@ -430,7 +437,7 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 				nodeTopLeft = stageToViewCoordinates(node.x, node.y),
 				nodeBottomRight = stageToViewCoordinates(node.x + node.width, node.y + node.height),
 				animation = {},
-				margin = DOMRender.stageVisibilityMargin || {top: 10, left: 10, bottom: 10, right: 10};
+				margin = stageVisibilityMargin || {top: 10, left: 10, bottom: 10, right: 10};
 			if ((nodeTopLeft.x - margin.left) < 0) {
 				animation.scrollLeft = viewPort.scrollLeft() + nodeTopLeft.x - margin.left;
 			} else if ((nodeBottomRight.x + margin.right) > viewPort.innerWidth()) {
@@ -499,7 +506,48 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 				return false;
 			}
 			return _.find(boundaries, closeTo);
+		},
+		translateToPixel = function () {
+			return svgPixel;
 		};
+
+
+	self.setTheme = function (newTheme) {
+		theme = newTheme;
+	};
+	self.setStageMargin = function (newMargins) {
+		stageMargin = newMargins;
+	};
+	self.setStageVisibilityMargin = function (newMargins) {
+		stageVisibilityMargin = newMargins;
+	};
+
+
+	self.dimensionProvider = function (idea, level) {
+		let result = false,
+			textBox = jQuery(document).nodeWithId(idea.id); // TODO: limit to stage
+		if (textBox && textBox.length > 0) {
+			if (_.isEqual(textBox.data('nodeCacheMark'), nodeCacheMark(idea, {level: level, theme: theme}))) {
+				return _.pick(textBox.data(), 'width', 'height');
+			}
+		}
+		textBox = dummyTextBox;
+		textBox.appendTo('body').updateNodeContent(
+			idea,
+			{resourceTranslator: translateToPixel, level: level, theme: theme}
+		);
+		result = {
+			width: textBox.outerWidth(true),
+			height: textBox.outerHeight(true)
+		};
+		textBox.detach();
+		return result;
+	};
+
+	mapModel.setLayoutCalculator(function (contentAggregate) {
+		return calculateLayout(contentAggregate, self.dimensionProvider, {theme: theme});
+	});
+
 	viewPort.on('scroll', function () {
 		viewPortDimensions = undefined;
 	});
@@ -513,7 +561,7 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 		let currentReorderBoundary;
 		const element = stageElement.createNode(node)
 			.queueFadeIn(nodeAnimOptions)
-			.updateNodeContent(node, {resourceTranslator: resourceTranslator, theme: DOMRender.theme})
+			.updateNodeContent(node, {resourceTranslator: resourceTranslator, theme: theme})
 			.nodeResizeWidget(node.id, mapModel, stagePositionForPointEvent)
 			.on('tap', function (evt) {
 
@@ -677,20 +725,20 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 		}
 	});
 	mapModel.addEventListener('nodeTitleChanged nodeAttrChanged nodeLabelChanged', function (n) {
-		stageElement.nodeWithId(n.id).updateNodeContent(n, { resourceTranslator: resourceTranslator, theme: DOMRender.theme});
+		stageElement.nodeWithId(n.id).updateNodeContent(n, { resourceTranslator: resourceTranslator, theme: theme});
 	});
 	mapModel.addEventListener('connectorCreated', function (connector) {
 		const element = stageElement.find('[data-mapjs-role=svg-container]')
-			.createConnector(connector).updateConnector({canUseData: true, theme: DOMRender.theme});
+			.createConnector(connector).updateConnector({canUseData: true, theme: theme});
 		stageElement.nodeWithId(connector.from).add(stageElement.nodeWithId(connector.to))
 			.on('mapjs:move', function () {
-				element.updateConnector({canUseData: true, theme: DOMRender.theme});
+				element.updateConnector({canUseData: true, theme: theme});
 			})
 			.on('mapjs:resize', function () {
-				element.updateConnector({canUseData: true, theme: DOMRender.theme});
+				element.updateConnector({canUseData: true, theme: theme});
 			})
 			.on('mm:drag', function () {
-				element.updateConnector({theme: DOMRender.theme});
+				element.updateConnector({theme: theme});
 			})
 			.on('mapjs:animatemove', function () {
 				connectorsForAnimation = connectorsForAnimation.add(element);
@@ -714,7 +762,7 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 	mapModel.addEventListener('linkCreated', function (line) {
 		const link = stageElement
 			.find('[data-mapjs-role=svg-container]')
-			.createLink(line).updateLink({theme: DOMRender.theme});
+			.createLink(line).updateLink({theme: theme});
 		link.on('tap', function (event) {
 			if (event.target && event.target.tagName === 'text') {
 				mapModel.lineLabelClicked(line);
@@ -726,7 +774,7 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 		});
 		stageElement.nodeWithId(line.ideaIdFrom).add(stageElement.nodeWithId(line.ideaIdTo))
 			.on('mapjs:move mm:drag', function () {
-				link.updateLink({theme: DOMRender.theme});
+				link.updateLink({theme: theme});
 			})
 			.on('mapjs:animatemove', function () {
 				linksForAnimation = linksForAnimation.add(link);
@@ -764,8 +812,8 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 		stageElement.data({'scale': 1, 'height': 0, 'width': 0, 'offsetX': 0, 'offsetY': 0}).updateStage();
 		stageElement.children().andSelf().finish(nodeAnimOptions.queue);
 		jQuery(stageElement).find('.mapjs-node').each(ensureSpaceForNode);
-		jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector({canUseData: true, theme: DOMRender.theme});
-		jQuery(stageElement).find('[data-mapjs-role=link]').updateLink({theme: DOMRender.theme});
+		jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector({canUseData: true, theme: theme});
+		jQuery(stageElement).find('[data-mapjs-role=link]').updateLink({theme: theme});
 		centerViewOnNode(mapModel.getCurrentlySelectedIdeaId());
 		viewPort.focus();
 	});
@@ -778,8 +826,8 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 		let connectorGroupClone = jQuery(), linkGroupClone = jQuery();
 		if (options && options.themeChanged) {
 			stageElement.children().andSelf().finish(nodeAnimOptions.queue);
-			jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector({canUseData: true, theme: DOMRender.theme});
-			jQuery(stageElement).find('[data-mapjs-role=link]').updateLink({theme: DOMRender.theme, canUseData: true});
+			jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector({canUseData: true, theme: theme});
+			jQuery(stageElement).find('[data-mapjs-role=link]').updateLink({theme: theme, canUseData: true});
 		} else {
 			connectorsForAnimation.each(function () {
 				if (!jQuery(this).animateConnectorToPosition(nodeAnimOptions, 2)) {
@@ -793,12 +841,12 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 			});
 			stageElement.animate({'opacity': 1}, _.extend({
 				progress: function () {
-					connectorGroupClone.updateConnector({theme: DOMRender.theme});
-					linkGroupClone.updateLink({theme: DOMRender.theme});
+					connectorGroupClone.updateConnector({theme: theme});
+					linkGroupClone.updateLink({theme: theme});
 				},
 				complete: function () {
-					connectorGroupClone.updateConnector({canUseData: true, theme: DOMRender.theme});
-					linkGroupClone.updateLink({theme: DOMRender.theme, canUseData: true});
+					connectorGroupClone.updateConnector({canUseData: true, theme: theme});
+					linkGroupClone.updateLink({theme: theme, canUseData: true});
 				}
 			}, nodeAnimOptions));
 			stageElement.children().dequeue(nodeAnimOptions.queue);
@@ -839,10 +887,10 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 		}
 	});
 	mapModel.addEventListener('linkAttrChanged', function (l) {
-		stageElement.findLine(l).data('attr', (l.attr && l.attr.style) || {}).updateLink({theme: DOMRender.theme});
+		stageElement.findLine(l).data('attr', (l.attr && l.attr.style) || {}).updateLink({theme: theme});
 	});
 	mapModel.addEventListener('connectorAttrChanged', function (connector) {
-		stageElement.findLine(connector).data('attr', connector.attr || false).updateConnector({canUseData: true, theme: DOMRender.theme});
+		stageElement.findLine(connector).data('attr', connector.attr || false).updateConnector({canUseData: true, theme: theme});
 	});
 	mapModel.addEventListener('activatedNodesChanged', function (activatedNodes, deactivatedNodes) {
 		_.each(activatedNodes, function (nodeId) {

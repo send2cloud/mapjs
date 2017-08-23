@@ -10,7 +10,8 @@ describe('mapToolbarWidget', function () {
 	'use strict';
 	let mapModel, element;
 	beforeEach(function () {
-		mapModel = new MapModel(function () {
+		mapModel = new MapModel();
+		mapModel.setLayoutCalculator(function () {
 			return [];
 		});
 		element = jQuery(

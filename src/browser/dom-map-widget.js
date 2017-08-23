@@ -1,7 +1,6 @@
 /*global require, document, window */
 const $ = require('jquery'),
 	_ = require('underscore'),
-	domMapViewController = require('./dom-map-view'),
 	createSVG = require('./create-svg');
 
 
@@ -30,7 +29,7 @@ $.fn.scrollWhenDragging = function (scrollPredicate) {
 		});
 	});
 };
-$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController, dragContainer, resourceTranslator, centerSelectedNodeOnOrientationChange, options) {
+$.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertController, dragContainer, centerSelectedNodeOnOrientationChange) {
 	'use strict';
 	const hotkeyEventHandlers = {
 			'return': 'insertDown',
@@ -151,7 +150,6 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, imageInsertCo
 			});
 
 		}
-		domMapViewController(mapModel, stage, touchEnabled, imageInsertController, resourceTranslator, options);
 		_.each(hotkeyEventHandlers, function (mappedFunction, keysPressed) {
 			element.keydown(keysPressed, function (event) {
 				if (actOnKeys) {
