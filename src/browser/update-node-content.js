@@ -4,7 +4,6 @@ const jQuery = require('jquery'),
 	URLHelper = require('../core/util/url-helper'),
 	foregroundStyle = require('../core/theme/foreground-style'),
 	formattedNodeTitle = require('../core/content/formatted-node-title'),
-	DOMRender = require('./dom-render'),
 	nodeCacheMark = require('./node-cache-mark');
 
 require('./set-theme-class-list');
@@ -13,6 +12,9 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 	'use strict';
 	const resourceTranslator = optional && optional.resourceTranslator,
 		forcedLevel = optional && optional.level,
+		nodeTextPadding = (optional && optional.nodeTextPadding) || 11,
+		fixedLayout = (optional && optional.fixedLayout),
+		theme = (optional && optional.theme),
 		self = jQuery(this),
 		textSpan = function () {
 			let span = self.find('[data-mapjs-role=title]');
@@ -86,7 +88,6 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 		},
 		updateText = function (title) {
 			const text = formattedNodeTitle(title, 25),
-				nodeTextPadding = DOMRender.nodeTextPadding || 11,
 				element = textSpan(),
 				domElement = element[0],
 				preferredWidth = nodeContent.attr && nodeContent.attr.style && nodeContent.attr.style.width;
@@ -173,7 +174,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 				if (icon.position === 'top' || icon.position === 'bottom') {
 					if (icon.position === 'top') {
 						selfProps['background-position'] = 'center ' + padding + 'px';
-					} else if (DOMRender.fixedLayout) {
+					} else if (fixedLayout) {
 						selfProps['background-position'] = 'center ' + (padding + textHeight) + 'px';
 					} else {
 						selfProps['background-position'] = 'center ' + icon.position + ' ' + padding + 'px';
@@ -187,7 +188,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 				} else if (icon.position === 'left' || icon.position === 'right') {
 					if (icon.position === 'left') {
 						selfProps['background-position'] = padding + 'px center';
-					} else if (DOMRender.fixedLayout) {
+					} else if (fixedLayout) {
 						selfProps['background-position'] = (textWidth + (2 * padding)) + 'px center ';
 					} else {
 						selfProps['background-position'] = icon.position + ' ' + padding + 'px center';
@@ -219,8 +220,8 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 		styleDefault = function () {
 			return ['default'];
 		},
-		attrValue = (DOMRender.theme && DOMRender.theme.attributeValue) || themeDefault,
-		nodeStyles = (DOMRender.theme &&  DOMRender.theme.nodeStyles) || styleDefault,
+		attrValue = (theme && theme.attributeValue) || themeDefault,
+		nodeStyles = (theme &&  theme.nodeStyles) || styleDefault,
 		effectiveStyles = nodeStyles(nodeLevel, nodeContent.attr),
 		borderType = attrValue(['node'], effectiveStyles, ['border', 'type'], 'surround'),
 		decorationEdge = attrValue(['node'], effectiveStyles, ['decorations', 'edge'], ''),
@@ -283,7 +284,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 	self.setThemeClassList(effectiveStyles).attr('mapjs-level', nodeLevel);
 
 	self.data(nodeCacheData);
-	self.data('nodeCacheMark', nodeCacheMark(nodeContent));
+	self.data('nodeCacheMark', nodeCacheMark(nodeContent, optional));
 	setColors(colorText);
 	setIcon(nodeContent.attr && nodeContent.attr.icon);
 	setCollapseClass();

@@ -395,9 +395,11 @@ describe('DOMRender', function () {
 		});
 		describe('nodeCreated', function () {
 			describe('adds a DIV for the node to the stage', function () {
-				let underTest, node;
+				let underTest, node, theme;
 
 				beforeEach(function () {
+					theme = new Theme({name: 'test'});
+					DOMRender.theme = theme;
 					node = {id: '11.12^13#AB-c', title: 'zeka', x: 10, y: 20, width: 30, height: 40};
 					spyOn(jQuery.fn, 'updateNodeContent').and.callFake(function () {
 						this.data(node);
@@ -429,7 +431,7 @@ describe('DOMRender', function () {
 					expect(underTest.hasClass('mapjs-node')).toBeTruthy();
 				});
 				it('updates the node content', function () {
-					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node, {resourceTranslator: resourceTranslator});
+					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node, {theme: theme, resourceTranslator: resourceTranslator});
 					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledOnJQueryObject(underTest);
 					expect(jQuery.fn.updateNodeContent.calls.count()).toBe(1);
 				});
@@ -1172,14 +1174,20 @@ describe('DOMRender', function () {
 		_.each(['nodeTitleChanged', 'nodeAttrChanged', 'nodeLabelChanged'], function (eventType) {
 			let underTest;
 			it('updates node content on ' + eventType, function () {
-				const node = {id: '11', title: 'zeka', x: -80, y: -35, width: 30, height: 20};
+				const node = {id: '11', title: 'zeka', x: -80, y: -35, width: 30, height: 20},
+					theme = new Theme({name: 'test'});
+				DOMRender.theme = theme;
 				mapModel.dispatchEvent('nodeCreated', node);
 				underTest = stage.children('[data-mapjs-role=node]').first();
 				spyOn(jQuery.fn, 'updateNodeContent');
 
 				mapModel.dispatchEvent(eventType, node);
 				expect(jQuery.fn.updateNodeContent).toHaveBeenCalledOnJQueryObject(underTest);
-				expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node, {resourceTranslator: resourceTranslator});
+				expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node,
+					{
+						theme: theme,
+						resourceTranslator: resourceTranslator
+					});
 			});
 		});
 		describe('nodeEditRequested', function () {

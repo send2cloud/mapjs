@@ -2,7 +2,6 @@
 
 const jQuery = require('jquery'),
 	_ = require('underscore'),
-	DOMRender = require('../../src/browser/dom-render'),
 	Theme = require('../../src/core/theme/theme');
 
 require('../../src/browser/update-node-content');
@@ -29,8 +28,6 @@ describe('updateNodeContent', function () {
 	afterEach(function () {
 		underTest.remove();
 		style.remove();
-		DOMRender.theme = undefined;
-
 	});
 	it('returns itself to allow chaining', function () {
 		expect(underTest.updateNodeContent(nodeContent)[0]).toEqual(underTest[0]);
@@ -38,8 +35,7 @@ describe('updateNodeContent', function () {
 	describe('styles', function () {
 		it('sets the data styles from the theme', function () {
 			nodeContent.attr = { group: 'blue' };
-			DOMRender.theme = new Theme({});
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: new Theme({})});
 			expect(underTest.data('styles')).toEqual(['attr_group_blue', 'attr_group', 'level_3', 'default']);
 		});
 	});
@@ -64,8 +60,7 @@ describe('updateNodeContent', function () {
 			expect(underTest.data('height')).toBe(40);
 		});
 		it('tags the node with a cache mark', function () {
-			DOMRender.theme = new Theme({name: 'blue'});
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: new Theme({name: 'blue'})});
 			expect(underTest.data('nodeCacheMark')).toEqual({ level: 3, width: undefined, styles: ['level_3', 'default'], title: 'Hello World!', theme: 'blue', icon: undefined, note: false, collapsed: undefined});
 		});
 	});
@@ -124,40 +119,42 @@ describe('updateNodeContent', function () {
 
 	});
 	describe('setting the styles', function () {
+		let theme;
 		beforeEach(function () {
-			DOMRender.theme = new Theme({});
+			theme = new Theme({name: 'test'});
 		});
+
 		it('sets the level attribute to the node content level', function () {
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.attr('mapjs-level')).toBe('3');
 		});
 		it('sets the group attributes', function () {
 			nodeContent.attr = { group: 'blue'};
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.hasClass('attr_group_blue')).toBeTruthy();
 		});
 		it('removes old attr classes', function () {
 			nodeContent.attr = { group: 'blue'};
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			nodeContent.attr = { group: 'red'};
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.hasClass('attr_group_blue')).toBeFalsy();
 			expect(underTest.hasClass('attr_group_red')).toBeTruthy();
 		});
 		it('sets the level class to the node content level', function () {
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.hasClass('level_3')).toBeTruthy();
 		});
 		it('updates the level class to the forcred level', function () {
-			underTest.updateNodeContent(nodeContent);
-			underTest.updateNodeContent(nodeContent, {level: 2});
+			underTest.updateNodeContent(nodeContent, {theme: theme});
+			underTest.updateNodeContent(nodeContent, {theme: theme, level: 2});
 			expect(underTest.hasClass('level_3')).toBeFalsy();
 			expect(underTest.hasClass('level_2')).toBeTruthy();
 		});
 	});
 	describe('setting the colortext attribute', function () {
 		it('sets the mapjs-node-colortext class if the border is underline', function () {
-			DOMRender.theme = new Theme({
+			const theme = new Theme({
 				node: [{
 					name: 'default',
 					border: {
@@ -166,11 +163,11 @@ describe('updateNodeContent', function () {
 				}
 				]
 			});
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.hasClass('mapjs-node-colortext')).toBeTruthy();
 		});
 		it('clears the colortext class if the border is not underline', function () {
-			DOMRender.theme = new Theme({
+			const theme = new Theme({
 				node: [{
 					name: 'default',
 					border: {
@@ -179,7 +176,7 @@ describe('updateNodeContent', function () {
 				]
 			});
 			underTest.addClass('mapjs-node-colortext');
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.hasClass('mapjs-node-colortext')).toBeFalsy();
 		});
 	});
@@ -199,7 +196,7 @@ describe('updateNodeContent', function () {
 					background: 'rgb(103, 101, 119)'
 				}
 			};
-			DOMRender.theme = new Theme({
+			const theme = new Theme({
 				node: [{
 					name: 'default',
 					border: {
@@ -208,7 +205,7 @@ describe('updateNodeContent', function () {
 				}
 				]
 			});
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.css('color')).toBe('rgb(103, 101, 119)');
 			expect(underTest.css('background-color')).toBe('rgba(0, 0, 0, 0)');
 		});
@@ -259,7 +256,6 @@ describe('updateNodeContent', function () {
 		});
 		describe('when icon is set', function () {
 			beforeEach(function () {
-				DOMRender.fixedLayout = false;
 				nodeContent.attr = {
 					icon: {
 						url: 'http://iconurl/',
@@ -326,9 +322,8 @@ describe('updateNodeContent', function () {
 				}
 			});
 			it('positions right icons right of node text and vertically centers the text for a fixed layouts', function () {
-				DOMRender.fixedLayout = true;
 				nodeContent.attr.icon.position = 'right';
-				underTest.updateNodeContent(nodeContent);
+				underTest.updateNodeContent(nodeContent, {fixedLayout: true});
 				expect(underTest.css('background-position')).toBe('170px 50%');
 				expect(underTest.css('padding-right')).toEqual('410px');
 				if (!isHeadless()) {
@@ -356,9 +351,8 @@ describe('updateNodeContent', function () {
 				expect(textBox.css('margin-left')).toBe('120px');
 			});
 			it('positions bottom icons bottom of node text and horizontally centers the text for fixed layout', function () {
-				DOMRender.fixedLayout = true;
 				nodeContent.attr.icon.position = 'bottom';
-				underTest.updateNodeContent(nodeContent);
+				underTest.updateNodeContent(nodeContent, {fixedLayout: true});
 				if (!isHeadless()) {
 					expect(underTest.css('background-position')).toBe('50% 23px');
 				}
@@ -589,7 +583,7 @@ describe('updateNodeContent', function () {
 	});
 	describe('decoration margin handling', function () {
 		it('adds a left margin for decorations when they are on the left', function () {
-			DOMRender.theme = new Theme(
+			const theme = new Theme(
 				{
 					node: [{
 						name: 'default',
@@ -602,7 +596,7 @@ describe('updateNodeContent', function () {
 				}
 			);
 			jQuery('<div data-mapjs-role=decorations>').css('width', '16px').appendTo(underTest);
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.css('margin-left')).toEqual('16px');
 			expect(underTest.data('innerRect').dx).toBe(16);
 			expect(underTest.data('innerRect').dy).toBe(0);
@@ -610,7 +604,7 @@ describe('updateNodeContent', function () {
 			expect(underTest.data('innerRect').height).toBe(40);
 		});
 		it('adds a right margin for decorations when they are on the right', function () {
-			DOMRender.theme = new Theme(
+			const theme = new Theme(
 				{
 					node: [{
 						name: 'default',
@@ -623,7 +617,7 @@ describe('updateNodeContent', function () {
 				}
 			);
 			jQuery('<div data-mapjs-role=decorations>').css('width', '16px').appendTo(underTest);
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.css('margin-right')).toEqual('16px');
 			expect(underTest.data('innerRect').dx).toBe(0);
 			expect(underTest.data('innerRect').dy).toBe(0);
@@ -632,7 +626,7 @@ describe('updateNodeContent', function () {
 		});
 
 		it('adds a top margin for decorations when they are on the top without overlap', function () {
-			DOMRender.theme = new Theme(
+			const theme = new Theme(
 				{
 					node: [{
 						name: 'default',
@@ -645,7 +639,7 @@ describe('updateNodeContent', function () {
 				}
 			);
 			jQuery('<div data-mapjs-role=decorations>').css('height', '21px').appendTo(underTest);
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.css('margin-top')).toEqual('21px');
 			expect(underTest.data('innerRect').dx).toBe(0);
 			expect(underTest.data('innerRect').dy).toBe(21);
@@ -654,7 +648,7 @@ describe('updateNodeContent', function () {
 
 		});
 		it('clears a top margin for decorations when the node does not have decorations', function () {
-			DOMRender.theme = new Theme(
+			const theme = new Theme(
 				{
 					node: [{
 						name: 'default',
@@ -667,7 +661,7 @@ describe('updateNodeContent', function () {
 				}
 			);
 			jQuery('<div data-mapjs-role=decorations>').css('height', '0').appendTo(underTest);
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.attr('style')).toBeFalsy();
 			expect(underTest.data('innerRect').dx).toBe(0);
 			expect(underTest.data('innerRect').dy).toBe(0);
@@ -677,7 +671,7 @@ describe('updateNodeContent', function () {
 		});
 
 		it('adds a top margin for decorations when they are on the top with overlap', function () {
-			DOMRender.theme = new Theme(
+			const theme = new Theme(
 				{
 					node: [{
 						name: 'default',
@@ -691,7 +685,7 @@ describe('updateNodeContent', function () {
 				}
 			);
 			jQuery('<div data-mapjs-role=decorations>').css('height', '22px').appendTo(underTest);
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.css('margin-top')).toEqual('11px');
 			expect(underTest.data('innerRect').dx).toBe(0);
 			expect(underTest.data('innerRect').dy).toBe(11);
@@ -702,7 +696,7 @@ describe('updateNodeContent', function () {
 
 
 		it('adds a bottom margin for decorations when they are on the bottom', function () {
-			DOMRender.theme = new Theme(
+			const theme = new Theme(
 				{
 					node: [{
 						name: 'default',
@@ -715,7 +709,7 @@ describe('updateNodeContent', function () {
 				}
 			);
 			jQuery('<div data-mapjs-role=decorations>').css('height', '21px').appendTo(underTest);
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.css('margin-bottom')).toEqual('21px');
 			expect(underTest.data('innerRect').dx).toBe(0);
 			expect(underTest.data('innerRect').dy).toBe(0);
@@ -725,7 +719,7 @@ describe('updateNodeContent', function () {
 		});
 
 		it('adds a bottom margin for decorations when they are on the bottom with overlap', function () {
-			DOMRender.theme = new Theme(
+			const theme = new Theme(
 				{
 					node: [{
 						name: 'default',
@@ -739,7 +733,7 @@ describe('updateNodeContent', function () {
 				}
 			);
 			jQuery('<div data-mapjs-role=decorations>').css('height', '22px').appendTo(underTest);
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.css('margin-bottom')).toEqual('11px');
 			expect(underTest.data('innerRect').dx).toBe(0);
 			expect(underTest.data('innerRect').dy).toBe(0);
@@ -750,7 +744,7 @@ describe('updateNodeContent', function () {
 
 		it('clears the other margins to ensure stale theme changes are reverted', function () {
 			underTest.css('margin-top', '10px');
-			DOMRender.theme = new Theme(
+			const theme = new Theme(
 				{
 					node: [{
 						name: 'default',
@@ -764,7 +758,7 @@ describe('updateNodeContent', function () {
 				}
 			);
 			jQuery('<div data-mapjs-role=decorations>').css('height', '100px').appendTo(underTest);
-			underTest.updateNodeContent(nodeContent);
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.css('margin-bottom')).toEqual('50px');
 			expect(underTest.css('margin-top')).toEqual('0px');
 		});

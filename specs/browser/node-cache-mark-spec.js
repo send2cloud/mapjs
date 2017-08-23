@@ -1,7 +1,6 @@
 /*global describe, it, expect, require */
 const nodeCacheMark = require('../../src/browser/node-cache-mark'),
-	Theme = require('../../src/core/theme/theme'),
-	DOMRender = require('../../src/browser/dom-render');
+	Theme = require('../../src/core/theme/theme');
 describe('nodeCacheMark', function () {
 	'use strict';
 
@@ -35,8 +34,7 @@ describe('nodeCacheMark', function () {
 				second = testCase[2];
 
 			it(testName, function () {
-				DOMRender.theme = new Theme({});
-				expect(nodeCacheMark(first)).not.toEqual(nodeCacheMark(second));
+				expect(nodeCacheMark(first)).not.toEqual(nodeCacheMark(second, {theme: new Theme({})}));
 			});
 		});
 	});

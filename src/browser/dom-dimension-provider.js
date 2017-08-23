@@ -15,12 +15,15 @@ module.exports = function domDimensionProvider(idea, level) {
 	let result = false,
 		textBox = jQuery(document).nodeWithId(idea.id);
 	if (textBox && textBox.length > 0) {
-		if (_.isEqual(textBox.data('nodeCacheMark'), nodeCacheMark(idea, level))) {
+		if (_.isEqual(textBox.data('nodeCacheMark'), nodeCacheMark(idea, {level: level, theme: DOMRender.theme}))) {
 			return _.pick(textBox.data(), 'width', 'height');
 		}
 	}
 	textBox = DOMRender.dummyTextBox;
-	textBox.appendTo('body').updateNodeContent(idea, {resourceTranslator: translateToPixel, level: level});
+	textBox.appendTo('body').updateNodeContent(
+		idea,
+		{resourceTranslator: translateToPixel, level: level, theme: DOMRender.theme}
+	);
 	result = {
 		width: textBox.outerWidth(true),
 		height: textBox.outerHeight(true)

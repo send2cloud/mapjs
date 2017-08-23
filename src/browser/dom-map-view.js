@@ -513,7 +513,7 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 		let currentReorderBoundary;
 		const element = stageElement.createNode(node)
 			.queueFadeIn(nodeAnimOptions)
-			.updateNodeContent(node, {resourceTranslator: resourceTranslator})
+			.updateNodeContent(node, {resourceTranslator: resourceTranslator, theme: DOMRender.theme})
 			.nodeResizeWidget(node.id, mapModel, stagePositionForPointEvent)
 			.on('tap', function (evt) {
 
@@ -677,7 +677,7 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 		}
 	});
 	mapModel.addEventListener('nodeTitleChanged nodeAttrChanged nodeLabelChanged', function (n) {
-		stageElement.nodeWithId(n.id).updateNodeContent(n, { resourceTranslator: resourceTranslator});
+		stageElement.nodeWithId(n.id).updateNodeContent(n, { resourceTranslator: resourceTranslator, theme: DOMRender.theme});
 	});
 	mapModel.addEventListener('connectorCreated', function (connector) {
 		const element = stageElement.find('[data-mapjs-role=svg-container]')

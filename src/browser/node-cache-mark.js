@@ -1,16 +1,17 @@
 /*global require, module */
-const _ = require('underscore'),
-	DOMRender = require('./dom-render');
-module.exports = function nodeCacheMark(idea, levelOverride) {
+const _ = require('underscore');
+module.exports = function nodeCacheMark(idea, optional) {
 	'use strict';
+	const levelOverride = optional && optional.level,
+		theme = (optional && optional.theme);
 	return {
 		title: idea.title,
 		width: idea.attr && idea.attr.style && idea.attr.style.width,
-		theme: DOMRender.theme &&  DOMRender.theme.name,
+		theme: theme &&  theme.name,
 		icon: idea.attr && idea.attr.icon && _.pick(idea.attr.icon, 'width', 'height', 'position'),
 		collapsed: idea.attr && idea.attr.collapsed,
 		note: !!(idea.attr && idea.attr.note),
-		styles: DOMRender.theme &&  DOMRender.theme.nodeStyles(idea.level  || levelOverride, idea.attr),
+		styles: theme &&  theme.nodeStyles(idea.level  || levelOverride, idea.attr),
 		level: idea.level || levelOverride
 	};
 };
