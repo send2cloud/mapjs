@@ -680,16 +680,17 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 		stageElement.nodeWithId(n.id).updateNodeContent(n, resourceTranslator);
 	});
 	mapModel.addEventListener('connectorCreated', function (connector) {
-		const element = stageElement.find('[data-mapjs-role=svg-container]').createConnector(connector).updateConnector(true);
+		const element = stageElement.find('[data-mapjs-role=svg-container]')
+			.createConnector(connector).updateConnector({canUseData: true, theme: DOMRender.theme});
 		stageElement.nodeWithId(connector.from).add(stageElement.nodeWithId(connector.to))
 			.on('mapjs:move', function () {
-				element.updateConnector(true);
+				element.updateConnector({canUseData: true, theme: DOMRender.theme});
 			})
 			.on('mapjs:resize', function () {
-				element.updateConnector(true);
+				element.updateConnector({canUseData: true, theme: DOMRender.theme});
 			})
 			.on('mm:drag', function () {
-				element.updateConnector();
+				element.updateConnector({theme: DOMRender.theme});
 			})
 			.on('mapjs:animatemove', function () {
 				connectorsForAnimation = connectorsForAnimation.add(element);
@@ -763,7 +764,7 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 		stageElement.data({'scale': 1, 'height': 0, 'width': 0, 'offsetX': 0, 'offsetY': 0}).updateStage();
 		stageElement.children().andSelf().finish(nodeAnimOptions.queue);
 		jQuery(stageElement).find('.mapjs-node').each(ensureSpaceForNode);
-		jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector(true);
+		jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector({canUseData: true, theme: DOMRender.theme});
 		jQuery(stageElement).find('[data-mapjs-role=link]').updateLink({theme: DOMRender.theme});
 		centerViewOnNode(mapModel.getCurrentlySelectedIdeaId());
 		viewPort.focus();
@@ -777,7 +778,7 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 		let connectorGroupClone = jQuery(), linkGroupClone = jQuery();
 		if (options && options.themeChanged) {
 			stageElement.children().andSelf().finish(nodeAnimOptions.queue);
-			jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector(true);
+			jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector({canUseData: true, theme: DOMRender.theme});
 			jQuery(stageElement).find('[data-mapjs-role=link]').updateLink({theme: DOMRender.theme, canUseData: true});
 		} else {
 			connectorsForAnimation.each(function () {
@@ -792,11 +793,11 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 			});
 			stageElement.animate({'opacity': 1}, _.extend({
 				progress: function () {
-					connectorGroupClone.updateConnector();
+					connectorGroupClone.updateConnector({theme: DOMRender.theme});
 					linkGroupClone.updateLink({theme: DOMRender.theme});
 				},
 				complete: function () {
-					connectorGroupClone.updateConnector(true);
+					connectorGroupClone.updateConnector({canUseData: true, theme: DOMRender.theme});
 					linkGroupClone.updateLink({theme: DOMRender.theme, canUseData: true});
 				}
 			}, nodeAnimOptions));
@@ -841,7 +842,7 @@ module.exports = function domMapViewController(mapModel, stageElement, touchEnab
 		stageElement.findLine(l).data('attr', (l.attr && l.attr.style) || {}).updateLink({theme: DOMRender.theme});
 	});
 	mapModel.addEventListener('connectorAttrChanged', function (connector) {
-		stageElement.findLine(connector).data('attr', connector.attr || false).updateConnector(true);
+		stageElement.findLine(connector).data('attr', connector.attr || false).updateConnector({canUseData: true, theme: DOMRender.theme});
 	});
 	mapModel.addEventListener('activatedNodesChanged', function (activatedNodes, deactivatedNodes) {
 		_.each(activatedNodes, function (nodeId) {

@@ -2043,13 +2043,15 @@ describe('DOMRender', function () {
 			});
 		});
 		describe('connector events', function () {
-			let nodeFrom, nodeTo, underTest, connector, svgContainer;
+			let nodeFrom, nodeTo, underTest, connector, svgContainer, theme;
 			beforeEach(function () {
 				svgContainer = createSVG().attr({
 					'data-mapjs-role': 'svg-container',
 					'class': 'mapjs-draw-container'
 				});
 				stage.append(svgContainer);
+				theme = new Theme({name: 'fromTest'});
+				DOMRender.theme = theme;
 				stage.attr('data-mapjs-role', 'stage');
 				connector = {type: 'connector', from: '1.from', to: '1.to', attr: {lovely: true}};
 				mapModel.dispatchEvent('nodeCreated', {id: '1.from', title: 'zeka', x: -80, y: -35, width: 30, height: 20});
@@ -2080,6 +2082,7 @@ describe('DOMRender', function () {
 				});
 				it('updates the connector content', function () {
 					expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(underTest);
+					expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{canUseData: true, theme: theme}]);
 				});
 				it('sets the connector attributes as data', function () {
 					expect(underTest.data('attr')).toEqual({lovely: true});
@@ -2110,6 +2113,7 @@ describe('DOMRender', function () {
 							});
 							it('updates connector', function () {
 								expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(underTest);
+								expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{theme: theme, canUseData: true}]);
 							});
 							it('does not add connectors to animation list', function () {
 								mapModel.dispatchEvent('layoutChangeComplete');
@@ -2119,7 +2123,7 @@ describe('DOMRender', function () {
 						it('updates the connector immediately on theme change', function () {
 							mapModel.dispatchEvent('layoutChangeComplete', {themeChanged: true});
 							expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(underTest);
-							expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([true]);
+							expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{theme: theme, canUseData: true}]);
 						});
 						describe('animating node ' + node, function () {
 							beforeEach(function () {
@@ -2144,6 +2148,7 @@ describe('DOMRender', function () {
 
 								jQuery.fn.animate.calls.mostRecent().args[1].progress();
 								expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(underTest);
+								expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{theme: theme}]);
 
 							});
 						});
@@ -2165,6 +2170,7 @@ describe('DOMRender', function () {
 					jQuery.fn.updateConnector.calls.reset();
 					mapModel.dispatchEvent('connectorAttrChanged', connector);
 					expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(underTest);
+					expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{canUseData: true, theme: theme}]);
 				});
 				it('updates the connector data attributes', function () {
 					mapModel.dispatchEvent('connectorAttrChanged', connector);
@@ -2395,7 +2401,7 @@ describe('DOMRender', function () {
 				jQuery.fn.updateConnector.calls.reset();
 				mapModel.dispatchEvent('mapViewResetRequested');
 				expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(jQuery('[data-mapjs-role=connector]'));
-				expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([true]);
+				expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{canUseData: true, theme: theme}]);
 			});
 			it('should update Links', function () {
 				jQuery.fn.updateLink.calls.reset();

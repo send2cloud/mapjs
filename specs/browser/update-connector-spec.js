@@ -1,7 +1,6 @@
 /*global describe, it, beforeEach, afterEach, expect, require, jasmine */
 const jQuery = require('jquery'),
 	createSVG = require('../../src/browser/create-svg'),
-	DOMRender = require('../../src/browser/dom-render'),
 	Theme = require('../../src/core/theme/theme');
 
 require('../helpers/jquery-extension-matchers');
@@ -17,12 +16,9 @@ describe('updateConnector', function () {
 		third = jQuery('<div>').attr('id', 'node_third').css({ position: 'absolute', top: '330px', left: '220px', width: '119px', height: '55px'}).appendTo('body');
 		anotherConnector = createSVG().appendTo('body').attr('data-role', 'test-connector').css('position', 'absolute').data({'nodeFrom': fromNode, 'nodeTo': third});
 	});
-	afterEach(function () {
-		DOMRender.theme = undefined;
-	});
 	it('calls connectorBuilder with styles', function () {
 		const builder = jasmine.createSpy().and.returnValue({'d': 'Z', color: 'black', width: 3.0, position: {top: 0}});
-		underTest.updateConnector(false, { connectorBuilder: builder});
+		underTest.updateConnector({ connectorBuilder: builder});
 		expect(builder.calls.mostRecent().args[0].styles).toEqual(['funky']);
 		expect(builder.calls.mostRecent().args[1].styles).toEqual(['bleak']);
 	});
@@ -31,7 +27,7 @@ describe('updateConnector', function () {
 		beforeEach(function () {
 			builder = jasmine.createSpy();
 			builder.and.returnValue({'d': 'Z', color: 'black', width: 3.0, position: {top: 0}});
-			underTest.updateConnector(false, {connectorBuilder: builder});
+			underTest.updateConnector({connectorBuilder: builder});
 			path = underTest.find('path');
 		});
 		it('sets the stroke of the path from the connector color', function () {
@@ -42,7 +38,7 @@ describe('updateConnector', function () {
 		});
 		it('overrides the theme color with connector attribute color', function () {
 			underTest.data('attr', {color: 'green'});
-			underTest.updateConnector(false, {connectorBuilder: builder});
+			underTest.updateConnector({connectorBuilder: builder});
 			expect(underTest[0].style.stroke).toEqual('green');
 			expect(path.attr('stroke')).toBeFalsy();
 			expect(path[0].style.stroke).toBeFalsy();
@@ -56,27 +52,28 @@ describe('updateConnector', function () {
 		});
 		it('overrides the theme lineStyle with the connector attributes', function () {
 			underTest.data('attr', {lineStyle: 'dashed'});
-			underTest.updateConnector(false, {connectorBuilder: builder});
+			underTest.updateConnector({connectorBuilder: builder});
 			expect(path.attr('stroke-dasharray')).toEqual('8, 8');
 		});
 		it('sets the path fill to transparent', function () {
 			expect(path.attr('fill')).toEqual('transparent');
 		});
 		describe('when the theme has blockParentConnectorOverride flag', function () {
+			let theme;
 			beforeEach(function () {
-				DOMRender.theme = new Theme({name: 'blocked', blockParentConnectorOverride: true});
+				theme = new Theme({name: 'blocked', blockParentConnectorOverride: true});
 			});
 			it('still adds a connector path', function () {
-				underTest.updateConnector(false, {connectorBuilder: builder});
+				underTest.updateConnector({theme: theme, connectorBuilder: builder});
 				expect(underTest.find('path.mapjs-connector').length).toBe(1);
 			});
 			it('does not add a link-hit element', function () {
-				underTest.updateConnector(false, {connectorBuilder: builder});
+				underTest.updateConnector({theme: theme, connectorBuilder: builder});
 				expect(underTest.find('path.mapjs-link-hit').length).toBe(0);
 			});
 			it('removes a pre-existing link-hit element', function () {
 				createSVG('path').addClass('mapjs-link-hit').appendTo(underTest);
-				underTest.updateConnector(false, {connectorBuilder: builder});
+				underTest.updateConnector({theme: theme, connectorBuilder: builder});
 				expect(underTest.find('path.mapjs-link-hit').length).toBe(0);
 			});
 		});
@@ -149,11 +146,9 @@ describe('updateConnector', function () {
 			expect(underTest.find('path').attr('d')).toBe('');
 		});
 		it('will update if the shapes did not move, but the theme changed', function () {
-			underTest.updateConnector();
+			underTest.updateConnector({theme: new Theme({name: 'old'})});
 			underTest.find('path').attr('d', '');
-			DOMRender.theme = new Theme({name: 'new'});
-
-			underTest.updateConnector();
+			underTest.updateConnector({theme: new Theme({name: 'new'})});
 			expect(underTest.find('path').attr('d')).toBe('M50,20Q50,190 140,142');
 		});
 		it('will update if the shapes did not move, but the connector attributes changed', function () {
@@ -214,7 +209,7 @@ describe('updateConnector', function () {
 
 		});
 		it('adds a text label if it is in the attributes', function () {
-			underTest.updateConnector(false, {connectorBuilder: builder});
+			underTest.updateConnector({connectorBuilder: builder});
 			textField = underTest.find('text');
 			expect(textField.length).toEqual(1);
 			expect(textField.text()).toEqual('blah blah blah');
@@ -222,20 +217,20 @@ describe('updateConnector', function () {
 		});
 		it('appends the active label theme to the attributes so they can be used for editor widgets', function () {
 			themePath.theme = customTheme;
-			underTest.updateConnector(false, {connectorBuilder: builder});
+			underTest.updateConnector({connectorBuilder: builder});
 			expect(underTest.data('theme')).toEqual(customTheme);
 
 		});
 		it('appends the label-center-point', function () {
 			themePath.theme = customTheme;
-			underTest.updateConnector(false, {connectorBuilder: builder});
+			underTest.updateConnector({connectorBuilder: builder});
 			expect(underTest.data('theme')).toEqual(customTheme);
 			expect(underTest.data('label-center-point').x).toEqual(20);
 			expect(underTest.data('label-center-point').y).toEqual(20);
 
 		});
 		it('paints the text label according to the default theme if no theme supplied', function () {
-			underTest.updateConnector(false, {connectorBuilder: builder});
+			underTest.updateConnector({connectorBuilder: builder});
 			textField = underTest.find('text');
 			textDims = textField[0].getClientRects()[0];
 			expect(parseInt(textField.attr('x'))).toEqual(Math.round(30 - textDims.width / 2));
@@ -247,7 +242,7 @@ describe('updateConnector', function () {
 		});
 		it('positions the text label according to the theme settings returned from themePath', function () {
 			themePath.theme = customTheme;
-			underTest.updateConnector(false, {connectorBuilder: builder});
+			underTest.updateConnector({connectorBuilder: builder});
 			textField = underTest.find('text');
 			textDims = textField[0].getClientRects()[0];
 			expect(parseInt(textField.attr('x'))).toEqual(Math.round(20 - textDims.width / 2));
@@ -262,7 +257,7 @@ describe('updateConnector', function () {
 			});
 			customTheme.label.position = {aboveEnd: 10};
 			themePath.theme = customTheme;
-			underTest.updateConnector(false, {connectorBuilder: builder});
+			underTest.updateConnector({connectorBuilder: builder});
 			textField = underTest.find('text');
 			textDims = textField[0].getClientRects()[0];
 			// cx = 130 - 101 + 30/2 = 44
@@ -274,7 +269,7 @@ describe('updateConnector', function () {
 			customTheme.label.backgroundColor = 'rgb(1, 2, 3)';
 			customTheme.label.borderColor = 'rgb(4, 5, 6)';
 			themePath.theme = customTheme;
-			underTest.updateConnector(false, {connectorBuilder: builder});
+			underTest.updateConnector({connectorBuilder: builder});
 			textField = underTest.find('text');
 			textDims = textField[0].getClientRects()[0];
 			rectField = underTest.find('rect');
