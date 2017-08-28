@@ -252,9 +252,6 @@ const _ = require('underscore'),
 				if (depth < 100) {
 					return translatePolyToNotOverlap(polyTranslation.translatedPoly, existingRegions, polyRootCenter, vector, previousTranslation, (depth + 1));
 				}
-			} else {
-				throw 'invalid-args';
-				//console.log('unable to translate poly', polyToFit, 'to intersectionPoint', intersectionPoint, 'with vector', vector);
 			}
 		}
 		return {

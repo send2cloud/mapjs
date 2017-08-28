@@ -25,7 +25,7 @@
 
 # discuss with dave
 
-- layout-geometry:257 console log -> throw?
+- [+] layout-geometry:257 console log -> throw?
 - `npm run sourcemap testem/compiled/browser/dom-map-view-spec.js.js:20811:44`
 - mapModel.layoutCalculator dependency
 
