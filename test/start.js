@@ -10,7 +10,6 @@ const MAPJS = require('../src/npm-main'),
 		const container = jQuery('#container'),
 			idea = content(testMap),
 			touchEnabled = false,
-			imageInsertController = new MAPJS.ImageInsertController('http://localhost:4999?u='),
 			mapModel = new MAPJS.MapModel([]);
 
 		jQuery.fn.attachmentEditorWidget = function (mapModel) {
@@ -28,9 +27,9 @@ const MAPJS = require('../src/npm-main'),
 		window.onerror = window.alert;
 		window.jQuery = jQuery;
 
-		container.domMapWidget(console, mapModel, touchEnabled, imageInsertController);
+		container.domMapWidget(console, mapModel, touchEnabled);
 
-		domMapController = new MAPJS.DomMapController(mapModel, container.find('[data-mapjs-role=stage]'), touchEnabled, imageInsertController /*, resourceTranslator*/);
+		domMapController = new MAPJS.DomMapController(mapModel, container.find('[data-mapjs-role=stage]'), touchEnabled);
 		jQuery('#themecss').themeCssWidget(themeProvider, new MAPJS.ThemeProcessor(), mapModel, domMapController);
 		// activityLog, mapModel, touchEnabled, imageInsertController, dragContainer, centerSelectedNodeOnOrientationChange
 
@@ -43,9 +42,6 @@ const MAPJS = require('../src/npm-main'),
 		window.mapModel = mapModel;
 		jQuery('.arrow').click(function () {
 			jQuery(this).toggleClass('active');
-		});
-		imageInsertController.addEventListener('imageInsertError', function (reason) {
-			console.log('image insert error', reason);
 		});
 
 		container.on('drop', function (e) {
