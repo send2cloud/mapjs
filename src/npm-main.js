@@ -11,5 +11,7 @@ module.exports = {
 	observable: require('./core/util/observable'),
 	DomMapController: require('./browser/dom-map-controller'),
 	ThemeProcessor: require('./core/theme/theme-processor'),
+	Theme: require('./core/theme/theme'),
+	defaultTheme: require('./core/theme/default-theme'),
 	version: 4
 };
