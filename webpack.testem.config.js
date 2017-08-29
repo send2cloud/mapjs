@@ -21,6 +21,6 @@ module.exports = {
 	devtool: 'source-map',
 	output: {
 		path: path.resolve(__dirname, 'testem', 'compiled'),
-		filename: '[name].js'
+		filename: '[name]'
 	}
 };
