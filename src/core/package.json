@@ -1,0 +1,10 @@
+{
+  "name": "@mindmup/mapjs-core",
+  "license": "MIT",
+  "private": true,
+  "version": "4.0.0",
+  "main": "npm-core.js",
+  "dependencies": {
+    "@mindmup/mapjs-core-dependencies": "../../packages/core-dependencies"
+  }
+}

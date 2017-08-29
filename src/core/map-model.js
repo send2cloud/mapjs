@@ -1,7 +1,7 @@
 /*global require, module */
 const _ = require('underscore'),
 	LayoutModel = require('./layout/layout-model'),
-	observable = require('../core/util/observable');
+	observable = require('./util/observable');
 module.exports = function MapModel(selectAllTitles, defaultReorderMargin, optional) {
 	'use strict';
 	let idea,
