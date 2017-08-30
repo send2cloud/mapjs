@@ -76,26 +76,32 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, dragContainer
 
 	return this.each(function () {
 		const element = $(this),
-			svgContainer = createSVG().css(
-				{
-					position: 'absolute',
-					top: 0,
-					left: 0
-				}).attr({
-					'data-mapjs-role': 'svg-container',
-					'class': 'mapjs-draw-container'
-				}),
-			stage = $('<div>').css(
+			svgContainer = createSVG()
+			.css({
+				position: 'absolute',
+				top: 0,
+				left: 0
+			})
+			.attr({
+				'data-mapjs-role': 'svg-container',
+				'class': 'mapjs-draw-container'
+			}),
+			stage = $('<div>')
+			.css(
 				{
 					position: 'relative'
-				}).attr('data-mapjs-role', 'stage').appendTo(element).data({
-					'offsetX': element.innerWidth() / 2,
-					'offsetY': element.innerHeight() / 2,
-					'width': element.innerWidth() - 20,
-					'height': element.innerHeight() - 20,
-					'scale': 1
-				}).append(svgContainer)
-				.updateStage();
+				})
+			.attr('data-mapjs-role', 'stage')
+			.appendTo(element)
+			.data({
+				'offsetX': element.innerWidth() / 2,
+				'offsetY': element.innerHeight() / 2,
+				'width': element.innerWidth() - 20,
+				'height': element.innerHeight() - 20,
+				'scale': 1
+			})
+			.append(svgContainer)
+			.updateStage();
 		let previousPinchScale = false;
 		element.css('overflow', 'auto').attr('tabindex', 1);
 		if (mapModel.isEditingEnabled()) {

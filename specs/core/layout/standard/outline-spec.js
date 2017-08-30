@@ -94,30 +94,30 @@ describe('outlineUtils', function () {
 		});
 		it('should calculate spacing between even more complex outlines', function () {
 			const outline1 = new outlineUtils.Outline(
-				[
-					{
-						'h': -17,
-						'l': 57.5
-					},
-					{
-						'l': 107.5,
-						'h': -71
-					},
-					{
-						'l': 85,
-						'h': 37
-					}
-				],
-				[
-					{
-						'h': 17,
-						'l': 57.5
-					},
-					{
-						'l': 192.5,
-						'h': 71
-					}
-				]),
+					[
+						{
+							'h': -17,
+							'l': 57.5
+						},
+						{
+							'l': 107.5,
+							'h': -71
+						},
+						{
+							'l': 85,
+							'h': 37
+						}
+					],
+					[
+						{
+							'h': 17,
+							'l': 57.5
+						},
+						{
+							'l': 192.5,
+							'h': 71
+						}
+					]),
 				outline2 = new outlineUtils.Outline(
 					[
 						{
@@ -231,15 +231,16 @@ describe('outlineUtils', function () {
 		});
 		it('should be able to stack outlines with more complex borders', function () {
 			const outline1 = new outlineUtils.Outline(
-				[
-					{'h': -17, 'l': 57.5 },
-					{'l': 107.5, 'h': -71},
-					{'l': 85, 'h': 37}
-				],
-				[
-					{'h': 17, 'l': 57.5},
-					{'l': 192.5, 'h': 71}
-				]),
+					[
+						{'h': -17, 'l': 57.5 },
+						{'l': 107.5, 'h': -71},
+						{'l': 85, 'h': 37}
+					],
+					[
+						{'h': 17, 'l': 57.5},
+						{'l': 192.5, 'h': 71}
+					]
+				),
 				outline2 = new outlineUtils.Outline(
 					[
 						{'h': -17, 'l': 30},

@@ -1,6 +1,7 @@
 /*global require, module */
 const _ = require('underscore'),
 	Theme = require ('./theme'),
+	calcChildPosition = require('./calc-child-position'),
 	lineTypes = require('./line-types'),
 	nodeConnectionPointX = require('./node-connection-point-x'),
 	appendUnderLine = function (connectorCurve, calculatedConnector, position) {
@@ -49,16 +50,7 @@ const _ = require('underscore'),
 
 	calculateConnector = function (parent, child, theme) {
 		'use strict';
-		const calcChildPosition = function () {
-				const tolerance = 10,
-					childMid = child.top + child.height * 0.5,
-					parentMid = parent.top + parent.height * 0.5;
-				if (Math.abs(parentMid - childMid) + tolerance < Math.max(child.height, parent.height * 0.75)) {
-					return 'horizontal';
-				}
-				return (childMid < parentMid) ? 'above' : 'below';
-			},
-			childPosition = calcChildPosition(),
+		const childPosition = calcChildPosition(parent, child, 10),
 			fromStyles = parent.styles,
 			toStyles = child.styles,
 			connectionPositionDefaultFrom = theme.attributeValue(['node'], fromStyles, ['connections', 'default'], {h: 'center', v: 'center'}),

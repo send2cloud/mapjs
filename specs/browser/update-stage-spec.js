@@ -46,17 +46,20 @@ describe('updateStage', function () {
 
 	});
 	it('updates the svg container if present', function () {
-		const svgContainer = createSVG().css(
-			{
-				position: 'absolute',
-				top: 0,
-				left: 0
-			}).attr({
-				'data-mapjs-role': 'svg-container',
-				'class': 'mapjs-draw-container',
-				'width': '100%',
-				'height': '100%'
-			}).appendTo(stage);
+		const svgContainer = createSVG()
+		.css({
+			position: 'absolute',
+			top: 0,
+			left: 0
+		})
+		.attr({
+			'data-mapjs-role': 'svg-container',
+			'class': 'mapjs-draw-container',
+			'width': '100%',
+			'height': '100%'
+		})
+		.appendTo(stage);
+
 		stage.data({width: 137.33, height: 100.34, offsetX: 50.21, offsetY: 10.93, scale: 1}).updateStage();
 		expect(svgContainer[0].getAttribute('viewBox')).toEqual('-50 -11 137 100');
 		expect(svgContainer[0].style.top).toEqual('-11px');

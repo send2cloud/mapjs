@@ -589,19 +589,19 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 			const editingElement = stageElement.nodeWithId(nodeId);
 			mapModel.setInputEnabled(false);
 			viewPort.finish(); /* close any pending animations */
-			editingElement.editNode(shouldSelectAll).done(
-				function (newText) {
-					mapModel.setInputEnabled(true);
-					mapModel.updateTitle(nodeId, newText, editingNew);
-					editingElement.focus();
-
-				}).fail(function () {
-					mapModel.setInputEnabled(true);
-					if (editingNew) {
-						mapModel.undo('internal');
-					}
-					editingElement.focus();
-				});
+			editingElement.editNode(shouldSelectAll)
+			.done(function (newText) {
+				mapModel.setInputEnabled(true);
+				mapModel.updateTitle(nodeId, newText, editingNew);
+				editingElement.focus();
+			})
+			.fail(function () {
+				mapModel.setInputEnabled(true);
+				if (editingNew) {
+					mapModel.undo('internal');
+				}
+				editingElement.focus();
+			});
 		});
 	}
 	mapModel.addEventListener('addLinkModeToggled', function (isOn) {

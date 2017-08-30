@@ -40,7 +40,7 @@
     "jquery.hotkeys": "git://github.com/jeresig/jquery.hotkeys"
   },
   "devDependencies": {
-    "eslint": "^3.14.1",
+    "eslint": "^4.5.0",
     "eslint-config-crockford": "^1.0.0",
     "eslint-config-defaults": "^9.0.0",
     "exports-loader": "^0.6.3",

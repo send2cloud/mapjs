@@ -4,11 +4,11 @@ const $ = require('jquery'),
 	onDrag = function (e) {
 		'use strict';
 		$(this).trigger(
-				$.Event('mm:start-dragging', {
-					relatedTarget: this,
-					gesture: e.gesture
-				})
-				);
+			$.Event('mm:start-dragging', {
+				relatedTarget: this,
+				gesture: e.gesture
+			})
+		);
 		e.stopPropagation();
 		e.preventDefault();
 		if (e.gesture) {
