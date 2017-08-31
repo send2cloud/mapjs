@@ -18,7 +18,7 @@ describe('Connectors', function () {
 		});
 		it('calculates the arrow if link attributes require it', function () {
 			const path = link(parent, child, {arrow: true});
-			expect(path.arrow).toEqual('M136,106L136,120L127,109Z');
+			expect(path.arrows).toEqual(['M136,106L136,120L127,109Z']);
 		});
 		it('returns the default link theme if no theme is provided', function () {
 			const path = link(parent, child);

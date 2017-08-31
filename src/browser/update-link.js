@@ -5,7 +5,30 @@ const jQuery = require('jquery'),
 	convertPositionToTransform = require('../core/util/convert-position-to-transform'),
 	updateConnectorText = require('./update-connector-text'),
 	themeLink = require('../core/theme/link'),
-	calcLabelCenterPont = require('../core/util/calc-label-center-point');
+	calcLabelCenterPont = require('../core/util/calc-label-center-point'),
+	showArrows = function (connection, element) {
+		'use strict';
+		const arrowElements = element.find('path.mapjs-arrow');
+		if (connection.arrows && connection.arrows.length) {
+			//connection.arrow can be true, 'to', 'from', 'both'
+			connection.arrows.forEach((arrow, index) => {
+				let arrowElement = arrowElements.eq(index);
+				if (arrowElement.length === 0) {
+					arrowElement = createSVG('path').attr('class', 'mapjs-arrow').appendTo(element);
+				}
+				arrowElement
+				.attr({
+					d: arrow,
+					fill: connection.lineProps.color,
+					'stroke-width': connection.lineProps.width
+				})
+				.show();
+			});
+			arrowElements.slice(connection.arrows.length).hide();
+		} else {
+			arrowElements.hide();
+		}
+	};
 
 
 require('./get-box');
@@ -34,7 +57,6 @@ jQuery.fn.updateLink = function (optional) {
 		let connection = false,
 			pathElement = element.find('path.mapjs-link'),
 			hitElement = element.find('path.mapjs-link-hit'),
-			arrowElement = element.find('path.mapjs-arrow'),
 			fromBox = false, toBox = false, changeCheck = false;
 		if (!shapeFrom || !shapeTo || shapeFrom.length === 0 || shapeTo.length === 0) {
 			element.hide();
@@ -72,22 +94,7 @@ jQuery.fn.updateLink = function (optional) {
 			'd': connection.d,
 			'stroke-width': connection.lineProps.width + 12
 		});
-
-		if (connection.arrow) {
-			if (arrowElement.length === 0) {
-				arrowElement = createSVG('path').attr('class', 'mapjs-arrow').appendTo(element);
-			}
-			arrowElement
-			.attr({
-				d: connection.arrow,
-				fill: connection.lineProps.color,
-				'stroke-width': connection.lineProps.width
-			})
-			.show();
-
-		} else {
-			arrowElement.hide();
-		}
+		showArrows(connection, element);
 		applyLabel(connection, toBox, pathElement);
 	});
 };

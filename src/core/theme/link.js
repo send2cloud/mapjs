@@ -1,5 +1,34 @@
 /*global require, module */
 const Theme = require ('./theme'),
+	arrowPath = function (lineFrom, lineTo, offset) {
+		'use strict';
+		const n = Math.tan(Math.PI / 9),
+			dx = lineTo.x - lineFrom.x,
+			dy = lineTo.y - lineFrom.y;
+
+		let len = 14, iy, a1x, a2x, a1y, a2y, m;
+
+		if (dx === 0) {
+			iy = dy < 0 ? -1 : 1;
+			a1x = lineTo.x + len * Math.sin(n) * iy;
+			a2x = lineTo.x - len * Math.sin(n) * iy;
+			a1y = lineTo.y - len * Math.cos(n) * iy;
+			a2y = lineTo.y - len * Math.cos(n) * iy;
+		} else {
+			m = dy / dx;
+			if (lineFrom.x < lineTo.x) {
+				len = -len;
+			}
+			a1x = lineTo.x + (1 - m * n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
+			a1y = lineTo.y + (m + n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
+			a2x = lineTo.x + (1 + m * n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
+			a2y = lineTo.y + (m - n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
+		}
+		return 'M' + Math.round(a1x - offset.left) + ',' + Math.round(a1y - offset.top) +
+			'L' + Math.round(lineTo.x - offset.left) + ',' + Math.round(lineTo.y - offset.top) +
+			'L' + Math.round(a2x - offset.left) + ',' + Math.round(a2y - offset.top) +
+			'Z';
+	},
 	lineStyles = require('./line-styles'),
 	linkPath = function (parent, child, linkAttrArg, themeArg) {
 		'use strict';
@@ -71,33 +100,19 @@ const Theme = require ('./theme'),
 				width: Math.max(parent.left + parent.width, child.left + child.width, left) - left,
 				height: Math.max(parent.top + parent.height, child.top + child.height, top) - top
 			},
-			arrowPath = function () {
-				const n = Math.tan(Math.PI / 9),
-					dx = conn.to.x - conn.from.x,
-					dy = conn.to.y - conn.from.y;
-
-				let len = 14, iy, a1x, a2x, a1y, a2y, m;
-
-				if (dx === 0) {
-					iy = dy < 0 ? -1 : 1;
-					a1x = conn.to.x + len * Math.sin(n) * iy;
-					a2x = conn.to.x - len * Math.sin(n) * iy;
-					a1y = conn.to.y - len * Math.cos(n) * iy;
-					a2y = conn.to.y - len * Math.cos(n) * iy;
-				} else {
-					m = dy / dx;
-					if (conn.from.x < conn.to.x) {
-						len = -len;
-					}
-					a1x = conn.to.x + (1 - m * n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
-					a1y = conn.to.y + (m + n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
-					a2x = conn.to.x + (1 + m * n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
-					a2y = conn.to.y + (m - n) * len / Math.sqrt((1 + m * m) * (1 + n * n));
+			arrowPaths = function (arrowAttr) {
+				//arrowAttr = true, to, from, both
+				if (!arrowAttr) {
+					return false;
 				}
-				return 'M' + Math.round(a1x - position.left) + ',' + Math.round(a1y - position.top) +
-					'L' + Math.round(conn.to.x - position.left) + ',' + Math.round(conn.to.y - position.top) +
-					'L' + Math.round(a2x - position.left) + ',' + Math.round(a2y - position.top) +
-					'Z';
+				const paths = [];
+				if (arrowAttr !== 'from') {
+					paths.push(arrowPath(conn.from, conn.to, position));
+				}
+				if (arrowAttr === 'from' || arrowAttr === 'both') {
+					paths.push(arrowPath(conn.to, conn.from, position));
+				}
+				return paths;
 			},
 			linkTheme = theme.linkTheme(linkAttr.type),
 			width = linkAttr.width || linkTheme.line.width,
@@ -113,7 +128,7 @@ const Theme = require ('./theme'),
 		return {
 			d: 'M' + Math.round(conn.from.x - position.left) + ',' + Math.round(conn.from.y - position.top) + 'L' + Math.round(conn.to.x - position.left) + ',' + Math.round(conn.to.y - position.top),
 			position: position,
-			arrow: linkAttr.arrow && arrowPath(),
+			arrows: linkAttr.arrow && arrowPaths(linkAttr.arrow),
 			theme: linkTheme,
 			lineProps: lineProps
 		};
