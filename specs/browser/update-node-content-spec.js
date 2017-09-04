@@ -5,7 +5,7 @@ const jQuery = require('jquery'),
 	Theme = require('../../src/core/theme/theme');
 
 require('../../src/browser/update-node-content');
-
+require('../helpers/jquery-extension-matchers');
 
 describe('updateNodeContent', function () {
 	'use strict';
@@ -39,6 +39,17 @@ describe('updateNodeContent', function () {
 			expect(underTest.data('styles')).toEqual(['attr_group_blue', 'attr_group', 'level_3', 'default']);
 		});
 	});
+	describe('font size', function () {
+		it('sets a font size on the node if there is a fontMultiplier', () => {
+			nodeContent.attr = {
+				style: {
+					fontMultiplier: 2
+				}
+			};
+			underTest.updateNodeContent(nodeContent, {theme: new Theme({})});
+			expect(underTest[0].style['font-size']).toEqual('24pt');
+		});
+	});
 	describe('dimensions', function () {
 		it('sets the x, y, width, height properties according to node values', function () {
 			underTest.updateNodeContent(nodeContent);
@@ -61,7 +72,7 @@ describe('updateNodeContent', function () {
 		});
 		it('tags the node with a cache mark', function () {
 			underTest.updateNodeContent(nodeContent, {theme: new Theme({name: 'blue'})});
-			expect(underTest.data('nodeCacheMark')).toEqual({ level: 3, width: undefined, styles: ['level_3', 'default'], title: 'Hello World!', theme: 'blue', icon: undefined, note: false, collapsed: undefined});
+			expect(underTest.data('nodeCacheMark')).toEqual({ level: 3, width: undefined, styles: ['level_3', 'default'], title: 'Hello World!', theme: 'blue', icon: undefined, note: false, collapsed: undefined, fontMultiplier: undefined});
 		});
 	});
 	describe('parentConnector', function () {

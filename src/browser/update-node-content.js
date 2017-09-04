@@ -86,6 +86,20 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 			}
 			element.show();
 		},
+		updateFontSize = function () {
+			const preferredFontMultiplier = nodeContent.attr && nodeContent.attr.style && nodeContent.attr.style.fontMultiplier,
+				level = forcedLevel || 1,
+				styles = nodeContent.styles || (theme && theme.nodeStyles(level, nodeContent.attr)) || [],
+				nodeTheme = preferredFontMultiplier && theme.nodeTheme(styles),
+				size = nodeTheme && nodeTheme.font && (nodeTheme.font.size * preferredFontMultiplier);
+			if (size) {
+				self.css({
+					'font-size': size + 'pt'
+				});
+			} else {
+				self.css({'font-size': ''});
+			}
+		},
 		updateText = function (title) {
 			const text = formattedNodeTitle(title, 25),
 				element = textSpan(),
@@ -248,7 +262,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 	nodeCacheData.innerRect.dx = 0;
 	nodeCacheData.innerRect.dy = 0;
 
-
+	updateFontSize();
 	if (isGroup) {
 		this.css({margin: '', width: nodeContent.width, height: nodeContent.height});
 		updateText('');

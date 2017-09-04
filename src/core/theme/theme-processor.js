@@ -30,9 +30,10 @@ module.exports = function ThemeProcessor() {
 		},
 		fontSizeParser = function (fontObj) {
 			const fontSize = (fontObj && fontObj.size) || 12,
-				lineSpacing = (fontObj && fontObj.lineSpacing) || 3;
+				lineSpacing = (fontObj && fontObj.lineSpacing) || 3,
+				lineHeight = (fontSize + lineSpacing) / fontSize;
 
-			return fontSize + 'pt/' + (lineSpacing + fontSize) + 'pt';
+			return fontSize + 'pt/' + lineHeight.toFixed(2);
 		},
 		parsers = {
 			cornerRadius: addPx,

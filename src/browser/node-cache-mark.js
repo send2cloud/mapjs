@@ -11,6 +11,7 @@ module.exports = function nodeCacheMark(idea, optional) {
 		icon: idea.attr && idea.attr.icon && _.pick(idea.attr.icon, 'width', 'height', 'position'),
 		collapsed: idea.attr && idea.attr.collapsed,
 		note: !!(idea.attr && idea.attr.note),
+		fontMultiplier: idea.attr && idea.attr.style && idea.attr.style.fontMultiplier,
 		styles: theme &&  theme.nodeStyles(idea.level  || levelOverride, idea.attr),
 		level: idea.level || levelOverride
 	};
