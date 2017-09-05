@@ -1,6 +1,7 @@
 /*global module, require */
 const _ = require('underscore'),
-	formattedNodeTitle = require('../content/formatted-node-title');
+	formattedNodeTitle = require('../content/formatted-node-title'),
+	applyIdeaAttributesToNodeTheme = require('../content/apply-idea-attributes-to-node-theme');
 
 module.exports = function ThemeDimensionProvider(textSizer, options) {
 	'use strict';
@@ -17,7 +18,7 @@ module.exports = function ThemeDimensionProvider(textSizer, options) {
 	self.dimensionProviderForTheme = function (theme) {
 		return function (idea, level) {
 			const icon = idea.attr && idea.attr.icon,
-				nodeTheme = theme.nodeTheme(theme.nodeStyles(level, idea.attr)),
+				nodeTheme = applyIdeaAttributesToNodeTheme(idea, theme.nodeTheme(theme.nodeStyles(level, idea.attr))),
 				title = formattedNodeTitle(idea.title),
 				maxWidth = calcMaxWidth(idea.attr, nodeTheme),
 				requestedWidth = (idea.attr && idea.attr.style && idea.attr.style.width) || 0,
@@ -51,7 +52,7 @@ module.exports = function ThemeDimensionProvider(textSizer, options) {
 	self.nodeLayoutProviderForTheme = function (theme) {
 		return function (node) {
 			const image = node.attr && node.attr.icon,
-				nodeTheme = theme.nodeTheme(theme.nodeStyles(node.level, node.attr)),
+				nodeTheme = applyIdeaAttributesToNodeTheme(node, theme.nodeTheme(theme.nodeStyles(node.level, node.attr))),
 				title = formattedNodeTitle(node.title),
 				maxWidth = calcMaxWidth(node.attr, nodeTheme),
 				textBox = textSizer(title, maxWidth, nodeTheme.font);

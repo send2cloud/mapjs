@@ -4,7 +4,8 @@ const jQuery = require('jquery'),
 	URLHelper = require('../core/util/url-helper'),
 	foregroundStyle = require('../core/theme/foreground-style'),
 	formattedNodeTitle = require('../core/content/formatted-node-title'),
-	nodeCacheMark = require('./node-cache-mark');
+	nodeCacheMark = require('./node-cache-mark'),
+	applyIdeaAttributesToNodeTheme = require('../core/content/apply-idea-attributes-to-node-theme');
 
 require('./set-theme-class-list');
 
@@ -87,14 +88,12 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 			element.show();
 		},
 		updateFontSize = function () {
-			const preferredFontMultiplier = nodeContent.attr && nodeContent.attr.style && nodeContent.attr.style.fontMultiplier,
-				level = forcedLevel || 1,
+			const level = forcedLevel || 1,
 				styles = nodeContent.styles || (theme && theme.nodeStyles(level, nodeContent.attr)) || [],
-				nodeTheme = preferredFontMultiplier && theme.nodeTheme(styles),
-				size = nodeTheme && nodeTheme.font && (nodeTheme.font.size * preferredFontMultiplier);
-			if (size) {
+				nodeTheme = theme && theme.nodeTheme && applyIdeaAttributesToNodeTheme(nodeContent, theme.nodeTheme(styles));
+			if (nodeTheme && nodeTheme.hasFontMultiplier) {
 				self.css({
-					'font-size': size + 'pt'
+					'font-size': nodeTheme.font.size + 'pt'
 				});
 			} else {
 				self.css({'font-size': ''});
