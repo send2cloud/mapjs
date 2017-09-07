@@ -1069,6 +1069,14 @@ describe('DomMapController', function () {
 					expect(mapModel.selectConnector).toHaveBeenCalledWith('mouse', connector, undefined);
 					expect(evt.isPropagationStopped()).toBeTruthy();
 				});
+				it('should ignore the link hit event if the theme has blockParentConnectorOverride set', () => {
+					theme = new Theme({name: 'fromTest', blockParentConnectorOverride: true});
+					domMapController.setTheme(theme);
+					const evt = new jQuery.Event('tap');
+					underTest.find('path.mapjs-link-hit').trigger(evt);
+					expect(mapModel.selectConnector).not.toHaveBeenCalled();
+					expect(evt.isPropagationStopped()).toBeTruthy();
+				});
 				it('sends the gesture page coordinates if the gesture is supplied with the event', function () {
 					const stopProp = jasmine.createSpy('stopProp'),
 						evt = new jQuery.Event('tap', { gesture: {stopPropagation: stopProp, center: { pageX: 100, pageY: 200} } });

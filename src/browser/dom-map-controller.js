@@ -469,13 +469,15 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 				connectorsForAnimation = connectorsForAnimation.add(element);
 			});
 		element.on('tap', function (event) {
-			if (event.target && event.target.tagName === 'text') {
-				mapModel.lineLabelClicked(connector);
-			} else {
-				mapModel.selectConnector('mouse', connector,
-					event && event.gesture && event.gesture.center &&
-						{ x: event.gesture.center.pageX, y: event.gesture.center.pageY }
-				);
+			if (!theme || !theme.blockParentConnectorOverride) {
+				if (event.target && event.target.tagName === 'text') {
+					mapModel.lineLabelClicked(connector);
+				} else 	{
+					mapModel.selectConnector('mouse', connector,
+						event && event.gesture && event.gesture.center &&
+							{ x: event.gesture.center.pageX, y: event.gesture.center.pageY }
+					);
+				}
 			}
 			event.gesture && event.gesture.stopPropagation && event.gesture.stopPropagation();
 			event.stopPropagation();
