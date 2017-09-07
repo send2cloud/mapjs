@@ -1,7 +1,7 @@
 /*global describe, beforeEach, it, expect, spyOn, require*/
 const defaultTheme = require('../../../src/core/theme/default-theme'),
-	Theme = require('../../../src/core/theme/theme');
-
+	Theme = require('../../../src/core/theme/theme'),
+	themeFallBackValues = require('../../../src/core/theme/theme-fallback-values');
 
 describe('Theme', function () {
 	'use strict';
@@ -147,33 +147,20 @@ describe('Theme', function () {
 	describe('nodeTheme', function () {
 		it('should return default values for empty theme', function () {
 			underTest = new Theme({});
-			expect(underTest.nodeTheme([])).toEqual({
-				margin: 5,
-				font: {
-					size: 12,
-					weight: 'semibold',
-					lineSpacing: 3.5
-				},
-				maxWidth: 146,
-				backgroundColor: '#E0E0E0',
-				borderType: 'surround',
-				cornerRadius: 5,
-				lineColor: '#707070',
-				text: {
-					color: '#4F4F4F',
-					lightColor: '#EEEEEE',
-					darkColor: '#000000'
-				}
-			});
+			expect(underTest.nodeTheme([])).toEqual(themeFallBackValues.nodeTheme);
+		});
+		it('should return a cloned object for the default values', () => {
+			underTest = new Theme({});
+			const nodeTheme1 = underTest.nodeTheme([]),
+				original = nodeTheme1.margin;
+			nodeTheme1.margin = nodeTheme1.margin * 2;
+			expect(underTest.nodeTheme([]).margin).toEqual(original);
+
 		});
 		it('should return the overridden values in the theme', function () {
 			expect(underTest.nodeTheme(['default'])).toEqual({
 				margin: 5,
-				font: {
-					size: 12,
-					weight: 'semibold',
-					lineSpacing: 3.5
-				},
+				font: themeFallBackValues.nodeTheme.font,
 				maxWidth: 146,
 				backgroundColor: 'transparent',
 				borderType: 'surround',

@@ -24,6 +24,7 @@ module.exports = {
 			}],
 			'text': {
 				'margin': 5.0,
+				'maxWidth': 146,
 				'alignment': 'center',
 				'color': '#4F4F4F',
 				'lightColor': '#EEEEEE',

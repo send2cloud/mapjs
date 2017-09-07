@@ -1,6 +1,7 @@
 /*global module, require */
 const _ = require('underscore'),
 	colorParser = require('./color-parser'),
+	themeFallbackValues = require('./theme-fallback-values'),
 	defaultTheme = require('./default-theme');
 module.exports = function Theme(themeJson) {
 	'use strict';
@@ -29,12 +30,12 @@ module.exports = function Theme(themeJson) {
 
 	self.getFontForStyles = function (themeStyles) {
 		const weight = self.attributeValue(['node'], themeStyles, ['text', 'font', 'weight'], 'semibold'),
-			size = self.attributeValue(['node'], themeStyles, ['text', 'font', 'size'], 12),
-			lineSpacing = self.attributeValue(['node'], themeStyles, ['text', 'font', 'lineSpacing'], 3.5);
+			size = self.attributeValue(['node'], themeStyles, ['text', 'font', 'size'], themeFallbackValues.nodeTheme.font.size),
+			lineSpacing = self.attributeValue(['node'], themeStyles, ['text', 'font', 'lineSpacing'], themeFallbackValues.nodeTheme.font.lineSpacing);
 		return {size: size, weight: weight, lineGap: lineSpacing};
 	};
 	self.getNodeMargin = function (themeStyles) {
-		return self.attributeValue(['node'], themeStyles, ['text', 'margin'], 5);
+		return self.attributeValue(['node'], themeStyles, ['text', 'margin'], themeFallbackValues.nodeTheme.margin);
 	};
 	self.name = themeJson && themeJson.name;
 	self.blockParentConnectorOverride = themeJson && themeJson.blockParentConnectorOverride;
@@ -73,25 +74,7 @@ module.exports = function Theme(themeJson) {
 				return getElementForPath(merged, ['backgroundColor']);
 			},
 			rootElement = getElementForPath(themeDictionary, ['node']),
-
-			result = {
-				margin: 5,
-				font: {
-					size: 12,
-					weight: 'semibold',
-					lineSpacing: 3.5
-				},
-				maxWidth: 146,
-				backgroundColor: '#E0E0E0',
-				borderType: 'surround',
-				cornerRadius: 5,
-				lineColor: '#707070',
-				text: {
-					color: '#4F4F4F',
-					lightColor: '#EEEEEE',
-					darkColor: '#000000'
-				}
-			};
+			result = _.extend({}, themeFallbackValues.nodeTheme);
 		if (!rootElement) {
 			return result;
 		}
@@ -109,7 +92,7 @@ module.exports = function Theme(themeJson) {
 	};
 
 	self.connectorControlPoint = function (childPosition, connectorStyle) {
-		const controlPointOffset = childPosition === 'horizontal' ? 1 : 1.75,
+		const controlPointOffset = childPosition === 'horizontal' ? themeFallbackValues.connectorControlPoint.horizontal : themeFallbackValues.connectorControlPoint.default,
 			defaultControlPoint = {'width': 0, 'height': controlPointOffset},
 			configuredControlPoint = connectorStyle && getElementForPath(themeDictionary, ['connector', connectorStyle, 'controlPoint', childPosition]);
 
@@ -125,14 +108,7 @@ module.exports = function Theme(themeJson) {
 			combinedConnector = combinedStyle &&  getElementForPath(themeDictionary, ['connector', combinedStyle]),
 			connectorStyle  = (combinedConnector && combinedStyle) || (parentConnector && parentConnectorStyle) || childConnectorStyle || 'default',
 			controlPoint = self.connectorControlPoint(position, connectorStyle),
-			connectorDefaults = {
-				type: 'quadratic',
-				label: defaultTheme.connector.default.label,
-				line: {
-					color: '#707070',
-					width: 1.0
-				}
-			},
+			connectorDefaults = _.extend({}, themeFallbackValues.connectorTheme),
 			returnedConnector =  _.extend({}, combinedConnector || parentConnector || childConnector || connectorDefaults);
 		if (!returnedConnector.label) {
 			returnedConnector.label = connectorDefaults.label;

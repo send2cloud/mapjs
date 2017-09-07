@@ -47,7 +47,7 @@ describe('updateNodeContent', function () {
 				}
 			};
 			underTest.updateNodeContent(nodeContent, {theme: new Theme({})});
-			expect(underTest[0].style['font-size']).toEqual('24pt');
+			expect(underTest[0].style['font-size']).toEqual('18pt');
 		});
 	});
 	describe('dimensions', function () {
