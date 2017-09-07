@@ -12,6 +12,7 @@ module.exports  = function calculateTopDownLayout(aggregate, dimensionProvider, 
 			const dimensions = dimensionProvider(idea, level);
 			return _.extend({level: level, verticalOffset: 0, title: isGroup(idea) ? '' : idea.title}, dimensions, _.pick(idea, ['id', 'attr']));
 		},
+		//TODO: why are we reimplementing traverse here?
 		traverse = function (idea, predicate, level) {
 			const childResults = {},
 				shouldIncludeSubIdeas = !(_.isEmpty(idea.ideas) || (idea.attr && idea.attr.collapsed));
@@ -34,7 +35,7 @@ module.exports  = function calculateTopDownLayout(aggregate, dimensionProvider, 
 
 			if (isGroup(node) && !_.isEmpty(idea.ideas)) {
 				result = combineVerticalSubtrees(node, childLayouts, margin.h, true);
-				alignGroup(result, idea);
+				alignGroup(result, idea, margin.h);
 			} else {
 				result = combineVerticalSubtrees(node, childLayouts, margin.h);
 			}
