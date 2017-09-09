@@ -13,5 +13,6 @@ module.exports = {
 	ThemeProcessor: require('./core/theme/theme-processor'),
 	Theme: require('./core/theme/theme'),
 	defaultTheme: require('./core/theme/default-theme'),
+	formatNoteToHtml: require('./core/content/format-note-to-html'),
 	version: 4
 };

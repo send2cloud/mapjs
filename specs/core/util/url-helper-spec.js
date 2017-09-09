@@ -33,6 +33,31 @@ describe('URLHelper', function () {
 			expect(URLHelper.stripLink(undefined)).toEqual('');
 		});
 	});
+	describe('formatLinks', function () {
+		it('returns empty text for falsy args', () => {
+			expect(URLHelper.formatLinks('')).toEqual('');
+			expect(URLHelper.formatLinks()).toEqual('');
+			expect(URLHelper.formatLinks(undefined)).toEqual('');
+			expect(URLHelper.formatLinks(false)).toEqual('');
+		});
+		it('returns unmodified text if it contains no links', () => {
+			expect(URLHelper.formatLinks('abcde')).toEqual('abcde');
+			expect(URLHelper.formatLinks('abc.google.com')).toEqual('abc.google.com');
+		});
+
+		it('makes the whole text clickable if it is a link', () => {
+			expect(URLHelper.formatLinks('https://www.google.com')).toEqual('<a target="_blank" href="https://www.google.com">https://www.google.com</a>');
+		});
+		it('injects a http prefix to the HREF if the link is without a protocol', () => {
+			expect(URLHelper.formatLinks('www.google.com')).toEqual('<a target="_blank" href="http://www.google.com">www.google.com</a>');
+		});
+		it('injects HTML elements around the link only, ignoring things before/after', () => {
+			expect(URLHelper.formatLinks('hey hey https://www.google.com who goes')).toEqual('hey hey <a target="_blank" href="https://www.google.com">https://www.google.com</a> who goes');
+		});
+		it('replaces multiple links in the text', () => {
+			expect(URLHelper.formatLinks('first https://www.google.com second www.xkcd.com')).toEqual('first <a target="_blank" href="https://www.google.com">https://www.google.com</a> second <a target="_blank" href="http://www.xkcd.com">www.xkcd.com</a>');
+		});
+	});
 	describe('getLink', function () {
 		it('can work with undefined', function () {
 			expect(URLHelper.getLink(undefined)).toBeFalsy();
