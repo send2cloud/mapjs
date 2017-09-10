@@ -58,6 +58,11 @@ describe('URLHelper', function () {
 			expect(URLHelper.formatLinks('first https://www.google.com second www.xkcd.com')).toEqual('first <a target="_blank" href="https://www.google.com">https://www.google.com</a> second <a target="_blank" href="http://www.xkcd.com">www.xkcd.com</a>');
 		});
 	});
+	describe('getPattern', function () {
+		it('creates a pattern for recognising URLs', () => {
+			expect('abcd https://www.google.com 123 www.xkcd.com def'.replace(URLHelper.getPattern(), t => `<${t}>`)).toEqual('abcd <https://www.google.com> 123 <www.xkcd.com> def');
+		});
+	});
 	describe('getLink', function () {
 		it('can work with undefined', function () {
 			expect(URLHelper.getLink(undefined)).toBeFalsy();

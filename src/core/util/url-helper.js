@@ -32,7 +32,10 @@ const URLHelper = function () {
 		if (!text) {
 			return '';
 		}
-		return text.replace(new RegExp(urlPattern, 'gi'), url => `<a target="_blank" href="${hrefUrl(url)}">${url}</a>`);
+		return text.replace(self.getPattern(), url => `<a target="_blank" href="${hrefUrl(url)}">${url}</a>`);
+	};
+	self.getPattern = function () {
+		return new RegExp(urlPattern, 'gi');
 	};
 };
 
