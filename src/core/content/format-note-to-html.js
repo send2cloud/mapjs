@@ -1,5 +1,6 @@
 /* global module, require */
-const URLHelper = require('../util/url-helper');
+const URLHelper = require('../util/url-helper'),
+	_ = require('underscore');
 module.exports = function formatNoteToHtml(noteText) {
 	'use strict';
 	if (!noteText) {
@@ -8,6 +9,6 @@ module.exports = function formatNoteToHtml(noteText) {
 	if (typeof noteText !== 'string') {
 		throw 'invalid-args';
 	}
-	const safeString = noteText.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	const safeString = _.escape(noteText);
 	return URLHelper.formatLinks(safeString);
 };
