@@ -63,6 +63,24 @@ describe('URLHelper', function () {
 			expect('abcd https://www.google.com 123 www.xkcd.com def'.replace(URLHelper.getPattern(), t => `<${t}>`)).toEqual('abcd <https://www.google.com> 123 <www.xkcd.com> def');
 		});
 	});
+	describe('hrefUrl', function () {
+		it('prepends http if no protocol', () => {
+			expect(URLHelper.hrefUrl('www.google.com')).toEqual('http://www.google.com');
+		});
+		it('does not prepend http if the link contains a protocol', () => {
+			expect(URLHelper.hrefUrl('https://www.google.com')).toEqual('https://www.google.com');
+			expect(URLHelper.hrefUrl('http://www.google.com')).toEqual('http://www.google.com');
+			expect(URLHelper.hrefUrl('HTTPS://www.google.com')).toEqual('HTTPS://www.google.com');
+			expect(URLHelper.hrefUrl('ftp://www.google.com')).toEqual('ftp://www.google.com');
+		});
+		it('does not prepend if the link starts with a /', () => {
+			expect(URLHelper.hrefUrl('/www.google.com')).toEqual('/www.google.com');
+		});
+		it('returns a blank string if empty', () => {
+			expect(URLHelper.hrefUrl('')).toEqual('');
+			expect(URLHelper.hrefUrl(undefined)).toEqual('');
+		});
+	});
 	describe('getLink', function () {
 		it('can work with undefined', function () {
 			expect(URLHelper.getLink(undefined)).toBeFalsy();

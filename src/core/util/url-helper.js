@@ -4,16 +4,25 @@ const URLHelper = function () {
 	const self = this,
 		urlPattern = /(https?:\/\/|www\.)[\w-]+(\.[\w-]+)+([\w\(\)\u0080-\u00FF.,!@?^=%&amp;:\/~+#-]*[\w\(\)\u0080-\u00FF!@?^=%&amp;\/~+#-])?/i,
 		hrefUrl = function (url) {
-			if (!/https?:\/\//i.test(url)) {
-				return 'http://' + url;
+			if (!url) {
+				return '';
 			}
-			return url;
+			if (url[0] === '/') {
+				return url;
+			}
+			if (/^[a-z]+:\/\//i.test(url)) {
+				return url;
+			}
+			return 'http://' + url;
+		},
+		getGlobalPattern = function () {
+			return new RegExp(urlPattern, 'gi');
 		};
+
 
 	self.containsLink = function (text) {
 		return urlPattern.test(text);
 	};
-
 	self.getLink  = function (text) {
 		const url = text && text.match(urlPattern);
 		if (url && url[0]) {
@@ -34,9 +43,8 @@ const URLHelper = function () {
 		}
 		return text.replace(self.getPattern(), url => `<a target="_blank" href="${hrefUrl(url)}">${url}</a>`);
 	};
-	self.getPattern = function () {
-		return new RegExp(urlPattern, 'gi');
-	};
+	self.getPattern = getGlobalPattern;
+	self.hrefUrl = hrefUrl;
 };
 
 module.exports = new URLHelper();
