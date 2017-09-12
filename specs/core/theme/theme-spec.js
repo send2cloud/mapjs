@@ -154,6 +154,8 @@ describe('Theme', function () {
 			const nodeTheme1 = underTest.nodeTheme([]),
 				original = nodeTheme1.margin;
 			nodeTheme1.margin = nodeTheme1.margin * 2;
+			nodeTheme1.font.size = nodeTheme1.font.size * 2;
+			nodeTheme1.text.margin = nodeTheme1.text.margin * 2;
 			expect(underTest.nodeTheme([]).margin).toEqual(original);
 
 		});

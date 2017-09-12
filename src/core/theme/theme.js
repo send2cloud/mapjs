@@ -76,14 +76,16 @@ module.exports = function Theme(themeJson) {
 			rootElement = getElementForPath(themeDictionary, ['node']),
 			result = _.extend({}, themeFallbackValues.nodeTheme);
 		if (!rootElement) {
+			result.font = _.extend({}, result.font);
+			result.text = _.extend({}, result.text);
 			return result;
 		}
 		styles.slice(0).reverse().forEach(function (style) {
 			merged = _.extend(merged, rootElement[style]);
 		});
 		result.margin = getElementForPath(merged, ['text', 'margin']) || result.margin;
-		result.font = _.extend(result.font, getElementForPath(merged, ['text', 'font']));
-		result.text = _.extend(result.text, getElementForPath(merged, ['text']));
+		result.font = _.extend({}, result.font, getElementForPath(merged, ['text', 'font']));
+		result.text = _.extend({}, result.text, getElementForPath(merged, ['text']));
 		result.borderType = getElementForPath(merged, ['border', 'type']) || result.borderType;
 		result.backgroundColor = getBackgroundColor() || result.backgroundColor;
 		result.cornerRadius = getElementForPath(merged, ['cornerRadius']) || result.cornerRadius;

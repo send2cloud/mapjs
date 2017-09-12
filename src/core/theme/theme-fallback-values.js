@@ -1,10 +1,11 @@
 /*global module, require*/
 const defaultTheme = require('./default-theme'),
+	deepFreeze = require('../util/deep-freeze'),
 	firstNode = defaultTheme.node[0],
 	defaultConnector = defaultTheme.connector.default;
 
-module.exports = Object.freeze({
-	nodeTheme: Object.freeze({
+module.exports = deepFreeze({
+	nodeTheme: {
 		margin: firstNode.text.margin,
 		font: firstNode.text.font,
 		maxWidth: firstNode.text.maxWidth,
@@ -12,19 +13,19 @@ module.exports = Object.freeze({
 		borderType: firstNode.border.type,
 		cornerRadius: firstNode.cornerRadius,
 		lineColor: firstNode.border.line.color,
-		text: Object.freeze({
+		text: {
 			color: firstNode.text.color,
 			lightColor: firstNode.text.lightColor,
 			darkColor: firstNode.text.darkColor
-		})
-	}),
-	connectorControlPoint: Object.freeze({
+		}
+	},
+	connectorControlPoint: {
 		horizontal: defaultConnector.controlPoint.horizontal.height,
 		default: defaultConnector.controlPoint.above.height
-	}),
-	connectorTheme: Object.freeze({
+	},
+	connectorTheme: {
 		type: defaultConnector.type,
 		label: defaultConnector.label,
 		line: defaultConnector.line
-	})
+	}
 });
