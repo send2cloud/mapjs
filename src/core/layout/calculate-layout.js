@@ -4,9 +4,25 @@ const contentUpgrade = require('../content/content-upgrade'),
 	extractConnectors = require('./extract-connectors'),
 	extractLinks = require('./extract-links'),
 	MultiRootLayout = require('./multi-root-layout'),
+	_ = require('underscore'),
+	nodeAttributeUtils = require('./node-attribute-utils'),
 	defaultLayouts = {
 		'standard': require('./standard/calculate-standard-layout'),
 		'top-down': require('./top-down/calculate-top-down-layout')
+	},
+	setThemeAttributes = function (nodes, theme) {
+		'use strict';
+		//TODO:specs
+		Object.keys(nodes).forEach(function (nodeKey) {
+			const node = nodes[nodeKey];
+			node.attr = _.extend({}, theme.getLayoutAttributes(node), node.attr);
+		});
+		Object.keys(nodes).forEach(function (nodeKey) {
+			const node = nodes[nodeKey];
+			nodeAttributeUtils.inheritAttributes(nodes, node);
+		});
+		return nodes;
+
 	},
 	attachStyles = function (nodes, theme) {
 		'use strict';
@@ -14,13 +30,16 @@ const contentUpgrade = require('../content/content-upgrade'),
 			const node = nodes[nodeKey];
 			node.styles = theme.nodeStyles(node.level, node.attr);
 		});
+		setThemeAttributes(nodes, theme);
 		return nodes;
 	},
 	formatResult = function (result, idea, theme, orientation) {
 		'use strict';
+		attachStyles(result, theme);
+		setThemeAttributes(result, theme);
 		return {
 			orientation: orientation,
-			nodes: attachStyles(result, theme),
+			nodes: result,
 			connectors: extractConnectors(idea, result, theme),
 			links: extractLinks(idea, result),
 			theme: idea.attr && idea.attr.theme

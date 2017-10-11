@@ -132,4 +132,16 @@ module.exports = function Theme(themeJson) {
 		});
 		delete themeDictionary.nodeArray;
 	}
+	//TODO:specs
+	self.getLayoutAttributes = (node) => {
+		const childConnectorStyle = self.attributeValue(['node'], node.styles, ['connections', 'style'], 'default'),
+			childConnector = getElementForPath(themeDictionary, ['connector', childConnectorStyle]),
+			result = {};
+		if (childConnector && childConnector.line) {
+			result.parentConnector = {
+				color: childConnector.line.color
+			};
+		}
+		return result;
+	};
 };
