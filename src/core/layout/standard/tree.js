@@ -12,6 +12,10 @@ const _ = require('underscore'),
 				},
 				self = _.pick(this, 'id', 'title', 'attr', 'width', 'height', 'level');
 
+			if (parentId) {
+				self.parentId = parentId;
+			}
+
 			x = x || 0;
 			y = y || 0;
 

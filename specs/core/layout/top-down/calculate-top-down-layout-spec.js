@@ -5,8 +5,8 @@ describe('calculateTopDownLayout', function () {
 	'use strict';
 	const dimensionProvider = function (idea /*, level */) {
 			return {
-				width: idea.title.length * 20,
-				height: idea.title.length * 10
+				width: (idea.title && idea.title.length * 20) || 1,
+				height: (idea.title && idea.title.length * 10) || 1
 			};
 		},
 		position = function (node) {
@@ -38,8 +38,41 @@ describe('calculateTopDownLayout', function () {
 			level: 2,
 			id: 11,
 			title: 'child',
-			attr: { ax: 'a-child' }
+			attr: { ax: 'a-child' },
+			parentId: 1
 		}));
+	});
+	it('includes the parentId in layout nodes, including groups', function () {
+		const idea = {
+				id: 1,
+				ideas: {
+					4: {
+						id: 11,
+						attr: {
+							group: 'standard'
+						},
+						ideas: {
+							4: {
+								id: 111
+							},
+							5: {
+								id: 112
+							}
+						}
+					},
+					5: {
+						id: 12
+					}
+				}
+			},
+			margin = {h: 5, v: 5},
+			result = layout(idea, dimensionProvider, margin);
+
+		expect(result[1].parentId).toBeFalsy();
+		expect(result[11].parentId).toEqual(1);
+		expect(result[12].parentId).toEqual(1);
+		expect(result[111].parentId).toEqual(11);
+		expect(result[112].parentId).toEqual(11);
 	});
 	it('lays out a single node map with the root at 0,0 center', function () {
 		const idea = { title: 'Hello World', id: 1, attr: {ax: 'ay'} },

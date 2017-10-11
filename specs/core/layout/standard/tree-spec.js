@@ -418,7 +418,8 @@ describe('tree', function () {
 							x: 110,
 							y: -40,
 							width: 300,
-							height: 80
+							height: 80,
+							parentId: 1
 						}
 					},
 					connectors: {
@@ -483,7 +484,8 @@ describe('tree', function () {
 							x: 110,
 							y: -60,
 							width: 300,
-							height: 80
+							height: 80,
+							parentId: 1
 						},
 						'3': {
 							id: 3,
@@ -493,7 +495,8 @@ describe('tree', function () {
 							x: 110,
 							y: 30,
 							width: 100,
-							height: 30
+							height: 30,
+							parentId: 1
 						}
 					},
 					connectors: {

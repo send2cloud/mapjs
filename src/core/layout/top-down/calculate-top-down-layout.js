@@ -8,12 +8,16 @@ module.exports  = function calculateTopDownLayout(aggregate, dimensionProvider, 
 	const isGroup = function (node) {
 			return node.attr && node.attr.group;
 		},
-		toNode = function (idea, level) {
-			const dimensions = dimensionProvider(idea, level);
-			return _.extend({level: level, verticalOffset: 0, title: isGroup(idea) ? '' : idea.title}, dimensions, _.pick(idea, ['id', 'attr']));
+		toNode = function (idea, level, parentId) {
+			const dimensions = dimensionProvider(idea, level),
+				node = _.extend({level: level, verticalOffset: 0, title: isGroup(idea) ? '' : idea.title}, dimensions, _.pick(idea, ['id', 'attr']));
+			if (parentId) {
+				node.parentId = parentId;
+			}
+			return node;
 		},
-		//TODO: why are we reimplementing traverse here?
-		traverse = function (idea, predicate, level) {
+		//TODO: adds some complexity to the standard traverse function - includes parent id, omits post order, skips groups
+		traverse = function (idea, predicate, level, parentId) {
 			const childResults = {},
 				shouldIncludeSubIdeas = !(_.isEmpty(idea.ideas) || (idea.attr && idea.attr.collapsed));
 
@@ -21,16 +25,16 @@ module.exports  = function calculateTopDownLayout(aggregate, dimensionProvider, 
 			if (shouldIncludeSubIdeas) {
 				Object.keys(idea.ideas).forEach(function (subNodeRank) {
 					const newLevel = isGroup(idea) ? level : level + 1,
-						result = traverse(idea.ideas[subNodeRank], predicate, newLevel);
+						result = traverse(idea.ideas[subNodeRank], predicate, newLevel, idea.id);
 					if (result) {
 						childResults[subNodeRank] = result;
 					}
 				});
 			}
-			return predicate(idea, childResults, level);
+			return predicate(idea, childResults, level, parentId);
 		},
-		traversalLayout = function (idea, childLayouts, level) {
-			const node = toNode(idea, level);
+		traversalLayout = function (idea, childLayouts, level, parentId) {
+			const node = toNode(idea, level, parentId);
 			let result;
 
 			if (isGroup(node) && !_.isEmpty(idea.ideas)) {
@@ -41,8 +45,8 @@ module.exports  = function calculateTopDownLayout(aggregate, dimensionProvider, 
 			}
 			return result;
 		},
-		traversalLayoutWithoutEmptyGroups = function (idea, childLayouts, level) {
-			return (idea === aggregate || !isEmptyGroup(idea)) && traversalLayout(idea, childLayouts, level);
+		traversalLayoutWithoutEmptyGroups = function (idea, childLayouts, level, parentId) {
+			return (idea === aggregate || !isEmptyGroup(idea)) && traversalLayout(idea, childLayouts, level, parentId);
 		},
 		setLevelHeights = function (nodes, levelHeights) {
 			_.each(nodes, function (node) {
