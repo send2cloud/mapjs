@@ -245,6 +245,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 
 	self.setTheme = function (newTheme) {
 		theme = newTheme;
+
 	};
 	self.setStageMargin = function (newMargins) {
 		stageMargin = newMargins;
@@ -278,6 +279,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 	mapModel.setLayoutCalculator(function (contentAggregate) {
 		return calculateLayout(contentAggregate, self.dimensionProvider, {theme: theme});
 	});
+	mapModel.setThemeSource(() => theme);
 
 	viewPort.on('scroll', function () {
 		viewPortDimensions = undefined;

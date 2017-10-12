@@ -989,14 +989,21 @@ describe('content aggregate', function () {
 					addedListener = jasmine.createSpy();
 				idea.addEventListener('changed', addedListener);
 				idea.addSubIdea(71, 'New Title');
-				expect(addedListener).toHaveBeenCalledWith('addSubIdea', [71, 'New Title', 72]);
+				expect(addedListener).toHaveBeenCalledWith('addSubIdea', [71, 'New Title', 72, undefined]);
+			});
+			it('fires an event matching the method call when a new idea is added with attributes', function () {
+				const idea = content({id: 71, title: 'My Idea'}),
+					addedListener = jasmine.createSpy();
+				idea.addEventListener('changed', addedListener);
+				idea.addSubIdea(71, 'New Title', undefined, {foo: 'bar'});
+				expect(addedListener).toHaveBeenCalledWith('addSubIdea', [71, 'New Title', 72, {foo: 'bar'}]);
 			});
 			it('fires an event with session ID if provided', function () {
 				const idea = content({id: 71, title: 'My Idea'}, 'sess'),
 					addedListener = jasmine.createSpy();
 				idea.addEventListener('changed', addedListener);
 				idea.addSubIdea(71, 'New Title');
-				expect(addedListener).toHaveBeenCalledWith('addSubIdea', [71, 'New Title', '72.sess'], 'sess');
+				expect(addedListener).toHaveBeenCalledWith('addSubIdea', [71, 'New Title', '72.sess', undefined], 'sess');
 			});
 			it('pops an event on the undo stack if successful', function () {
 				const idea = content({id: 4, ideas: {1: {id: 5, title: 'My Idea'}}});

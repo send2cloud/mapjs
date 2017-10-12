@@ -575,11 +575,11 @@ describe('MapModel', function () {
 			});
 			it('should invoke idea.addSubIdea with currently selected idea as parentId', function () {
 				underTest.addSubIdea();
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith(1);
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith(1, undefined, undefined, undefined);
 			});
 			it('should invoke idea.addSubIdea with argument idea as parentId if provided', function () {
 				underTest.addSubIdea('source', 555);
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith(555);
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith(555, undefined, undefined, undefined);
 			});
 			it('should not invoke idea.addSubIdea when input is disabled', function () {
 				underTest.setInputEnabled(false);
@@ -599,7 +599,7 @@ describe('MapModel', function () {
 				const nodeEditRequestedListener = jasmine.createSpy('node edit requested');
 				underTest.addEventListener('nodeEditRequested', nodeEditRequestedListener);
 				underTest.addSubIdea('source', 2, 'initial title');
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith(2, 'initial title');
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith(2, 'initial title', undefined, undefined);
 				expect(nodeEditRequestedListener).not.toHaveBeenCalled();
 				expect(underTest.getSelectedNodeId()).toBe(3);
 			});
@@ -691,7 +691,7 @@ describe('MapModel', function () {
 			});
 			it('should add a node to represent the group with currently selected idea as parentId', function () {
 				underTest.addGroupSubidea();
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith(1, 'group');
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith(1, 'group', undefined, undefined);
 			});
 			it('should add a contentLocked attribute to the group node', function () {
 
@@ -715,7 +715,7 @@ describe('MapModel', function () {
 			});
 			it('should invoke idea.addSubIdea with argument idea as parentId if provided', function () {
 				underTest.addGroupSubidea('source', {parentId: 555});
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith(555, 'group');
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith(555, 'group', undefined, undefined);
 			});
 
 			it('should add a node with the group node as parentId, as a batched event', function () {
@@ -723,7 +723,7 @@ describe('MapModel', function () {
 				spyOn(anIdea, 'dispatchEvent');
 
 				underTest.addGroupSubidea();
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith(22);
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith(22, undefined, undefined, undefined);
 			});
 			it('should add a node with the group node  as a batched event', function () {
 				spyOn(anIdea, 'dispatchEvent');
@@ -1196,18 +1196,18 @@ describe('MapModel', function () {
 			it('should invoke idea.addSubIdea with a parent of a currently selected node', function () {
 				underTest.selectNode(2);
 				underTest.addSiblingIdea();
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith(1);
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith(1, undefined, undefined, undefined);
 			});
 			it('should invoke idea.addSubIdea with a parent of a specified node', function () {
 				const nodeId = anIdea.addSubIdea(2, 'test');
 				anIdea.addSubIdea.calls.reset();
 				underTest.selectNode(1);
 				underTest.addSiblingIdea('keyboard', nodeId);
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith(2);
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith(2, undefined, undefined, undefined);
 			});
 			it('it should add sibling idea as a new root node if the selected node is one of the  root nodes', function () {
 				underTest.addSiblingIdea('keyboard', 1, 'new root?');
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith('root', 'new root?');
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith('root', 'new root?', undefined, undefined);
 				expect(_.size(anIdea.ideas)).toEqual(2);
 			});
 			it('should add with a title and select, but not invoke editNode if title is supplied', function () {
@@ -1218,7 +1218,7 @@ describe('MapModel', function () {
 				underTest.addEventListener('nodeEditRequested', nodeEditRequestedListener);
 
 				underTest.addSiblingIdea('keyboard', nodeId, 'initial title');
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith(2, 'initial title');
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith(2, 'initial title', undefined, undefined);
 				expect(nodeEditRequestedListener).not.toHaveBeenCalled();
 				expect(underTest.getSelectedNodeId()).toBe(4);
 			});
@@ -1331,11 +1331,11 @@ describe('MapModel', function () {
 			it('should invoke idea.addSubIdea with a parent of a currently selected node', function () {
 				underTest.selectNode(2);
 				underTest.addSiblingIdeaBefore();
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith(1);
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith(1, undefined, undefined, undefined);
 			});
 			it('it should add sibling idea as a new root node if the selected node is one of the root nodes', function () {
 				underTest.addSiblingIdeaBefore('keyboard');
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith('root');
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith('root', undefined, undefined, undefined);
 				expect(_.size(anIdea.ideas)).toEqual(2);
 			});
 			it('should expand the parent node if it is collapsed, as a batched event', function () {
@@ -3510,13 +3510,13 @@ describe('MapModel', function () {
 			});
 			it('inserts a new root node as a sub idea of the aggregate root node', function () {
 				underTest.insertRoot('source');
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith('root');
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith('root', undefined, undefined, undefined);
 				expect(nodeEditRequestedListener).toHaveBeenCalledWith(4, true, true);
 				expect(underTest.getSelectedNodeId()).toBe(4);
 			});
 			it('should add with a title and select but not invoke editNode if title is supplied', function () {
 				underTest.insertRoot('source', 'initial title');
-				expect(anIdea.addSubIdea).toHaveBeenCalledWith('root', 'initial title');
+				expect(anIdea.addSubIdea).toHaveBeenCalledWith('root', 'initial title', undefined, undefined);
 				expect(nodeEditRequestedListener).not.toHaveBeenCalled();
 				expect(underTest.getSelectedNodeId()).toBe(4);
 			});

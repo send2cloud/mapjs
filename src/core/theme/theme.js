@@ -1,5 +1,6 @@
 /*global module, require */
 const _ = require('underscore'),
+	AUTO_COLOR = 'theme-auto-color',
 	colorParser = require('./color-parser'),
 	themeFallbackValues = require('./theme-fallback-values'),
 	defaultTheme = require('./default-theme');
@@ -143,5 +144,26 @@ module.exports = function Theme(themeJson) {
 			};
 		}
 		return result;
+	};
+
+	self.getPersistedAttributes = (nodeAttribs, nodeLevel, numberOfSiblings) => {
+		const styles = ['level_' + nodeLevel, 'default'],
+			getAutoColor = () => {
+				const autoColors = themeDictionary.autoColors || [defaultTheme.connector.default.line.color],
+					index = (numberOfSiblings % autoColors.length);
+				return autoColors[index];
+			},
+			childConnectorStyle = self.attributeValue(['node'], styles, ['connections', 'style'], 'default'),
+			connectorDefaults = _.extend({}, themeFallbackValues.connectorTheme),
+			childConnector = getElementForPath(themeDictionary, ['connector', childConnectorStyle]) || connectorDefaults;
+
+		if (childConnector && childConnector.line && childConnector.line.color === AUTO_COLOR) {
+			return _.extend({
+				parentConnector: {
+					color: getAutoColor()
+				}
+			}, nodeAttribs);
+		}
+		return nodeAttribs;
 	};
 };

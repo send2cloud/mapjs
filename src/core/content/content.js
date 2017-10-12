@@ -623,18 +623,25 @@ module.exports = function content(contentAggregate, sessionKey) {
 		}, originSession);
 		return true;
 	};
-	contentAggregate.addSubIdea = function (/*parentId, ideaTitle, optionalNewId*/) {
+	contentAggregate.addSubIdea = function (/*parentId, ideaTitle, optionalNewId, optionalAttr*/) {
 		return contentAggregate.execCommand('addSubIdea', arguments);
 	};
-	commandProcessors.addSubIdea = function (originSession, parentId, ideaTitle, optionalNewId) {
+	commandProcessors.addSubIdea = function (originSession, parentId, ideaTitle, optionalNewId, optionalAttr) {
 		const parent = findIdeaById(parentId),
+			createIdeaParams = () => {
+				const params = {
+					title: ideaTitle,
+					id: optionalNewId
+				};
+				if (optionalAttr) {
+					params.attr = optionalAttr;
+				}
+				return params;
+			},
 			performAdd = function () {
-				const idea = init({
-						title: ideaTitle,
-						id: optionalNewId
-					}),
+				const idea = init(createIdeaParams()),
 					newRank = appendSubIdea(parent, idea);
-				logChange('addSubIdea', [parentId, ideaTitle, idea.id], function () {
+				logChange('addSubIdea', [parentId, ideaTitle, idea.id, optionalAttr], function () {
 					delete parent.ideas[newRank];
 				}, originSession);
 				return idea.id;

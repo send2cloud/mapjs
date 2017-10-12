@@ -9,6 +9,7 @@ describe('Theme', function () {
 	beforeEach(function () {
 		theme = {
 			name: 'Mike',
+			autoColors: ['red', 'green', 'blue'],
 			'node': [
 				{
 					'name': 'default',
@@ -39,6 +40,12 @@ describe('Theme', function () {
 					'connections': {
 						style: 'inherit'
 					}
+				},
+				{
+					'name': 'level_7',
+					'connections': {
+						style: 'autoColor'
+					}
 				}
 			],
 			connector: {
@@ -54,6 +61,11 @@ describe('Theme', function () {
 					line: {
 						color: 'inherit',
 						width: 2.0
+					}
+				},
+				autoColor: {
+					line: {
+						color: 'theme-auto-color'
 					}
 				},
 				'no-connector': {
@@ -458,6 +470,34 @@ describe('Theme', function () {
 					color: '#707070'
 				}
 			});
+		});
+	});
+	describe('getPersistedAttributes', () => {
+		it('should return unchanged attributes if line color is not auto-color', () => {
+			expect(underTest.getPersistedAttributes({foo: 'bar'}, 1, 0)).toEqual({foo: 'bar'});
+		});
+		it('should return attributes with parentConnector.color if line color is auto-color', () => {
+			expect(underTest.getPersistedAttributes({foo: 'bar'}, 7, 0)).toEqual({
+				foo: 'bar',
+				parentConnector: {
+					color: 'red'
+				}
+			});
+		});
+		it('should return next color according to number of siblings', () => {
+			expect(underTest.getPersistedAttributes({}, 7, 0).parentConnector.color).toEqual('red');
+			expect(underTest.getPersistedAttributes({}, 7, 1).parentConnector.color).toEqual('green');
+			expect(underTest.getPersistedAttributes({}, 7, 2).parentConnector.color).toEqual('blue');
+			expect(underTest.getPersistedAttributes({}, 7, 3).parentConnector.color).toEqual('red');
+		});
+		it('should not override existing attributes', () => {
+			expect(underTest.getPersistedAttributes({parentConnector: {color: 'pink'}}, 7, 0).parentConnector.color).toEqual('pink');
+		});
+		it('should use default color is autoColors not defined', () => {
+			delete theme.autoColors;
+			underTest = new Theme(theme);
+			expect(underTest.getPersistedAttributes({}, 7, 0).parentConnector.color).toEqual('#707070');
+			expect(underTest.getPersistedAttributes({}, 7, 1).parentConnector.color).toEqual('#707070');
 		});
 	});
 });

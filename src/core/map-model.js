@@ -2,6 +2,7 @@
 const _ = require('underscore'),
 	LayoutModel = require('./layout/layout-model'),
 	observable = require('./util/observable');
+
 module.exports = function MapModel(selectAllTitles, defaultReorderMargin, optional) {
 	'use strict';
 	let idea,
@@ -11,14 +12,19 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		isEditingEnabled = true,
 		revertSelectionForUndo,
 		revertActivatedForUndo,
+		themeSource = false,
 		paused = false,
 		activatedNodes = [],
 		layoutCalculator,
 		currentlySelectedIdeaId;
 
 	const self = this,
+		autoThemedIdeaUtils = (optional && optional.autoThemedIdeaUtils) || require('./content/auto-themed-idea-utils'),
 		reorderMargin = (optional && optional.reorderMargin) || 20,
 		layoutModel = (optional && optional.layoutModel) || new LayoutModel({nodes: {}, connectors: {}}),
+		addSubIdea = (parentId, ideaTitle, optionalNewId, optionalIdeaAttr) => {
+			return autoThemedIdeaUtils.addSubIdea(idea, themeSource, parentId, ideaTitle, optionalNewId, optionalIdeaAttr);
+		},
 		setActiveNodes = function (activated) {
 			const wasActivated = _.clone(activatedNodes);
 			if (activated.length === 0) {
@@ -166,9 +172,9 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 			let newId;
 			ensureNodeIsExpanded(source, targetId);
 			if (initialTitle) {
-				newId = idea.addSubIdea(targetId, initialTitle);
+				newId = addSubIdea(targetId, initialTitle);
 			} else {
-				newId = idea.addSubIdea(targetId);
+				newId = addSubIdea(targetId);
 			}
 			if (layoutModel.getOrientation() === 'top-down') {
 				if (targetNode.findChildRankById(newId) < 0) {
@@ -415,7 +421,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 				if (newGroupId) {
 					idea.updateAttr(newGroupId, 'contentLocked', true);
 					idea.updateAttr(newGroupId, 'group', group);
-					newId = idea.addSubIdea(newGroupId);
+					newId = addSubIdea(newGroupId);
 				}
 			});
 			if (newId) {
@@ -491,7 +497,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 			if (parent !== idea) {
 				ensureNodeIsExpanded(source, parent.id);
 			}
-			newId = idea.addSubIdea(parent.id);
+			newId = addSubIdea(parent.id);
 			if (newId) {
 				if (parent === idea) {
 					positionNextTo(newId, currentlySelectedIdeaId);
@@ -528,9 +534,9 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 					ensureNodeIsExpanded(source, parent.id);
 				}
 				if (optionalInitialText) {
-					newId = idea.addSubIdea(parent.id, optionalInitialText);
+					newId = addSubIdea(parent.id, optionalInitialText);
 				} else {
-					newId = idea.addSubIdea(parent.id);
+					newId = addSubIdea(parent.id);
 				}
 				if (newId) {
 					if (parent === idea) {
@@ -1203,6 +1209,9 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 	self.setLayoutCalculator = function (newCalculator) {
 		layoutCalculator = newCalculator;
 	};
+	self.setThemeSource = function (newThemeSource) {
+		themeSource = newThemeSource;
+	};
 	self.dropImage =  function (dataUrl, imgWidth, imgHeight, x, y, metaData) {
 		const dropOn = function (ideaId, position) {
 				const scaleX = Math.min(imgWidth, 300) / imgWidth,
@@ -1213,7 +1222,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 			},
 			addNew = function () {
 				idea.startBatch();
-				const newId = idea.addSubIdea(currentlySelectedIdeaId);
+				const newId = addSubIdea(currentlySelectedIdeaId);
 				dropOn(newId, 'center');
 				idea.endBatch();
 				self.selectNode(newId);
@@ -1408,9 +1417,9 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 	self.insertRoot = function (source, initialTitle) {
 		const createNode = function () {
 			if (initialTitle) {
-				return idea.addSubIdea(idea.id, initialTitle);
+				return addSubIdea(idea.id, initialTitle);
 			} else {
-				return idea.addSubIdea(idea.id);
+				return addSubIdea(idea.id);
 			}
 		};
 		if (!isEditingEnabled) {
