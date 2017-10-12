@@ -6,7 +6,6 @@ module.exports = function extractConnectors(aggregate, visibleNodes, theme) {
 		allowParentConnectorOverride = !(theme && theme.blockParentConnectorOverride),
 		traverse = function (idea, parentId, isChildNode) {
 			if (isChildNode) {
-				//TODO: specs
 				const visibleNode = visibleNodes[idea.id];
 				if (!visibleNode) {
 					return;
@@ -17,7 +16,6 @@ module.exports = function extractConnectors(aggregate, visibleNodes, theme) {
 						from: parentId,
 						to: idea.id
 					};
-					console.log('idea.id', idea.id, visibleNode.attr.parentConnector); //eslint-disable-line
 					if (allowParentConnectorOverride && visibleNode.attr && visibleNode.attr.parentConnector) {
 						result[idea.id].attr = _.clone(visibleNode.attr.parentConnector);
 					}

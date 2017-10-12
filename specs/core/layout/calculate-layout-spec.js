@@ -184,26 +184,27 @@ describe('calculateLayout', function () {
 					}
 				};
 				layouts.standard.and.returnValue({
-					1: {x: 0, y: 0, height: 10, width: 10},
-					11: {x: 0, y: 0, height: 10, width: 10},
-					12: {x: 0, y: 0, height: 10, width: 10},
-					112: {x: 0, y: 0, height: 10, width: 10},
-					111: {x: 0, y: 0, height: 10, width: 10}
+					1: {x: 0, y: 0, height: 10, width: 10, level: 1},
+					11: {x: 0, y: 0, height: 10, width: 10, level: 2, parentId: 1},
+					12: {x: 0, y: 0, height: 10, width: 10, level: 2, parentId: 1, attr: { parentConnector: {color: 'green'} }},
+					112: {x: 0, y: 0, height: 10, width: 10, level: 3, parentId: 12},
+					111: {x: 0, y: 0, height: 10, width: 10, level: 3, parentId: 11}
 				});
 			});
 			it('should include connectors regardless of the layout', function () {
 				result = calculateLayout(idea, dimensionProvider, optional);
 
 				expect(result.connectors).toEqual({
-					11: makeConnector({ from: 1, to: 11 }),
-					12: makeConnector({ from: 1, to: 12, attr: {color: 'green'} }),
-					112: makeConnector({ from: 12, to: 112 }),
-					111: makeConnector({ from: 11, to: 111 })
+					11: makeConnector({ from: 1, to: 11, attr: {color: '#707070'}}),
+					12: makeConnector({ from: 1, to: 12, attr: {color: 'green'}}),
+					112: makeConnector({ from: 12, to: 112, attr: {color: '#707070'}}),
+					111: makeConnector({ from: 11, to: 111, attr: {color: '#707070'} })
 				});
 			});
 			it('should allow the theme to block connector overrides', function () {
 				optional.theme = new Theme({blockParentConnectorOverride: true});
 				result = calculateLayout(idea, dimensionProvider, optional);
+				expect(result.connectors[11].attr).toBeFalsy();
 				expect(result.connectors[12].attr).toBeFalsy();
 			});
 		});

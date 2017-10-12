@@ -33,6 +33,12 @@ describe('Theme', function () {
 					'connections': {
 						style: 'no-line-curve'
 					}
+				},
+				{
+					'name': 'inherit-color',
+					'connections': {
+						style: 'inherit'
+					}
 				}
 			],
 			connector: {
@@ -40,6 +46,13 @@ describe('Theme', function () {
 					type: 'top-down-s-curve',
 					line: {
 						color: '#070707',
+						width: 2.0
+					}
+				},
+				inherit: {
+					type: 'top-down-s-curve',
+					line: {
+						color: 'inherit',
 						width: 2.0
 					}
 				},
@@ -420,6 +433,30 @@ describe('Theme', function () {
 						width: 0
 					}
 				});
+			});
+		});
+	});
+	describe('getLayoutConnectorAttributes', () => {
+		it('should return the parentConnectorAttribute with color', () => {
+			expect(underTest.getLayoutConnectorAttributes(['default'])).toEqual({
+				parentConnector: {
+					color: '#070707'
+				}
+			});
+		});
+		it('should return the parentConnectorAttribute with color as inherited', () => {
+			expect(underTest.getLayoutConnectorAttributes(['inherit-color'])).toEqual({
+				parentConnector: {
+					color: 'inherit'
+				}
+			});
+		});
+		it('should return the parentConnectorAttribute with defaulted color', () => {
+			underTest = new Theme({});
+			expect(underTest.getLayoutConnectorAttributes(['default'])).toEqual({
+				parentConnector: {
+					color: '#707070'
+				}
 			});
 		});
 	});

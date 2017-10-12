@@ -1,9 +1,9 @@
 /*global module, require*/
 const objectUtils = require('../util/object-utils'),
+	_ = require('underscore'),
 	INHERIT_MARKER = 'theme_inherit',
 	inheritAttributeKeysFromParentNode = (parentNode, node, keysToInherit) => {
 		'use strict';
-		console.log('inheritAttributeKeysFromParentNode parentNode', parentNode, 'node', node, 'keysToInherit', keysToInherit); //eslint-disable-line
 		let remainingToInherit = [];
 		if (parentNode.attr) {
 			keysToInherit.forEach((keyToInherit) => {
@@ -43,11 +43,27 @@ const objectUtils = require('../util/object-utils'),
 			return;
 		}
 		inheritAttributeKeys(nodesMap, node, keysToInherit);
+	},
+	setThemeAttributes = function (nodes, theme) {
+		'use strict';
+		if (!nodes || !theme) {
+			throw 'invalid-args';
+		}
+		Object.keys(nodes).forEach(function (nodeKey) {
+			const node = nodes[nodeKey];
+			node.styles = theme.nodeStyles(node.level, node.attr);
+			node.attr = _.extend({}, theme.getLayoutConnectorAttributes(node.styles), node.attr);
+		});
+		Object.keys(nodes).forEach(function (nodeKey) {
+			const node = nodes[nodeKey];
+			inheritAttributes(nodes, node);
+		});
 	};
 
 module.exports = {
 	INHERIT_MARKER: INHERIT_MARKER,
 	inheritAttributes: inheritAttributes,
 	inheritAttributeKeys: inheritAttributeKeys,
-	inheritAttributeKeysFromParentNode: inheritAttributeKeysFromParentNode
+	inheritAttributeKeysFromParentNode: inheritAttributeKeysFromParentNode,
+	setThemeAttributes: setThemeAttributes
 };
