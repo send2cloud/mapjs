@@ -30,6 +30,11 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 			const themeObj = themeSource && themeSource();
 			return autoThemedIdeaUtils.insertIntermediateMultiple(idea, themeObj, inFrontOfIdeaIds, ideaOptions);
 		},
+		changeParent = (ideaId, newParentId) => {
+			const themeObj = themeSource && themeSource();
+			return autoThemedIdeaUtils.changeParent(idea, themeObj, ideaId, newParentId);
+
+		},
 		setActiveNodes = function (activated) {
 			const wasActivated = _.clone(activatedNodes);
 			if (activated.length === 0) {
@@ -1153,7 +1158,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 				return manuallyPositionRootNode();
 			} else {
 				return idea.batch(function () {
-					idea.changeParent(nodeId, 'root');
+					changeParent(nodeId, 'root');
 					return manuallyPositionRootNode();
 				});
 			}
@@ -1208,7 +1213,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		if (dropTargetId === parentIdea.id) {
 			return self.autoPosition(nodeId);
 		} else {
-			return idea.changeParent(nodeId, dropTargetId);
+			return changeParent(nodeId, dropTargetId);
 		}
 	};
 	self.setLayoutCalculator = function (newCalculator) {
@@ -1389,7 +1394,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		}
 		if (isInputEnabled && isEditingEnabled) {
 			return idea.batch(function () {
-				const result = idea.changeParent(nodeId, 'root');
+				const result = changeParent(nodeId, 'root');
 				if (layoutModel.getOrientation() === 'top-down') {
 					if (!idea.getAttrById(oldRootId, 'position')) {
 						setNodePositionFromCurrentLayout(oldRootId);

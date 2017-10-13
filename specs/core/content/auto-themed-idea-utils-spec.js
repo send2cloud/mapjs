@@ -55,6 +55,10 @@ describe('autoThemedIdeaUtils', () => {
 				}
 			});
 		});
+		it('should not add a root node child with theme configured color when themeObj is not supplied', () => {
+			const newId = underTest.addSubIdea(activeContent, undefined, 1, 'first child');
+			expect(activeContent.findSubIdeaById(newId).attr).toBeFalsy();
+		});
 		it('should add a sub node child without a theme configured color', () => {
 			const newId1 = underTest.addSubIdea(activeContent, themeObj, 1, 'first child'),
 				newId2 = underTest.addSubIdea(activeContent, themeObj, newId1, 'first sub child');
@@ -84,6 +88,11 @@ describe('autoThemedIdeaUtils', () => {
 				}
 			});
 		});
+		it('should not add a root node child with theme configured auto color when themeObj is not supplied', () => {
+			const newId = underTest.insertIntermediateMultiple(activeContent, undefined, nodeIds, {title: 'first intermediate'});
+			expect(activeContent.findSubIdeaById(newId).attr).toBeFalsy();
+		});
+
 		it('should add a root node child with theme configured auto color when no attributes ar supplied', () => {
 			const newId = underTest.insertIntermediateMultiple(activeContent, themeObj, nodeIds);
 			expect(activeContent.findSubIdeaById(newId).attr).toEqual({
@@ -103,6 +112,38 @@ describe('autoThemedIdeaUtils', () => {
 			expect(activeContent.findSubIdeaById(nodeIds[1]).attr).toEqual({});
 			expect(activeContent.findSubIdeaById(nodeIds[2]).attr).toEqual({});
 		});
-
+	});
+	describe('changeParent', () => {
+		let nodeId1, nodeId2;
+		beforeEach(() => {
+			nodeId1 = underTest.addSubIdea(activeContent, themeObj, 1);
+			nodeId2 = underTest.addSubIdea(activeContent, themeObj, nodeId1);
+		});
+		it('should not update node attr when node is moved if themeObj not supplied', () => {
+			underTest.changeParent(activeContent, undefined, nodeId2, 1);
+			expect(activeContent.findSubIdeaById(nodeId2).attr).toEqual({});
+		});
+		it('should update node attr when node is moved', () => {
+			underTest.changeParent(activeContent, themeObj, nodeId2, 1);
+			expect(activeContent.findSubIdeaById(nodeId2).attr).toEqual({
+				parentConnector: {
+					color: 'green',
+					themeAutoColor: 'green'
+				}
+			});
+		});
+		it('should update node attr when node becomes a root node', () => {
+			underTest.changeParent(activeContent, themeObj, nodeId1, 'root');
+			expect(activeContent.findSubIdeaById(nodeId1).attr).toBeFalsy();
+		});
+		it('should update child node attr when node becomes a root node', () => {
+			underTest.changeParent(activeContent, themeObj, nodeId1, 'root');
+			expect(activeContent.findSubIdeaById(nodeId2).attr).toEqual({
+				parentConnector: {
+					color: 'red',
+					themeAutoColor: 'red'
+				}
+			});
+		});
 	});
 });

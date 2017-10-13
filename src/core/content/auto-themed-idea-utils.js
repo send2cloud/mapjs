@@ -22,9 +22,32 @@ const calcIdeaLevel = require('./calc-idea-level'),
 			activeContent.updateAttr(idea.id, key, updatedAttr.attr[key]);
 		});
 	},
+	changeParent = (activeContent, themeObj, ideaId, newParentId) => {
+		'use strict';
+		if (!themeObj) {
+			return activeContent.changeParent(ideaId, newParentId);
+		}
+		let result;
+		const newParent = activeContent.findSubIdeaById(newParentId),
+			numberOfSiblings = (newParent && newParent.ideas && Object.keys(newParent.ideas).length) || 0,
+			parentLevel = calcIdeaLevel(activeContent, newParentId);
+
+		activeContent.batch(() => {
+			activeContent.changeParent(ideaId, newParentId);
+			const idea = activeContent.findSubIdeaById(ideaId);
+			recalcAutoNodeAttrs(activeContent, themeObj, idea, parentLevel + 1, numberOfSiblings);
+			let childSiblings = 0;
+			if (idea.ideas) {
+				Object.keys(idea.ideas).forEach((childIdeaId) => {
+					recalcAutoNodeAttrs(activeContent, themeObj, idea.ideas[childIdeaId], parentLevel + 2, childSiblings);
+					childSiblings += 1;
+				});
+			}
+		});
+		return result;
+	},
 	insertIntermediateMultiple = (activeContent, themeObj, inFrontOfIdeaIds, ideaOptions) => {
 		'use strict';
-		;
 		if (!themeObj) {
 			return activeContent.insertIntermediateMultiple(inFrontOfIdeaIds, ideaOptions);
 		}
@@ -55,5 +78,6 @@ const calcIdeaLevel = require('./calc-idea-level'),
 
 module.exports = {
 	addSubIdea: addSubIdea,
+	changeParent: changeParent,
 	insertIntermediateMultiple: insertIntermediateMultiple
 };
