@@ -22,6 +22,20 @@ const calcIdeaLevel = require('./calc-idea-level'),
 			activeContent.updateAttr(idea.id, key, updatedAttr.attr[key]);
 		});
 	},
+	recalcIdeasAutoNodeAttrs = (activeContent, themeObj, idea, level, numberOfSiblings) => {
+		'use strict';
+		// console.log('recalcIdeasAutoNodeAttrs idea.id', idea.id, 'level', level, 'numberOfSiblings', numberOfSiblings); //eslint-disable-line
+		if (level > 0) {
+			recalcAutoNodeAttrs(activeContent, themeObj, idea, level, numberOfSiblings);
+		}
+		if (idea.ideas) {
+			let siblingIndex = 0;
+			Object.keys(idea.ideas).forEach((childIdeaKey) => {
+				recalcIdeasAutoNodeAttrs(activeContent, themeObj, idea.ideas[childIdeaKey], level + 1, siblingIndex);
+				siblingIndex += 1;
+			});
+		}
+	},
 	changeParent = (activeContent, themeObj, ideaId, newParentId) => {
 		'use strict';
 		if (!themeObj) {
@@ -38,8 +52,8 @@ const calcIdeaLevel = require('./calc-idea-level'),
 			recalcAutoNodeAttrs(activeContent, themeObj, idea, parentLevel + 1, numberOfSiblings);
 			let childSiblings = 0;
 			if (idea.ideas) {
-				Object.keys(idea.ideas).forEach((childIdeaId) => {
-					recalcAutoNodeAttrs(activeContent, themeObj, idea.ideas[childIdeaId], parentLevel + 2, childSiblings);
+				Object.keys(idea.ideas).forEach((childIdeaKey) => {
+					recalcAutoNodeAttrs(activeContent, themeObj, idea.ideas[childIdeaKey], parentLevel + 2, childSiblings);
 					childSiblings += 1;
 				});
 			}
@@ -74,10 +88,20 @@ const calcIdeaLevel = require('./calc-idea-level'),
 		});
 		return result;
 
+	},
+	themeChanged = (activeContent, themeObj) => {
+		'use strict';
+		if (!themeObj) {
+			return;
+		}
+		activeContent.batch(() => {
+			recalcIdeasAutoNodeAttrs(activeContent, themeObj, activeContent, 0, 0);
+		});
 	};
 
 module.exports = {
 	addSubIdea: addSubIdea,
 	changeParent: changeParent,
+	themeChanged: themeChanged,
 	insertIntermediateMultiple: insertIntermediateMultiple
 };

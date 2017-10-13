@@ -146,4 +146,56 @@ describe('autoThemedIdeaUtils', () => {
 			});
 		});
 	});
+	describe('themeChanged', () => {
+		beforeEach(() => {
+			idea = {
+				id: 1,
+				title: '1 node',
+				ideas: {
+					11: {
+						id: 11,
+						title: '11 node',
+						ideas: {
+							111: {
+								id: 111,
+								title: '111 node'
+							}
+						}
+					},
+					12: {
+						id: 12,
+						title: '22 node'
+					}
+				}
+			};
+			activeContent = content(idea);
+		});
+		it('applies autoColors to all applicable nodes', () => {
+			underTest.themeChanged(activeContent, themeObj);
+			expect(activeContent.findSubIdeaById(11).attr).toEqual({
+				parentConnector: {
+					color: 'red',
+					themeAutoColor: 'red'
+				}
+			});
+			expect(activeContent.findSubIdeaById(12).attr).toEqual({
+				parentConnector: {
+					color: 'green',
+					themeAutoColor: 'green'
+				}
+			});
+
+		});
+		it('does not apply autoColors to all non-applicable nodes', () => {
+			underTest.themeChanged(activeContent,  themeObj);
+			expect(activeContent.findSubIdeaById(1).attr).toEqual({});
+			expect(activeContent.findSubIdeaById(111).attr).toBeFalsy();
+		});
+		it('should removed auto color attributes when theme does not have autoColors', () => {
+			underTest.themeChanged(activeContent, themeObj);
+			underTest.themeChanged(activeContent, new Theme({}));
+			expect(activeContent.findSubIdeaById(11).attr).toBeFalsy();
+			expect(activeContent.findSubIdeaById(12).attr).toBeFalsy();
+		});
+	});
 });
