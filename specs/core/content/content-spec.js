@@ -859,6 +859,11 @@ describe('content aggregate', function () {
 				expect(_.size(idea.ideas[1].ideas[77].ideas)).toBe(1);
 				expect(idea.ideas[1].ideas[77].ideas[1]).toEqual(jasmine.objectContaining({id: 2, title: 'Moved'}));
 			});
+			it('adds an idea with attributes between the argument idea and its parent, keeping the same rank for the new node and reassigning rank of 1 to the argument', function () {
+				const result = idea.insertIntermediate(2, 'Steve', undefined, {foo: 'bar'});
+				expect(result).toBeTruthy();
+				expect(idea.ideas[1].ideas[77].attr).toEqual(jasmine.objectContaining({foo: 'bar'}));
+			});
 			it('assigns an ID automatically if not provided', function () {
 				const result = idea.insertIntermediate(2, 'Steve');
 				expect(result).toBeTruthy();
@@ -881,20 +886,20 @@ describe('content aggregate', function () {
 				expect(idea.ideas[1].ideas[77].id).toBe(2);
 			});
 			it('fires an event matching the method call when the operation succeeds', function () {
-				idea.insertIntermediate(2, 'Steve');
-				expect(listener).toHaveBeenCalledWith('insertIntermediate', [2, 'Steve', 3]);
+				idea.insertIntermediate(2, 'Steve', undefined, {foo: 'bar'});
+				expect(listener).toHaveBeenCalledWith('insertIntermediate', [2, 'Steve', 3, {foo: 'bar'}]);
 			});
 			it('fires an event with session ID if defined', function () {
 				const idea = content({id: 1, ideas: {77: {id: 2, title: 'Moved'}}}, 'sess');
 				listener = jasmine.createSpy('insert_listener');
 				idea.addEventListener('changed', listener);
-				idea.insertIntermediate(2, 'Steve');
-				expect(listener).toHaveBeenCalledWith('insertIntermediate', [2, 'Steve', '3.sess'], 'sess');
+				idea.insertIntermediate(2, 'Steve', undefined, {foo: 'bar'});
+				expect(listener).toHaveBeenCalledWith('insertIntermediate', [2, 'Steve', '3.sess', {foo: 'bar'}], 'sess');
 			});
 			it('fires the generated ID in the event if the ID was not supplied', function () {
-				idea.insertIntermediate(2, 'Steve');
+				idea.insertIntermediate(2, 'Steve', undefined, {foo: 'bar'});
 				const newId = idea.ideas[1].ideas[77].id;
-				expect(listener).toHaveBeenCalledWith('insertIntermediate', [2, 'Steve', newId]);
+				expect(listener).toHaveBeenCalledWith('insertIntermediate', [2, 'Steve', newId, {foo: 'bar'}]);
 			});
 			it('fails if argument idea does not exist', function () {
 				expect(idea.insertIntermediate(22, 'Steve')).toBeFalsy();

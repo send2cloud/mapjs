@@ -23,7 +23,12 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		reorderMargin = (optional && optional.reorderMargin) || 20,
 		layoutModel = (optional && optional.layoutModel) || new LayoutModel({nodes: {}, connectors: {}}),
 		addSubIdea = (parentId, ideaTitle, optionalNewId, optionalIdeaAttr) => {
-			return autoThemedIdeaUtils.addSubIdea(idea, themeSource, parentId, ideaTitle, optionalNewId, optionalIdeaAttr);
+			const themeObj = themeSource && themeSource();
+			return autoThemedIdeaUtils.addSubIdea(idea, themeObj, parentId, ideaTitle, optionalNewId, optionalIdeaAttr);
+		},
+		insertIntermediateMultiple = (inFrontOfIdeaIds, ideaOptions) => {
+			const themeObj = themeSource && themeSource();
+			return autoThemedIdeaUtils.insertIntermediateMultiple(idea, themeObj, inFrontOfIdeaIds, ideaOptions);
 		},
 		setActiveNodes = function (activated) {
 			const wasActivated = _.clone(activatedNodes);
@@ -443,7 +448,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		self.applyToActivated(function (i) {
 			activeNodes.push(i);
 		});
-		idea.insertIntermediateMultiple(activeNodes, { title: 'group', attr: {group: group, contentLocked: true}});
+		insertIntermediateMultiple(activeNodes, { title: 'group', attr: {group: group, contentLocked: true}});
 	};
 	this.insertIntermediate = function (source) {
 		const activeNodes = [];
@@ -458,7 +463,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		self.applyToActivated(function (i) {
 			activeNodes.push(i);
 		});
-		newId = idea.insertIntermediateMultiple(activeNodes);
+		newId = insertIntermediateMultiple(activeNodes);
 		if (newId) {
 			editNewIdea(newId);
 		}

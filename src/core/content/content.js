@@ -711,10 +711,10 @@ module.exports = function content(contentAggregate, sessionKey) {
 			return newId;
 		});
 	};
-	contentAggregate.insertIntermediate = function (/*inFrontOfIdeaId, title, optionalNewId*/) {
+	contentAggregate.insertIntermediate = function (/*inFrontOfIdeaId, title, optionalNewId, optionalAttr*/) {
 		return contentAggregate.execCommand('insertIntermediate', arguments);
 	};
-	commandProcessors.insertIntermediate = function (originSession, inFrontOfIdeaId, title, optionalNewId) {
+	commandProcessors.insertIntermediate = function (originSession, inFrontOfIdeaId, title, optionalNewId, optionalAttr) {
 		const parentIdea = contentAggregate.isRootNode(inFrontOfIdeaId) ? contentAggregate : contentAggregate.findParent(inFrontOfIdeaId),
 			childRank = parentIdea && parentIdea.findChildRankById(inFrontOfIdeaId),
 			canInsert = function () {
@@ -734,17 +734,24 @@ module.exports = function content(contentAggregate, sessionKey) {
 				return true;
 			},
 			performInsert = function () {
-				const oldIdea = parentIdea.ideas[childRank],
-					newIdea = init({
-						title: title,
-						id: optionalNewId
-					});
+				const createIdeaParams = () => {
+						const params = {
+							title: title,
+							id: optionalNewId
+						};
+						if (optionalAttr) {
+							params.attr = optionalAttr;
+						}
+						return params;
+					},
+					oldIdea = parentIdea.ideas[childRank],
+					newIdea = init(createIdeaParams());
 
 				parentIdea.ideas[childRank] = newIdea;
 				newIdea.ideas = {
 					1: oldIdea
 				};
-				logChange('insertIntermediate', [inFrontOfIdeaId, title, newIdea.id], function () {
+				logChange('insertIntermediate', [inFrontOfIdeaId, title, newIdea.id, optionalAttr], function () {
 					parentIdea.ideas[childRank] = oldIdea;
 				}, originSession);
 				return newIdea.id;

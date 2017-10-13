@@ -146,7 +146,7 @@ module.exports = function Theme(themeJson) {
 		return result;
 	};
 
-	self.getPersistedAttributes = (nodeAttribs, nodeLevel, numberOfSiblings) => {
+	self.getPersistedAttributes = (currentAttribs, nodeLevel, numberOfSiblings) => {
 		const styles = ['level_' + nodeLevel, 'default'],
 			getAutoColor = () => {
 				const autoColors = themeDictionary.autoColors || [defaultTheme.connector.default.line.color],
@@ -155,15 +155,32 @@ module.exports = function Theme(themeJson) {
 			},
 			childConnectorStyle = self.attributeValue(['node'], styles, ['connections', 'style'], 'default'),
 			connectorDefaults = _.extend({}, themeFallbackValues.connectorTheme),
-			childConnector = getElementForPath(themeDictionary, ['connector', childConnectorStyle]) || connectorDefaults;
+			childConnector = getElementForPath(themeDictionary, ['connector', childConnectorStyle]) || connectorDefaults,
+			autoColor = getAutoColor(),
+			result = {
+				attr: _.extend({}, currentAttribs),
+				removed: []
+			};
 
 		if (childConnector && childConnector.line && childConnector.line.color === AUTO_COLOR) {
-			return _.extend({
+			result.attr = _.extend({
 				parentConnector: {
-					color: getAutoColor()
+					color: autoColor,
+					themeAutoColor: autoColor
 				}
-			}, nodeAttribs);
+			}, result.attr);
+		} else if (result.attr.parentConnector && result.attr.parentConnector.themeAutoColor) {
+			result.attr.parentConnector = _.extend({}, result.attr.parentConnector);
+			if (result.attr.parentConnector.themeAutoColor === result.attr.parentConnector.color) {
+				delete result.attr.parentConnector.color;
+			}
+			delete result.attr.parentConnector.themeAutoColor;
+
+			if (_.isEmpty(result.attr.parentConnector)) {
+				result.removed.push('parentConnector');
+				delete result.attr.parentConnector;
+			}
 		}
-		return nodeAttribs;
+		return result;
 	};
 };

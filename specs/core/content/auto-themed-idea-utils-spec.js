@@ -1,4 +1,4 @@
-/*global require, describe, it, beforeEach, expect, jasmine*/
+/*global require, describe, it, beforeEach, expect*/
 
 const underTest = require('../../../src/core/content/auto-themed-idea-utils'),
 	content = require('../../../src/core/content/content'),
@@ -6,7 +6,7 @@ const underTest = require('../../../src/core/content/auto-themed-idea-utils'),
 
 describe('autoThemedIdeaUtils', () => {
 	'use strict';
-	let activeContent, theme, themeSource, idea;
+	let activeContent, theme, idea, themeObj;
 	beforeEach(() => {
 		theme = {
 			autoColors: ['red', 'green', 'blue'],
@@ -38,7 +38,7 @@ describe('autoThemedIdeaUtils', () => {
 
 			}
 		};
-		themeSource = jasmine.createSpy('themeSource').and.callFake(() => new Theme(theme));
+		themeObj = new Theme(theme);
 		idea = {
 			id: 1,
 			title: 'single root node'
@@ -47,19 +47,62 @@ describe('autoThemedIdeaUtils', () => {
 	});
 	describe('addSubIdea', () => {
 		it('should add a root node child with theme configured color', () => {
-			const newId = underTest.addSubIdea(activeContent, themeSource, 1, 'first child');
+			const newId = underTest.addSubIdea(activeContent, themeObj, 1, 'first child');
 			expect(activeContent.findSubIdeaById(newId).attr).toEqual({
-				parentConnector: { color: 'red' }
+				parentConnector: {
+					color: 'red',
+					themeAutoColor: 'red'
+				}
 			});
 		});
 		it('should add a sub node child without a theme configured color', () => {
-			const newId1 = underTest.addSubIdea(activeContent, themeSource, 1, 'first child'),
-				newId2 = underTest.addSubIdea(activeContent, themeSource, newId1, 'first sub child');
+			const newId1 = underTest.addSubIdea(activeContent, themeObj, 1, 'first child'),
+				newId2 = underTest.addSubIdea(activeContent, themeObj, newId1, 'first sub child');
 			expect(activeContent.findSubIdeaById(newId2).attr).toBeFalsy();
 		});
 		it('should add a root node without a theme configured color', () => {
-			const newId = underTest.addSubIdea(activeContent, themeSource, 'root', 'second root');
+			const newId = underTest.addSubIdea(activeContent, themeObj, 'root', 'second root');
 			expect(activeContent.findSubIdeaById(newId).attr).toBeFalsy();
 		});
+	});
+
+	describe('insertIntermediateMultiple', () => {
+		let nodeIds;
+		beforeEach(() => {
+			nodeIds = [];
+			nodeIds.push(underTest.addSubIdea(activeContent, themeObj, 1, 'first root'));
+			const id = underTest.addSubIdea(activeContent, themeObj, 1, 'second root');
+			nodeIds.push(underTest.addSubIdea(activeContent, themeObj, id, 'second root child 1'));
+			nodeIds.push(underTest.addSubIdea(activeContent, themeObj, id, 'second root child 2'));
+		});
+		it('should add a root node child with theme configured auto color', () => {
+			const newId = underTest.insertIntermediateMultiple(activeContent, themeObj, nodeIds, {title: 'first intermediate'});
+			expect(activeContent.findSubIdeaById(newId).attr).toEqual({
+				parentConnector: {
+					color: 'red',
+					themeAutoColor: 'red'
+				}
+			});
+		});
+		it('should add a root node child with theme configured auto color when no attributes ar supplied', () => {
+			const newId = underTest.insertIntermediateMultiple(activeContent, themeObj, nodeIds);
+			expect(activeContent.findSubIdeaById(newId).attr).toEqual({
+				parentConnector: {
+					color: 'red',
+					themeAutoColor: 'red'
+				}
+			});
+		});
+
+		it('should remove theme configured auto color from the moved down a level node if is no longer auto colored, preserving other attributes', () => {
+			activeContent.updateAttr(nodeIds[0], 'foo', 'bar');
+			underTest.insertIntermediateMultiple(activeContent, themeObj, nodeIds, {title: 'first intermediate'});
+			expect(activeContent.findSubIdeaById(nodeIds[0]).attr).toEqual({
+				foo: 'bar'
+			});
+			expect(activeContent.findSubIdeaById(nodeIds[1]).attr).toEqual({});
+			expect(activeContent.findSubIdeaById(nodeIds[2]).attr).toEqual({});
+		});
+
 	});
 });

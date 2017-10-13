@@ -1638,18 +1638,18 @@ describe('MapModel', function () {
 			it('should invoke idea.insertIntermediate with the id of the selected node', function () {
 				init();
 				underTest.insertIntermediate();
-				expect(anIdea.insertIntermediateMultiple).toHaveBeenCalledWith([2]);
+				expect(anIdea.insertIntermediateMultiple).toHaveBeenCalledWith([2], undefined);
 			});
 			it('should invoke idea.insertIntermediate with the ids of all active nodes of the selected node', function () {
 				init();
 				underTest.activateNode('test', 3);
 				underTest.insertIntermediate();
-				expect(anIdea.insertIntermediateMultiple).toHaveBeenCalledWith([2, 3]);
+				expect(anIdea.insertIntermediateMultiple).toHaveBeenCalledWith([2, 3], undefined);
 			});
 			it('should invoke idea.insertIntermediate when a root node is selected', function () {
 				spyOn(anIdea, 'insertIntermediateMultiple');
 				underTest.insertIntermediate();
-				expect(anIdea.insertIntermediateMultiple).toHaveBeenCalledWith([1]);
+				expect(anIdea.insertIntermediateMultiple).toHaveBeenCalledWith([1], undefined);
 			});
 			it('should not invoke anything if input is disabled', function () {
 				init();

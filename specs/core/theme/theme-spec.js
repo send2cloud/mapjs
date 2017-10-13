@@ -473,31 +473,97 @@ describe('Theme', function () {
 		});
 	});
 	describe('getPersistedAttributes', () => {
-		it('should return unchanged attributes if line color is not auto-color', () => {
-			expect(underTest.getPersistedAttributes({foo: 'bar'}, 1, 0)).toEqual({foo: 'bar'});
-		});
-		it('should return attributes with parentConnector.color if line color is auto-color', () => {
-			expect(underTest.getPersistedAttributes({foo: 'bar'}, 7, 0)).toEqual({
-				foo: 'bar',
-				parentConnector: {
-					color: 'red'
-				}
+		describe('should determint automatically assigned colors', () => {
+			it('should return unchanged attributes if line color is not auto-color', () => {
+				expect(underTest.getPersistedAttributes({foo: 'bar'}, 1, 0).attr).toEqual({foo: 'bar'});
 			});
-		});
-		it('should return next color according to number of siblings', () => {
-			expect(underTest.getPersistedAttributes({}, 7, 0).parentConnector.color).toEqual('red');
-			expect(underTest.getPersistedAttributes({}, 7, 1).parentConnector.color).toEqual('green');
-			expect(underTest.getPersistedAttributes({}, 7, 2).parentConnector.color).toEqual('blue');
-			expect(underTest.getPersistedAttributes({}, 7, 3).parentConnector.color).toEqual('red');
-		});
-		it('should not override existing attributes', () => {
-			expect(underTest.getPersistedAttributes({parentConnector: {color: 'pink'}}, 7, 0).parentConnector.color).toEqual('pink');
-		});
-		it('should use default color is autoColors not defined', () => {
-			delete theme.autoColors;
-			underTest = new Theme(theme);
-			expect(underTest.getPersistedAttributes({}, 7, 0).parentConnector.color).toEqual('#707070');
-			expect(underTest.getPersistedAttributes({}, 7, 1).parentConnector.color).toEqual('#707070');
+
+			it('should return attributes with parentConnector.color if line color is auto-color', () => {
+				expect(underTest.getPersistedAttributes({
+					foo: 'bar'
+				}, 7, 0).attr).toEqual({
+					foo: 'bar',
+					parentConnector: {
+						color: 'red',
+						themeAutoColor: 'red'
+					}
+				});
+			});
+			it('should return attributes with previous autoColor parentConnector.color if line color is auto-color and autoColorAttribute exists', () => {
+				expect(underTest.getPersistedAttributes({
+					foo: 'bar',
+					parentConnector: {
+						color: 'blue',
+						themeAutoColor: 'blue'
+					}
+				}, 7, 0).attr).toEqual({
+					foo: 'bar',
+					parentConnector: {
+						color: 'blue',
+						themeAutoColor: 'blue'
+					}
+				});
+			});
+			it('should return unchanged attributes with parentConnector.color if line color is not auto-color', () => {
+				expect(underTest.getPersistedAttributes({foo: 'bar'}, 2, 0).attr).toEqual({foo: 'bar'});
+			});
+			it('should remove attributes with parentConnector.color if line color is not auto-color and color was auto color', () => {
+				expect(underTest.getPersistedAttributes({
+					foo: 'bar',
+					parentConnector: {
+						color: 'red',
+						themeAutoColor: 'red'
+					}
+				}, 2, 0)).toEqual({
+					attr: {foo: 'bar'},
+					removed: ['parentConnector']
+				});
+			});
+			it('should not remove attributes with parentConnector.color if line color is not auto-color but color was different to auto color', () => {
+				expect(underTest.getPersistedAttributes({
+					foo: 'bar',
+					parentConnector: {
+						color: 'red',
+						themeAutoColor: 'blue'
+					}
+				}, 2, 0).attr).toEqual({
+					foo: 'bar',
+					parentConnector: {
+						color: 'red'
+					}
+				});
+			});
+			it('should not remove attributes with parentConnector.color if line color is not auto-color but color was not auto color', () => {
+				expect(underTest.getPersistedAttributes({
+					foo: 'bar',
+					parentConnector: {
+						color: 'red'
+					}
+				}, 2, 0).attr).toEqual({
+					foo: 'bar',
+					parentConnector: {
+						color: 'red'
+					}
+				});
+			});
+
+			it('should return next color according to number of siblings', () => {
+				expect(underTest.getPersistedAttributes({}, 7, 0).attr.parentConnector.color).toEqual('red');
+				expect(underTest.getPersistedAttributes({}, 7, 1).attr.parentConnector.color).toEqual('green');
+				expect(underTest.getPersistedAttributes({}, 7, 2).attr.parentConnector.color).toEqual('blue');
+				expect(underTest.getPersistedAttributes({}, 7, 3).attr.parentConnector.color).toEqual('red');
+			});
+
+			it('should not override existing attributes', () => {
+				expect(underTest.getPersistedAttributes({parentConnector: {color: 'pink'}}, 7, 0).attr.parentConnector.color).toEqual('pink');
+			});
+
+			it('should use default color is autoColors not defined', () => {
+				delete theme.autoColors;
+				underTest = new Theme(theme);
+				expect(underTest.getPersistedAttributes({}, 7, 0).attr.parentConnector.color).toEqual('#707070');
+				expect(underTest.getPersistedAttributes({}, 7, 1).attr.parentConnector.color).toEqual('#707070');
+			});
 		});
 	});
 });
