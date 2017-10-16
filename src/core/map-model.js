@@ -236,8 +236,8 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 			return;
 		}
 		if (layoutModel.getLayout().theme !== (idea.attr && idea.attr.theme)) {
-			const themeObj = themeSource && themeSource();
 			self.dispatchEvent('themeChanged', idea.attr && idea.attr.theme);
+			const themeObj = themeSource && themeSource();
 			autoThemedIdeaUtils.themeChanged(idea, themeObj);
 		}
 		updateCurrentLayout(self.reactivate(layoutCalculator(idea)), sessionId);
