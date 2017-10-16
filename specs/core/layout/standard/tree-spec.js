@@ -1,9 +1,9 @@
-/*global describe, expect, it, require, jasmine*/
+/*global describe, expect, it, require, jasmine, beforeEach*/
 const treeUtils = require('../../../../src/core/layout/standard/tree');
 
 describe('tree', function () {
 	'use strict';
-	let result;
+	let result, margin;
 	describe('Tree', function () {
 		const dimensionProvider = function (content) {
 			const parts = content.title.split('x');
@@ -12,6 +12,9 @@ describe('tree', function () {
 				height: parseInt(parts[1], 10)
 			};
 		};
+		beforeEach(() => {
+			margin = {h: 10, v: 10};
+		});
 		describe('Calculating Tree', function () {
 			it('should convert a single root node into a tree', function () {
 				const content = {
@@ -20,7 +23,7 @@ describe('tree', function () {
 					attr: { name: 'value' }
 				};
 
-				result = treeUtils.calculateTree(content, dimensionProvider);
+				result = treeUtils.calculateTree(content, dimensionProvider, margin);
 
 				expect(result).toEqual(jasmine.objectContaining({
 					id: 1,
@@ -42,7 +45,7 @@ describe('tree', function () {
 					}
 				};
 
-				result = treeUtils.calculateTree(content, dimensionProvider, 10);
+				result = treeUtils.calculateTree(content, dimensionProvider, margin);
 
 				expect(result).toEqual(jasmine.objectContaining({
 					id: 1,
@@ -72,7 +75,7 @@ describe('tree', function () {
 					}
 				};
 
-				result = treeUtils.calculateTree(content, dimensionProvider, 10);
+				result = treeUtils.calculateTree(content, dimensionProvider, margin);
 
 				expect(result).toEqual(jasmine.objectContaining({
 					id: 1,
@@ -99,7 +102,7 @@ describe('tree', function () {
 					}
 				};
 
-				result = treeUtils.calculateTree(content, dimensionProvider, 10);
+				result = treeUtils.calculateTree(content, dimensionProvider, margin);
 
 				expect(result).toEqual(jasmine.objectContaining({
 					id: 1,
@@ -140,7 +143,7 @@ describe('tree', function () {
 					}
 				};
 
-				result = treeUtils.calculateTree(content, dimensionProvider, 10, function (rank, parentId) {
+				result = treeUtils.calculateTree(content, dimensionProvider, margin, function (rank, parentId) {
 					return parentId !== 11 || rank !== 200;
 				});
 				expect(result).toEqual(jasmine.objectContaining({
@@ -173,7 +176,7 @@ describe('tree', function () {
 						}
 					};
 
-					result = treeUtils.calculateTree(content, dimensionProvider, 10);
+					result = treeUtils.calculateTree(content, dimensionProvider, margin);
 					expect(result.subtrees[0]).toEqual(jasmine.objectContaining({
 						title: '300x80',
 						deltaX: 500,
@@ -197,7 +200,7 @@ describe('tree', function () {
 						}
 					};
 
-					result = treeUtils.calculateTree(content, dimensionProvider, 10);
+					result = treeUtils.calculateTree(content, dimensionProvider, margin);
 
 					expect(result.subtrees[0]).toEqual(jasmine.objectContaining({
 						id: 2,
@@ -227,7 +230,7 @@ describe('tree', function () {
 						}
 					};
 
-					result = treeUtils.calculateTree(content, dimensionProvider, 10);
+					result = treeUtils.calculateTree(content, dimensionProvider, margin);
 					expect(result.subtrees[0].deltaY).toBe(10);
 					expect(result.subtrees[1].deltaY).toBe(100);
 				});
@@ -247,7 +250,7 @@ describe('tree', function () {
 							}
 						}
 					};
-					result = treeUtils.calculateTree(content, dimensionProvider, 10);
+					result = treeUtils.calculateTree(content, dimensionProvider, margin);
 					expect(result.subtrees[0].deltaY).toBe(-80);
 					expect(result.subtrees[1].deltaY).toBe(10);
 				});
@@ -268,7 +271,7 @@ describe('tree', function () {
 							}
 						}
 					};
-					result = treeUtils.calculateTree(content, dimensionProvider, 10);
+					result = treeUtils.calculateTree(content, dimensionProvider, margin);
 					expect(result.subtrees[0].deltaY).toBe(5);
 					expect(result.subtrees[1].deltaY).toBe(95);
 				});
@@ -294,7 +297,7 @@ describe('tree', function () {
 							}
 						}
 					};
-					result = treeUtils.calculateTree(content, dimensionProvider, 10);
+					result = treeUtils.calculateTree(content, dimensionProvider, margin);
 					expect(result.subtrees[0].deltaY).toBe(-10);
 					expect(result.subtrees[1].deltaY).toBe(10);
 				});
@@ -318,7 +321,7 @@ describe('tree', function () {
 							}
 						}
 					};
-					result = treeUtils.calculateTree(content, dimensionProvider, 10);
+					result = treeUtils.calculateTree(content, dimensionProvider, margin);
 					expect(result.subtrees[0].deltaY).toBe(-20);
 					expect(result.subtrees[1].deltaY).toBe(10);
 					expect(result.subtrees[2].deltaY).toBe(75);
@@ -339,7 +342,7 @@ describe('tree', function () {
 							}
 						}
 					};
-					result = treeUtils.calculateTree(content, dimensionProvider, 10);
+					result = treeUtils.calculateTree(content, dimensionProvider, margin);
 					expect(result.subtrees[0].deltaX).toBe(20);
 				});
 			});
