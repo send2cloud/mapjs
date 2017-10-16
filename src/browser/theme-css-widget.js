@@ -1,19 +1,16 @@
 /*global require */
 const $ = require('jquery'),
-	Theme = require('../core/theme/theme');
-$.fn.themeCssWidget = function (themeProvider, themeProcessor, mapModel, domMapController) {
+	ThemeProcessor = require('../core/theme/theme-processor');
+$.fn.themeCssWidget = function (mapThemeModel, optional) {
 	'use strict';
+	if (!mapThemeModel) {
+		throw 'invalid-args';
+	}
 	const element = $(this),
-		activateTheme =	function (theme) {
-			const themeJson = themeProvider[(theme || 'default')];
-			if (!themeJson) {
-				return;
-			}
-			domMapController.setTheme(new Theme(themeJson));
-			element.text(themeProcessor.process(themeJson).css);
-		};
-	activateTheme('default');
-	mapModel.addEventListener('themeChanged', activateTheme);
+		themeProcessor = (optional && optional.themeProcessor) || new ThemeProcessor(),
+		activateTheme = (themeJson) => element.text(themeProcessor.process(themeJson).css);
+
+	mapThemeModel.addEventListener('themeJSONChanged', activateTheme);
 	return element;
 };
 

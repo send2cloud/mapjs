@@ -33,7 +33,6 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		changeParent = (ideaId, newParentId) => {
 			const themeObj = themeSource && themeSource();
 			return autoThemedIdeaUtils.changeParent(idea, themeObj, ideaId, newParentId);
-
 		},
 		setActiveNodes = function (activated) {
 			const wasActivated = _.clone(activatedNodes);
@@ -237,8 +236,6 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		}
 		if (layoutModel.getLayout().theme !== (idea.attr && idea.attr.theme)) {
 			self.dispatchEvent('themeChanged', idea.attr && idea.attr.theme);
-			const themeObj = themeSource && themeSource();
-			autoThemedIdeaUtils.themeChanged(idea, themeObj);
 		}
 		updateCurrentLayout(self.reactivate(layoutCalculator(idea)), sessionId);
 	};
@@ -1381,12 +1378,13 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		}
 		return false;
 	};
-	self.setTheme = function (themeId) {
-		if (!isEditingEnabled) {
-			return false;
-		}
-		idea.updateAttr(idea.id, 'theme', themeId);
-	};
+	// self.setTheme = function (themeId) {
+	// 	if (!isEditingEnabled) {
+	// 		return false;
+	// 	}
+	// 	const themeObj = themeSource && themeSource(themeId);
+	// 	autoThemedIdeaUtils.themeChanged(idea, themeObj, themeId);
+	// };
 	self.makeSelectedNodeRoot = function () {
 		const nodeId = self.getSelectedNodeId(),
 			node = nodeId && layoutModel.getNode(nodeId),

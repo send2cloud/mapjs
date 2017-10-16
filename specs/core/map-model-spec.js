@@ -1563,17 +1563,6 @@ describe('MapModel', function () {
 				expect(anIdea.updateAttr).toHaveBeenCalledWith(2, 'attachment', false);
 			});
 		});
-		describe('setTheme', function () {
-			beforeEach(function () {
-				spyOn(anIdea, 'updateAttr');
-				underTest.selectNode(2);
-			});
-			it('should invoke idea.setAttr with root ideaId and theme argument', function () {
-				underTest.setTheme('red');
-
-				expect(anIdea.updateAttr).toHaveBeenCalledWith(anIdea.id, 'theme', 'red');
-			});
-		});
 		describe('setNodeWidth', function () {
 			it('should set the width property of the idea style attribute', function () {
 				underTest.setNodeWidth('mouse', 2, 200);

@@ -146,7 +146,7 @@ describe('autoThemedIdeaUtils', () => {
 			});
 		});
 	});
-	describe('themeChanged', () => {
+	describe('recalcIdeasAutoNodeAttrs', () => {
 		beforeEach(() => {
 			idea = {
 				id: 1,
@@ -171,7 +171,7 @@ describe('autoThemedIdeaUtils', () => {
 			activeContent = content(idea);
 		});
 		it('applies autoColors to all applicable nodes', () => {
-			underTest.themeChanged(activeContent, themeObj);
+			underTest.recalcIdeasAutoNodeAttrs(activeContent, themeObj, activeContent, 0, 0);
 			expect(activeContent.findSubIdeaById(11).attr).toEqual({
 				parentConnector: {
 					color: 'red',
@@ -187,15 +187,16 @@ describe('autoThemedIdeaUtils', () => {
 
 		});
 		it('does not apply autoColors to all non-applicable nodes', () => {
-			underTest.themeChanged(activeContent,  themeObj);
+			underTest.recalcIdeasAutoNodeAttrs(activeContent, themeObj, activeContent, 0, 0);
 			expect(activeContent.findSubIdeaById(1).attr).toEqual({});
 			expect(activeContent.findSubIdeaById(111).attr).toBeFalsy();
 		});
-		it('should removed auto color attributes when theme does not have autoColors', () => {
-			underTest.themeChanged(activeContent, themeObj);
-			underTest.themeChanged(activeContent, new Theme({}));
+		it('should remove auto color attributes when theme does not have autoColors', () => {
+			underTest.recalcIdeasAutoNodeAttrs(activeContent, themeObj, activeContent, 0, 0);
+			underTest.recalcIdeasAutoNodeAttrs(activeContent, new Theme({}), activeContent, 0, 0);
 			expect(activeContent.findSubIdeaById(11).attr).toBeFalsy();
 			expect(activeContent.findSubIdeaById(12).attr).toBeFalsy();
 		});
+
 	});
 });

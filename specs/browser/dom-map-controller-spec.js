@@ -15,17 +15,23 @@ describe('DomMapController', function () {
 	'use strict';
 	let stage,
 		viewPort,
+		themeFromSource,
 		mapModel,
 		domMapController,
-		resourceTranslator;
+		resourceTranslator,
+		themeSource;
+
+	const setTheme = (newTheme) => themeFromSource = newTheme;
+
 	beforeEach(function () {
-		mapModel = observable(jasmine.createSpyObj('mapModel', ['setLayoutCalculator', 'selectConnector', 'getReorderBoundary', 'dropImage', 'clickNode', 'positionNodeAt', 'dropNode', 'openAttachment', 'toggleCollapse', 'undo', 'editNode', 'isEditingEnabled', 'editNode', 'setInputEnabled', 'getInputEnabled', 'updateTitle', 'getNodeIdAtPosition', 'selectNode', 'getCurrentlySelectedIdeaId', 'requestContextMenu', 'setNodeWidth', 'setThemeSource']));
+		mapModel = observable(jasmine.createSpyObj('mapModel', ['setLayoutCalculator', 'selectConnector', 'getReorderBoundary', 'dropImage', 'clickNode', 'positionNodeAt', 'dropNode', 'openAttachment', 'toggleCollapse', 'undo', 'editNode', 'isEditingEnabled', 'editNode', 'setInputEnabled', 'getInputEnabled', 'updateTitle', 'getNodeIdAtPosition', 'selectNode', 'getCurrentlySelectedIdeaId', 'requestContextMenu', 'setNodeWidth']));
 		mapModel.getInputEnabled.and.returnValue(true);
 		mapModel.isEditingEnabled.and.returnValue(true);
 		viewPort = jQuery('<div>').appendTo('body');
 		stage = jQuery('<div>').css('overflow', 'scroll').appendTo(viewPort);
 		resourceTranslator = jasmine.createSpy('resourceTranslator');
-		domMapController = new DomMapController(mapModel, stage, false, resourceTranslator);
+		themeSource = () => themeFromSource;
+		domMapController = new DomMapController(mapModel, stage, false, resourceTranslator, themeSource);
 		spyOn(jQuery.fn, 'queueFadeIn').and.callThrough();
 	});
 	afterEach(function () {
@@ -135,7 +141,7 @@ describe('DomMapController', function () {
 
 				beforeEach(function () {
 					theme = new Theme({name: 'test'});
-					domMapController.setTheme(theme);
+					setTheme(theme);
 					node = {id: '11.12^13#AB-c', title: 'zeka', x: 10, y: 20, width: 30, height: 40};
 					spyOn(jQuery.fn, 'updateNodeContent').and.callFake(function () {
 						this.data(node);
@@ -292,7 +298,7 @@ describe('DomMapController', function () {
 				it('on touch devices sends clickNode message to map model and requests the context menu to be shown', function () {
 					stage.remove();
 					stage = jQuery('<div>').css('overflow', 'scroll').appendTo(viewPort);
-					domMapController = new DomMapController(mapModel, stage, true);
+					domMapController = new DomMapController(mapModel, stage, true, undefined, themeSource);
 					mapModel.dispatchEvent('nodeCreated', {x: 20, y: -120, width: 20, height: 10, title: 'zeka', id: 1});
 					underTest = stage.children('[data-mapjs-role=node]').first();
 
@@ -909,7 +915,7 @@ describe('DomMapController', function () {
 			it('updates node content on ' + eventType, function () {
 				const node = {id: '11', title: 'zeka', x: -80, y: -35, width: 30, height: 20},
 					theme = new Theme({name: 'test'});
-				domMapController.setTheme(theme);
+				setTheme(theme);
 				mapModel.dispatchEvent('nodeCreated', node);
 				underTest = stage.children('[data-mapjs-role=node]').first();
 				spyOn(jQuery.fn, 'updateNodeContent');
@@ -944,15 +950,15 @@ describe('DomMapController', function () {
 						resourceTranslator = jasmine.createSpy('resourceTranslator');
 					});
 					it('should subscribe to mapModel nodeEditRequested event when no options supplied', function () {
-						domMapController = new DomMapController(mapModel, stage, false, resourceTranslator);
+						domMapController = new DomMapController(mapModel, stage, false, resourceTranslator, themeSource);
 						expect(mapModel.addEventListener).toHaveBeenCalledWith('nodeEditRequested', jasmine.any(Function));
 					});
 					it('should subscribe to mapModel nodeEditRequested event when no options.inlineEditingDisabled is false', function () {
-						domMapController = new DomMapController(mapModel, stage, false, resourceTranslator, {inlineEditingDisabled: false});
+						domMapController = new DomMapController(mapModel, stage, false, resourceTranslator, themeSource, {inlineEditingDisabled: false});
 						expect(mapModel.addEventListener).toHaveBeenCalledWith('nodeEditRequested', jasmine.any(Function));
 					});
 					it('should not subscribe to mapModel nodeEditRequested event when true', function () {
-						domMapController = new DomMapController(mapModel, stage, false, resourceTranslator, {inlineEditingDisabled: true});
+						domMapController = new DomMapController(mapModel, stage, false, resourceTranslator, themeSource, {inlineEditingDisabled: true});
 						expect(mapModel.addEventListener).not.toHaveBeenCalledWith('nodeEditRequested', jasmine.any(Function));
 					});
 				});
@@ -1027,7 +1033,7 @@ describe('DomMapController', function () {
 				});
 				stage.append(svgContainer);
 				theme = new Theme({name: 'fromTest'});
-				domMapController.setTheme(theme);
+				setTheme(theme);
 				stage.attr('data-mapjs-role', 'stage');
 				connector = {type: 'connector', from: '1.from', to: '1.to', attr: {lovely: true}};
 				mapModel.dispatchEvent('nodeCreated', {id: '1.from', title: 'zeka', x: -80, y: -35, width: 30, height: 20});
@@ -1071,7 +1077,7 @@ describe('DomMapController', function () {
 				});
 				it('should ignore the link hit event if the theme has blockParentConnectorOverride set', () => {
 					theme = new Theme({name: 'fromTest', blockParentConnectorOverride: true});
-					domMapController.setTheme(theme);
+					setTheme(theme);
 					const evt = new jQuery.Event('tap');
 					underTest.find('path.mapjs-link-hit').trigger(evt);
 					expect(mapModel.selectConnector).not.toHaveBeenCalled();
@@ -1173,7 +1179,7 @@ describe('DomMapController', function () {
 					'class': 'mapjs-draw-container'
 				});
 				theme = new Theme({name: 'new'});
-				domMapController.setTheme(theme);
+				setTheme(theme);
 				stage.append(svgContainer);
 				stage.attr('data-mapjs-role', 'stage');
 				link = {type: 'link', ideaIdFrom: '1.from', ideaIdTo: '1.to', attr: {style: {color: 'blue', lineStyle: 'solid', arrow: true}}};
@@ -1351,7 +1357,7 @@ describe('DomMapController', function () {
 			let theme;
 			beforeEach(function () {
 				theme = new Theme({name: 'new'});
-				domMapController.setTheme(theme);
+				setTheme(theme);
 
 				spyOn(jQuery.fn, 'updateStage').and.callThrough();
 				spyOn(jQuery.fn, 'updateConnector').and.callThrough();

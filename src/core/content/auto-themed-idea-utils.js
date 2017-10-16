@@ -88,20 +88,11 @@ const calcIdeaLevel = require('./calc-idea-level'),
 		});
 		return result;
 
-	},
-	themeChanged = (activeContent, themeObj) => {
-		'use strict';
-		if (!themeObj) {
-			return;
-		}
-		activeContent.batch(() => {
-			recalcIdeasAutoNodeAttrs(activeContent, themeObj, activeContent, 0, 0);
-		});
 	};
 
 module.exports = {
 	addSubIdea: addSubIdea,
 	changeParent: changeParent,
-	themeChanged: themeChanged,
-	insertIntermediateMultiple: insertIntermediateMultiple
+	insertIntermediateMultiple: insertIntermediateMultiple,
+	recalcIdeasAutoNodeAttrs: recalcIdeasAutoNodeAttrs
 };
