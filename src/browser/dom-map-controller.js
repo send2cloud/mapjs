@@ -553,7 +553,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 	mapModel.addEventListener('layoutChangeComplete', function (options) {
 		let connectorGroupClone = jQuery(), linkGroupClone = jQuery();
 		const theme = themeSource();
-		if (options && options.themeChanged) {
+		if ((options && options.themeChanged) || theme.noAnimations()) {
 			stageElement.children().andSelf().finish(nodeAnimOptions.queue);
 			jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector({canUseData: true, theme: theme});
 			jQuery(stageElement).find('[data-mapjs-role=link]').updateLink({theme: theme, canUseData: true});

@@ -103,6 +103,17 @@ module.exports = function ThemeProcessor() {
 					}
 
 				},
+				appendSpanStyles = function (styleSelector, nodeStyle) {
+					const maxWidth = nodeStyle.text && nodeStyle.text.maxWidth;
+					if (!maxWidth) {
+						return;
+					}
+					result.push(styleSelector);
+					result.push(' span {');
+					result.push('max-width:');
+					result.push(maxWidth);
+					result.push('px;}');
+				},
 				appendDecorationStyles = function (styleSelector, nodeStyle) {
 					const style = nodeStyle.decorations,
 						margin = nodeStyle.text && nodeStyle.text.margin || 0;
@@ -150,6 +161,7 @@ module.exports = function ThemeProcessor() {
 
 				appendColorVariants(styleSelector, nodeStyle);
 				appendDecorationStyles(styleSelector, nodeStyle);
+				appendSpanStyles(styleSelector, nodeStyle);
 			});
 			return result.join('');
 		};

@@ -133,6 +133,8 @@ module.exports = function Theme(themeJson) {
 		});
 		delete themeDictionary.nodeArray;
 	}
+
+	self.noAnimations = () => !!(themeDictionary.noAnimations);
 	self.getLayoutConnectorAttributes = (styles) => {
 		const childConnectorStyle = self.attributeValue(['node'], styles, ['connections', 'style'], 'default'),
 			connectorDefaults = _.extend({}, themeFallbackValues.connectorTheme),

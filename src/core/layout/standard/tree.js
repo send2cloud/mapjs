@@ -116,7 +116,7 @@ const _ = require('underscore'),
 			appendSubtrees = function (subtrees) {
 				let suboutline, deltaHeight, subtreePosition, horizontal, treeOutline;
 				_.each(subtrees, function (subtree) {
-					subtree.deltaX = nodeDimensions.width + margin;
+					subtree.deltaX = nodeDimensions.width + margin.h;
 					subtreePosition = subtree.attr && subtree.attr.position && subtree.attr.position[0];
 					if (subtreePosition && subtreePosition > subtree.deltaX) {
 						horizontal = subtreePosition - subtree.deltaX;
@@ -125,11 +125,11 @@ const _ = require('underscore'),
 						horizontal = 0;
 					}
 					if (!suboutline) {
-						suboutline = subtree.outline.indent(horizontal, margin);
+						suboutline = subtree.outline.indent(horizontal, margin.h);
 					} else {
-						treeOutline = subtree.outline.indent(horizontal, margin);
+						treeOutline = subtree.outline.indent(horizontal, margin.h);
 						deltaHeight = treeOutline.initialHeight();
-						suboutline = treeOutline.stackBelow(suboutline, margin);
+						suboutline = treeOutline.stackBelow(suboutline, margin.v);
 						subtree.deltaY = Math.round(suboutline.initialHeight() - deltaHeight / 2 - subtree.height / 2);
 					}
 				});
@@ -140,7 +140,7 @@ const _ = require('underscore'),
 						Math.round(subtrees[subtrees.length - 1].deltaY + subtrees[subtrees.length - 1].height - nodeDimensions.height * 0.5)
 					);
 				}
-				options.outline = suboutline.insertAtStart(nodeDimensions, margin);
+				options.outline = suboutline.insertAtStart(nodeDimensions, margin.h);
 			};
 		_.extend(options, nodeDimensions);
 		options.outline = outlineUtils.outlineFromDimensions(nodeDimensions);
