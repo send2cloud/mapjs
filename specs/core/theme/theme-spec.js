@@ -566,4 +566,47 @@ describe('Theme', function () {
 			});
 		});
 	});
+	describe('self.cleanPersistedAttributes', () => {
+		let attr;
+		beforeEach(() => {
+			attr = {
+				parentConnector: {
+					color: 'red',
+					themeAutoColor: 'red'
+				}
+			};
+		});
+		it('should mutate and remove autoColor attribute', () => {
+			underTest.cleanPersistedAttributes(attr);
+			expect(attr).toEqual({});
+		});
+		it('should return mutatedattribute', () => {
+			expect(underTest.cleanPersistedAttributes(attr)).toEqual({});
+		});
+		it('should not touch color if different from themeAutoColor autoColor attribute', () => {
+			attr.parentConnector.color = 'blue';
+			underTest.cleanPersistedAttributes(attr);
+			expect(attr).toEqual({
+				parentConnector: {
+					color: 'blue'
+				}
+			});
+		});
+		it('should not touch properties of parentConnector other than color', () => {
+			attr.parentConnector.foo = 'bar';
+			underTest.cleanPersistedAttributes(attr);
+			expect(attr).toEqual({
+				parentConnector: {
+					foo: 'bar'
+				}
+			});
+		});
+		it('should not touch other attribute properties', () => {
+			attr.foo = 'bar';
+			underTest.cleanPersistedAttributes(attr);
+			expect(attr).toEqual({
+				foo: 'bar'
+			});
+		});
+	});
 });

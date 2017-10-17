@@ -197,6 +197,72 @@ describe('autoThemedIdeaUtils', () => {
 			expect(activeContent.findSubIdeaById(11).attr).toBeFalsy();
 			expect(activeContent.findSubIdeaById(12).attr).toBeFalsy();
 		});
-
 	});
+	describe('pasteMultiple', () => {
+		let toPaste;
+		beforeEach(() => {
+			idea = {
+				id: 1,
+				title: '1 node',
+				ideas: {
+					11: {
+						id: 11,
+						title: '11 node'
+					}
+				}
+			};
+			toPaste = [{id: 1, title: 'new1'}, {id: 2, title: 'new2'}];
+			activeContent = content(idea);
+		});
+		it('should autocolor pasted nodes', () => {
+			const result = underTest.pasteMultiple(activeContent, themeObj, 1, toPaste);
+			expect(activeContent.findSubIdeaById(result[0]).attr).toEqual({
+				parentConnector: {
+					color: 'green',
+					themeAutoColor: 'green'
+				}
+			});
+			expect(activeContent.findSubIdeaById(result[1]).attr).toEqual({
+				parentConnector: {
+					color: 'blue',
+					themeAutoColor: 'blue'
+				}
+			});
+		});
+		it('should replace autoColors', () => {
+			toPaste[0].attr = {
+				parentConnector: {
+					color: 'yellow',
+					themeAutoColor: 'yellow'
+				}
+			};
+			const result = underTest.pasteMultiple(activeContent, themeObj, 1, toPaste);
+			expect(activeContent.findSubIdeaById(result[0]).attr).toEqual({
+				parentConnector: {
+					color: 'green',
+					themeAutoColor: 'green'
+				}
+			});
+			expect(activeContent.findSubIdeaById(result[1]).attr).toEqual({
+				parentConnector: {
+					color: 'blue',
+					themeAutoColor: 'blue'
+				}
+			});
+
+		});
+		it('should remove autoColors', () => {
+			toPaste[0].attr = {
+				parentConnector: {
+					color: 'yellow',
+					themeAutoColor: 'yellow'
+				}
+			};
+			const result = underTest.pasteMultiple(activeContent, themeObj, 11, toPaste);
+			expect(activeContent.findSubIdeaById(result[0]).attr).toEqual({});
+			expect(activeContent.findSubIdeaById(result[1]).attr).toEqual({});
+
+		});
+	});
+
 });

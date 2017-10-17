@@ -1,6 +1,7 @@
 /*global module, require*/
 const calcIdeaLevel = require('./calc-idea-level'),
 	_ = require('underscore'),
+	traverse = require('./traverse'),
 	addSubIdea = (activeContent, themeObj, parentId, ideaTitle, optionalNewId, optionalIdeaAttr) => {
 		'use strict';
 		if (!themeObj) {
@@ -60,6 +61,33 @@ const calcIdeaLevel = require('./calc-idea-level'),
 		});
 		return result;
 	},
+	pasteMultiple = (activeContent, themeObj, parentId, contents) => {
+		'use strict';
+		if (!themeObj) {
+			return activeContent.pasteMultiple(parentId, contents);
+		}
+		const level = calcIdeaLevel(activeContent, parentId),
+			parent = activeContent.findSubIdeaById(parentId),
+			existingSiblings = (parent.ideas && Object.keys(parent.ideas).length) || 0;
+
+		contents.forEach((idea) => {
+			traverse(idea, (subIdea) => themeObj.cleanPersistedAttributes(subIdea.attr));
+		});
+		let pastedIds = false, siblings = existingSiblings;
+		activeContent.batch(() => {
+			pastedIds = activeContent.pasteMultiple(parentId, contents);
+			if (pastedIds && pastedIds.length) {
+				pastedIds.forEach((pastedId) => {
+					const idea = activeContent.findSubIdeaById(pastedId);
+					recalcIdeasAutoNodeAttrs(activeContent, themeObj, idea, level + 1, siblings);
+					siblings += 1;
+				});
+			}
+			return pastedIds;
+		});
+		return pastedIds;
+
+	},
 	insertIntermediateMultiple = (activeContent, themeObj, inFrontOfIdeaIds, ideaOptions) => {
 		'use strict';
 		if (!themeObj) {
@@ -94,5 +122,6 @@ module.exports = {
 	addSubIdea: addSubIdea,
 	changeParent: changeParent,
 	insertIntermediateMultiple: insertIntermediateMultiple,
+	pasteMultiple: pasteMultiple,
 	recalcIdeasAutoNodeAttrs: recalcIdeasAutoNodeAttrs
 };

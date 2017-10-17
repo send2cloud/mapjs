@@ -148,6 +148,19 @@ module.exports = function Theme(themeJson) {
 		return result;
 	};
 
+	self.cleanPersistedAttributes = (currentAttribs) => {
+		if (currentAttribs && currentAttribs.parentConnector && currentAttribs.parentConnector.themeAutoColor) {
+			if (currentAttribs.parentConnector.themeAutoColor === currentAttribs.parentConnector.color) {
+				delete currentAttribs.parentConnector.color;
+			}
+			delete currentAttribs.parentConnector.themeAutoColor;
+			if (_.isEmpty(currentAttribs.parentConnector)) {
+				delete currentAttribs.parentConnector;
+			}
+		}
+		return currentAttribs;
+	};
+
 	self.getPersistedAttributes = (currentAttribs, nodeLevel, numberOfSiblings) => {
 		const styles = ['level_' + nodeLevel, 'default'],
 			getAutoColor = () => {
