@@ -22,6 +22,7 @@ describe('updateNodeContent', function () {
 			x: 10,
 			y: 20,
 			width: 30,
+			textWidth: 32,
 			height: 40
 		};
 	});
@@ -114,9 +115,17 @@ describe('updateNodeContent', function () {
 
 			expect(parseInt(textBox.css('max-width'), 10)).toBeGreaterThan(160);
 		});
+		it('should use the text width if provided', function () {
+			const textBox = jQuery('<span data-mapjs-role="title" class="test-max-width"></span>').appendTo(underTest).css('width', '100px');
+			nodeContent.title = 'first should could would maybe not so much and so on go on';
+			nodeContent.textWidth = 200;
+			underTest.updateNodeContent(nodeContent);
+			expect(textBox.css('min-width')).toBe('200px');
+		});
 		it('should not allow the box to shrink width if it is multiline', function () {
 			const textBox = jQuery('<span data-mapjs-role="title" class="test-max-width"></span>').appendTo(underTest).css('width', '100px');
 			nodeContent.title = 'first should could would maybe not so much and so on go on';
+			delete nodeContent.textWidth;
 			underTest.updateNodeContent(nodeContent);
 			expect(textBox.css('min-width')).toBe('160px');
 		});
@@ -271,6 +280,7 @@ describe('updateNodeContent', function () {
 					icon: {
 						url: 'http://iconurl/',
 						width: 400,
+						textWidth: 390,
 						height: 500,
 						position: 'center'
 					}

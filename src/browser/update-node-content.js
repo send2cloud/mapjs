@@ -116,8 +116,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 				element.css('max-width', domElement.scrollWidth + 'px');
 			} else if (!preferredWidth) {
 				height = domElement.offsetHeight;
-
-				element.css('min-width', element.css('max-width'));
+				element.css('min-width', nodeContent.textWidth || element.css('max-width'));
 				if (domElement.offsetHeight === height) {
 					element.css('min-width', '');
 				}
@@ -245,6 +244,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 			x: Math.round(nodeContent.x),
 			y: Math.round(nodeContent.y),
 			width: Math.round(nodeContent.width),
+			textWidth: Math.round(nodeContent.textWidth),
 			height: Math.round(nodeContent.height),
 			nodeId: nodeContent.id,
 			styles: effectiveStyles,

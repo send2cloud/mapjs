@@ -6,9 +6,11 @@ describe('tree', function () {
 	let result, margin;
 	describe('Tree', function () {
 		const dimensionProvider = function (content) {
-			const parts = content.title.split('x');
+			const parts = content.title.split('x'),
+				width = parseInt(parts[0], 10);
 			return {
-				width: parseInt(parts[0], 10),
+				width: width,
+				textWidth: width + 23,
 				height: parseInt(parts[1], 10)
 			};
 		};
@@ -30,6 +32,7 @@ describe('tree', function () {
 					title: '100x200',
 					attr: { name: 'value' },
 					width: 100,
+					textWidth: 123,
 					height: 200
 				}));
 			});
@@ -51,12 +54,14 @@ describe('tree', function () {
 					id: 1,
 					title: '200x100',
 					width: 200,
+					textWidth: 223,
 					height: 100
 				}));
 				expect(result.subtrees[0]).toEqual(jasmine.objectContaining({
 					id: 2,
 					title: '300x80',
 					width: 300,
+					textWidth: 323,
 					height: 80,
 					deltaX: 210,
 					deltaY: 10
@@ -82,6 +87,7 @@ describe('tree', function () {
 					title: '200x100',
 					attr: {collapsed: true},
 					width: 200,
+					textWidth: 223,
 					height: 100
 				}));
 				expect(result.subtrees).toBeUndefined();
@@ -114,6 +120,7 @@ describe('tree', function () {
 					id: 2,
 					title: '300x80',
 					width: 300,
+					textWidth: 323,
 					height: 80,
 					deltaX: 210,
 					deltaY: -10
@@ -122,6 +129,7 @@ describe('tree', function () {
 					id: 3,
 					title: '100x30',
 					width: 100,
+					textWidth: 123,
 					height: 30,
 					deltaX: 210,
 					deltaY: 80
@@ -150,12 +158,14 @@ describe('tree', function () {
 					id: 11,
 					title: '200x100',
 					width: 200,
+					textWidth: 223,
 					height: 100
 				}));
 				expect(result.subtrees[0]).toEqual(jasmine.objectContaining({
 					id: 2,
 					title: '300x80',
 					width: 300,
+					textWidth: 323,
 					height: 80,
 					deltaX: 210,
 					deltaY: 10
@@ -355,6 +365,7 @@ describe('tree', function () {
 					title: 'Hello world',
 					attr: { name: 'value' },
 					width: 200,
+					textWidth: 223,
 					height: 100,
 					level: 1
 				});
@@ -371,6 +382,7 @@ describe('tree', function () {
 							x: -100,
 							y: -50,
 							width: 200,
+							textWidth: 223,
 							height: 100
 						}
 					},

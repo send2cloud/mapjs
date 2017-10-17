@@ -259,7 +259,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 			textBox = stageElement.nodeWithId(idea.id);
 		if (textBox && textBox.length > 0) {
 			if (_.isEqual(textBox.data('nodeCacheMark'), nodeCacheMark(idea, {level: level, theme: themeSource()}))) {
-				return _.pick(textBox.data(), 'width', 'height');
+				return _.pick(textBox.data(), 'width', 'height', 'textWidth');
 			}
 		}
 		textBox = dummyTextBox;
@@ -269,6 +269,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		);
 		result = {
 			width: textBox.outerWidth(true),
+			textWidth: textBox.find('[data-mapjs-role="title"]').outerWidth(true),
 			height: textBox.outerHeight(true)
 		};
 		textBox.detach();
@@ -450,7 +451,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		}
 	});
 	mapModel.addEventListener('nodeTitleChanged nodeAttrChanged nodeLabelChanged', function (n) {
-		stageElement.nodeWithId(n.id).updateNodeContent(n, { resourceTranslator: resourceTranslator, theme: themeSource()});
+		stageElement.nodeWithId(n.id).updateNodeContent(n, { resourceTranslator: resourceTranslator, theme: themeSource()}).each(ensureSpaceForNode);
 	});
 	mapModel.addEventListener('connectorCreated', function (connector) {
 		const element = stageElement.find('[data-mapjs-role=svg-container]')
@@ -553,6 +554,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 	mapModel.addEventListener('layoutChangeComplete', function (options) {
 		let connectorGroupClone = jQuery(), linkGroupClone = jQuery();
 		const theme = themeSource();
+
 		if ((options && options.themeChanged) || theme.noAnimations()) {
 			stageElement.children().andSelf().finish(nodeAnimOptions.queue);
 			jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector({canUseData: true, theme: theme});
@@ -583,7 +585,6 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		}
 		connectorsForAnimation = jQuery();
 		linksForAnimation = jQuery();
-
 		ensureNodeVisible(stageElement.nodeWithId(mapModel.getCurrentlySelectedIdeaId()));
 	});
 

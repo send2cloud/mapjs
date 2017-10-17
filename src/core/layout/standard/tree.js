@@ -10,7 +10,7 @@ const _ = require('underscore'),
 					nodes: {},
 					connectors: {}
 				},
-				self = _.pick(this, 'id', 'title', 'attr', 'width', 'height', 'level');
+				self = _.pick(this, 'id', 'title', 'attr', 'width', 'textWidth', 'height', 'level');
 
 			if (parentId) {
 				self.parentId = parentId;

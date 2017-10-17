@@ -52,7 +52,7 @@ describe('DomMapController', function () {
 		});
 		it('calculates the width and height of node by drawing an invisible box with .mapjs-node and detaching it after', function () {
 			newElement = jQuery('<style type="text/css">.mapjs-node { width:456px !important; min-height:789px !important}</style>').appendTo(stage);
-			expect(domMapController.dimensionProvider(idea)).toEqual({width: 456, height: 789});
+			expect(domMapController.dimensionProvider(idea)).toEqual({width: 456, textWidth: 29, height: 789});
 			expect(jQuery('.mapjs-node').length).toBe(0);
 		});
 		describe('when ideas has a width attribute', function () {
@@ -65,7 +65,7 @@ describe('DomMapController', function () {
 						width: 500
 					}
 				};
-				expect(domMapController.dimensionProvider(idea)).toEqual({width: 500, height: 789});
+				expect(domMapController.dimensionProvider(idea)).toEqual({width: 500, textWidth: 500, height: 789});
 			});
 			it('should use the width if greater than than the max unwrappable text width', function () {
 				idea.attr = {
@@ -74,7 +74,7 @@ describe('DomMapController', function () {
 					}
 				};
 				idea.title = 'some short words are in this title that is still a quite long piece of text';
-				expect(domMapController.dimensionProvider(idea)).toEqual({width: 500, height: 789});
+				expect(domMapController.dimensionProvider(idea)).toEqual({width: 500, textWidth: 500, height: 789});
 			});
 			it('should use max unwrappable text width if greater than the prefferred width', function () {
 				idea.attr = {
@@ -91,17 +91,18 @@ describe('DomMapController', function () {
 				'.mapjs-node { width:356px !important; min-height:389px !important} ' +
 				'.mapjs-node[mapjs-level="1"] { width:456px !important; min-height:789px !important} ' +
 				'</style>').appendTo(stage);
-			expect(domMapController.dimensionProvider(idea, 1)).toEqual({width: 456, height: 789});
-			expect(domMapController.dimensionProvider(idea, 2)).toEqual({width: 356, height: 389});
+			expect(domMapController.dimensionProvider(idea, 1)).toEqual({width: 456, textWidth: 29, height: 789});
+			expect(domMapController.dimensionProvider(idea, 2)).toEqual({width: 356, textWidth: 29, height: 389});
 
 		});
 		it('applies the updateNodeContent function while calculating dimensions', function () {
 			jQuery.fn.updateNodeContent = function () {
 				this.css('width', '654px');
 				this.css('height', '786px');
+				jQuery('<div>').attr('data-mapjs-role', 'title').css('width', '123px').appendTo(this);
 				return this;
 			};
-			expect(domMapController.dimensionProvider(idea)).toEqual({width: 654, height: 786});
+			expect(domMapController.dimensionProvider(idea)).toEqual({width: 654, textWidth: 123, height: 786});
 		});
 		describe('caching', function () {
 			beforeEach(function () {
@@ -109,27 +110,26 @@ describe('DomMapController', function () {
 				jQuery.fn.updateNodeContent.and.callFake(function () {
 					this.css('width', '654px');
 					this.css('height', '786px');
+					jQuery('<div>').attr('data-mapjs-role', 'title').css('width', '123px').appendTo(this);
 					return this;
 				});
+				newElement = jQuery('<div>').data({width: 111, textWidth: 132, height: 222}).attr('id', 'node_foo_1').appendTo(stage);
 			});
 			it('looks up a DOM object with the matching node ID and if the node cache mark matches, returns the DOM width without re-applying content', function () {
-				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo(stage);
 				newElement.data('nodeCacheMark', nodeCacheMark(idea));
-				expect(domMapController.dimensionProvider(idea)).toEqual({width: 111, height: 222});
+				expect(domMapController.dimensionProvider(idea)).toEqual({width: 111, textWidth: 132, height: 222});
 				expect(jQuery.fn.updateNodeContent).not.toHaveBeenCalled();
 			});
 			it('ignores DOM objects where the cache mark does not match', function () {
-				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo(stage);
 				newElement.data('nodeCacheMark', nodeCacheMark(idea));
-				expect(domMapController.dimensionProvider(_.extend(idea, {title: 'not zeka'}))).toEqual({width: 654, height: 786});
+				expect(domMapController.dimensionProvider(_.extend(idea, {title: 'not zeka'}))).toEqual({width: 654, textWidth: 123, height: 786});
 				expect(jQuery.fn.updateNodeContent).toHaveBeenCalled();
 			});
 			it('passes the level as an override when finding the cache mark', function () {
-				newElement = jQuery('<div>').data({width: 111, height: 222}).attr('id', 'node_foo_1').appendTo(stage);
 				idea.level = 5;
 				newElement.data('nodeCacheMark', nodeCacheMark(idea));
 				idea.level = undefined;
-				expect(domMapController.dimensionProvider(idea, 5)).toEqual({width: 111, height: 222});
+				expect(domMapController.dimensionProvider(idea, 5)).toEqual({width: 111, textWidth: 132, height: 222});
 				expect(jQuery.fn.updateNodeContent).not.toHaveBeenCalled();
 			});
 		});
@@ -911,22 +911,37 @@ describe('DomMapController', function () {
 			});
 		});
 		_.each(['nodeTitleChanged', 'nodeAttrChanged', 'nodeLabelChanged'], function (eventType) {
-			let underTest;
-			it('updates node content on ' + eventType, function () {
-				const node = {id: '11', title: 'zeka', x: -80, y: -35, width: 30, height: 20},
-					theme = new Theme({name: 'test'});
-				setTheme(theme);
-				mapModel.dispatchEvent('nodeCreated', node);
-				underTest = stage.children('[data-mapjs-role=node]').first();
-				spyOn(jQuery.fn, 'updateNodeContent');
 
-				mapModel.dispatchEvent(eventType, node);
-				expect(jQuery.fn.updateNodeContent).toHaveBeenCalledOnJQueryObject(underTest);
-				expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node,
-					{
-						theme: theme,
-						resourceTranslator: resourceTranslator
-					});
+			describe(eventType, () => {
+				let underTest, node, theme;
+				beforeEach(() => {
+					stage.data({offsetX: 200, offsetY: 100, width: 300, height: 150});
+					spyOn(jQuery.fn, 'updateStage').and.callThrough();
+
+					node = {id: '11', title: 'zeka', x: -80, y: -35, width: 30, height: 20};
+					theme = new Theme({name: 'test'});
+					setTheme(theme);
+					mapModel.dispatchEvent('nodeCreated', node);
+					spyOn(jQuery.fn, 'updateNodeContent').and.callThrough();
+				});
+				it('updates node content on ' + eventType, function () {
+
+					underTest = stage.children('[data-mapjs-role=node]').first();
+					mapModel.dispatchEvent(eventType, node);
+					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledOnJQueryObject(underTest);
+					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node,
+						{
+							theme: theme,
+							resourceTranslator: resourceTranslator
+						});
+				});
+				it('grows the stage', function () {
+					node = {id: '11', title: 'zeka', x: -220, y: -350, width: 700, height: 900};
+					mapModel.dispatchEvent(eventType, node);
+					expect(stage.data('offsetX')).toBe(220);
+					expect(stage.data('width')).toBe(700);
+					expect(jQuery.fn.updateStage).toHaveBeenCalledOnJQueryObject(stage);
+				});
 			});
 		});
 		describe('nodeEditRequested', function () {
