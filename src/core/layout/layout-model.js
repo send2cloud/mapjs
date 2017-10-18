@@ -105,6 +105,16 @@ module.exports = function LayoutModel(emptyLayout) {
 				];
 				return _.min(d);
 			});
+		},
+		getPreferred = (referenceNode, nodes, xRatio, yRatio) => {
+			// console.log('getPreferred', 'layout', layout, 'referenceNode', referenceNode, 'nodes', nodes); //eslint-disable-line
+			if (self.getOrientation() === 'standard') {
+				const siblings = nodes.filter((node) => referenceNode.parentId && referenceNode.parentId === node.parentId);
+				if (siblings.length) {
+					return _.min(siblings, (node) => Math.abs(node.y - referenceNode.y));
+				}
+			}
+			return getNearest(referenceNode, nodes, xRatio, yRatio);
 		};
 
 	self.getNode = function (nodeId) {
@@ -138,13 +148,13 @@ module.exports = function LayoutModel(emptyLayout) {
 	self.nodeIdUp = function (nodeId) {
 		const referenceNode = self.getNode(nodeId),
 			nodes = referenceNode && (getNodesUp(referenceNode, options.coneRatio) || getNodesUp(referenceNode)),
-			node = nodes && getNearest(referenceNode, nodes, options.majorAxisRatio, 1);
+			node = nodes && getPreferred(referenceNode, nodes, options.majorAxisRatio, 1);
 		return node && node.id;
 	};
 	self.nodeIdDown = function (nodeId) {
 		const referenceNode = self.getNode(nodeId),
 			nodes = referenceNode && (getNodesDown(referenceNode, options.coneRatio) || getNodesDown(referenceNode)),
-			node = nodes && getNearest(referenceNode, nodes, options.majorAxisRatio, 1);
+			node = nodes && getPreferred(referenceNode, nodes, options.majorAxisRatio, 1);
 		return node && node.id;
 	};
 	self.getOrientation = function () {

@@ -1,5 +1,6 @@
 /*global describe, require, beforeEach, it, expect*/
-const LayoutModel = require('../../../src/core/layout/layout-model');
+const LayoutModel = require('../../../src/core/layout/layout-model'),
+	_ = require('underscore');
 describe('LayoutModel', function () {
 	'use strict';
 	let underTest, layout;
@@ -226,6 +227,15 @@ describe('LayoutModel', function () {
 				layout.nodes[3].x = 1000;
 				expect(underTest.nodeIdUp(1)).toEqual(3);
 			});
+			it('should prioritise sibling nodes when layout is standard', function () {
+				layout.nodes[1].parentId = 29;
+				layout.nodes[4] = _.extend({}, layout.nodes[3], {
+					id: 4,
+					y: layout.nodes[3].y - 10,
+					parentId: 29
+				});
+				expect(underTest.nodeIdUp(1)).toEqual(4);
+			});
 			it('should prioritise nodes in a 45/2 degree arc above the node', function () {
 				layout.nodes[3].y = -10000;
 				layout.nodes[4] = {
@@ -309,6 +319,17 @@ describe('LayoutModel', function () {
 				layout.nodes[2].x = 200;
 				expect(underTest.nodeIdDown(1)).toEqual(2);
 			});
+			it('should prioritise sibling nodes when layout is standard', function () {
+				layout.orientation = 'standard';
+				layout.nodes[1].parentId = 29;
+				layout.nodes[4] = _.extend({}, layout.nodes[2], {
+					id: 4,
+					y: layout.nodes[2].y + 10,
+					parentId: 29
+				});
+				expect(underTest.nodeIdDown(1)).toEqual(4);
+			});
+
 			it('should prioritise nodes in a 45/2 degree arc to the right of the node', function () {
 				layout.nodes[2].y = 10000;
 				layout.nodes[4] = {
