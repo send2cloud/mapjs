@@ -173,7 +173,7 @@ module.exports = function Theme(themeJson) {
 			childConnector = getElementForPath(themeDictionary, ['connector', childConnectorStyle]) || connectorDefaults,
 			autoColor = getAutoColor(),
 			result = {
-				attr: _.extend({}, currentAttribs),
+				attr: _.pick(_.extend({}, currentAttribs), ['parentConnector']),
 				removed: []
 			};
 

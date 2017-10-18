@@ -88,12 +88,18 @@ describe('autoThemedIdeaUtils', () => {
 				}
 			});
 		});
+		it('should not copy non themed attributes to the inserted node', () => {
+			activeContent.updateAttr(nodeIds[0], 'foo', 'bar');
+			const newId = underTest.insertIntermediateMultiple(activeContent, themeObj, nodeIds, {title: 'first intermediate'});
+			expect(activeContent.findSubIdeaById(newId).attr.foo).toBeFalsy();
+
+		});
 		it('should not add a root node child with theme configured auto color when themeObj is not supplied', () => {
 			const newId = underTest.insertIntermediateMultiple(activeContent, undefined, nodeIds, {title: 'first intermediate'});
 			expect(activeContent.findSubIdeaById(newId).attr).toBeFalsy();
 		});
 
-		it('should add a root node child with theme configured auto color when no attributes ar supplied', () => {
+		it('should add a root node child with theme configured auto color when no attributes are supplied', () => {
 			const newId = underTest.insertIntermediateMultiple(activeContent, themeObj, nodeIds);
 			expect(activeContent.findSubIdeaById(newId).attr).toEqual({
 				parentConnector: {

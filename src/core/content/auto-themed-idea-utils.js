@@ -98,12 +98,12 @@ const calcIdeaLevel = require('./calc-idea-level'),
 			inFrontOfIdeaId = themeObj && inFrontOfIdeaIds && inFrontOfIdeaIds[0],
 			inFrontOfIdea = inFrontOfIdeaId && activeContent.findSubIdeaById(inFrontOfIdeaId),
 			level = inFrontOfIdeaId && calcIdeaLevel(activeContent, inFrontOfIdeaId),
-			insertAttr = (inFrontOfIdea && inFrontOfIdea.attr && _.extend(inFrontOfIdea.attr, ideaOptionsSafe.attr)) || ideaOptionsSafe.attr,
+			insertAttr = (inFrontOfIdea && inFrontOfIdea.attr) || {},
 			siblingIds = activeContent.sameSideSiblingIds(inFrontOfIdeaId),
 			numberOfSiblings = (siblingIds && siblingIds.length) || 0,
 			attrs = themeObj.getPersistedAttributes(insertAttr, level, numberOfSiblings).attr;
 
-		ideaOptionsSafe.attr = attrs;
+		ideaOptionsSafe.attr = _.extend({}, ideaOptionsSafe.attr, attrs);
 		let result;
 		activeContent.batch(() => {
 			result = activeContent.insertIntermediateMultiple(inFrontOfIdeaIds, ideaOptionsSafe);
