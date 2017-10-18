@@ -7,7 +7,7 @@ module.exports = function ThemeDimensionProvider(textSizer, options) {
 	'use strict';
 	const self = this,
 		calcMaxWidth = function (attr, nodeTheme) {
-			const maxWidth = (attr && attr.style && attr.style.width) || nodeTheme.maxWidth,
+			const maxWidth = (attr && attr.style && attr.style.width) || (nodeTheme && nodeTheme.text && nodeTheme.text.maxWidth),
 				margin = (nodeTheme && nodeTheme.margin) || (nodeTheme && nodeTheme.text && nodeTheme.text.margin) || 0;
 			if (options && options.substractMarginFromMaxWidth && margin) {
 				return  maxWidth - (2 * margin);

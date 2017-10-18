@@ -6,7 +6,9 @@ describe('ThemeDimensionProvider', function () {
 	beforeEach(function () {
 		nodeTheme = {
 			margin: 1,
-			maxWidth: 20,
+			text: {
+				maxWidth: 20
+			},
 			cornerRadius: 10,
 			font: 'theme font info here'
 		};
