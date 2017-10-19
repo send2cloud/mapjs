@@ -66,10 +66,14 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 			}
 			if (element.length === 0) {
 				element = jQuery('<a href="#" class="mapjs-attachment icon-attachment"></a>').
-					appendTo(decorations()).click(function () {
-						self.trigger('attachment-click');
-						self.trigger('decoration-click', 'attachment');
-					});
+					appendTo(decorations());
+				element.click(function () {
+					self.trigger(jQuery.Event('attachment-click', {
+						relatedTarget: element,
+						nodeId: nodeContent.id
+					}));
+					self.trigger('decoration-click', 'attachment');
+				});
 			}
 			element.show();
 		},
