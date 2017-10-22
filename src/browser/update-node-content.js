@@ -69,7 +69,8 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 					appendTo(decorations()).click(function () {
 						self.trigger('attachment-click');
 						self.trigger('decoration-click', 'attachment');
-					});
+					})
+					.trigger(jQuery.Event('attachment-link-created', {nodeId: nodeContent.id}));
 			}
 			element.show();
 		},

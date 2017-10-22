@@ -23,7 +23,8 @@ describe('updateNodeContent', function () {
 			y: 20,
 			width: 30,
 			textWidth: 32,
-			height: 40
+			height: 40,
+			id: 44
 		};
 	});
 	afterEach(function () {
@@ -503,6 +504,17 @@ describe('updateNodeContent', function () {
 					}
 				};
 			});
+			it('dispatches an attachment-link-created event for the node id', done => {
+				underTest.on('attachment-link-created', e => {
+					const eventTarget = jQuery(e.target);
+					expect(e.target.nodeName).toEqual('A');
+					expect(e.nodeId).toEqual(44);
+					expect(eventTarget.hasClass('mapjs-attachment')).toBeTruthy();
+					expect(eventTarget.parent().attr('data-mapjs-role')).toEqual('decorations');
+					done();
+				});
+				underTest.updateNodeContent(nodeContent);
+			});
 			it('shows the paperclip element', function () {
 				underTest.updateNodeContent(nodeContent);
 				expect(underTest.find('[data-mapjs-role=decorations] a.mapjs-attachment').css('display')).not.toBe('none');
@@ -515,10 +527,15 @@ describe('updateNodeContent', function () {
 				expect(listener).toHaveBeenCalled();
 			});
 			it('should reuse and show existing element', function () {
+				let eventCalled = false;
+				underTest.on('attachment-link-created', () => {
+					eventCalled = true;
+				});
 				jQuery('<a href="#" class="mapjs-attachment">hello</a>').appendTo(underTest).hide();
 				underTest.updateNodeContent(nodeContent);
 				expect(underTest.find('a.mapjs-attachment').length).toBe(1);
 				expect(underTest.find('a.mapjs-attachment').css('display')).not.toBe('none');
+				expect(eventCalled).toEqual(false);
 			});
 		});
 		describe('when there is no attachment', function () {
