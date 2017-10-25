@@ -18,6 +18,9 @@ jQuery.fn.nodeResizeWidget = function (nodeId, mapModel, stagePositionForPointEv
 				return dragWidth;
 			},
 			dragHandle = jQuery('<div>').addClass('resize-node').shadowDraggable().on('mm:start-dragging mm:start-dragging-shadow', function (evt) {
+				if (!mapModel.isEditingEnabled()) {
+					return;
+				}
 				mapModel.selectNode(nodeId);
 				initialPosition = stagePositionForPointEvent(evt);
 				initialWidth = nodeTextElement.innerWidth();
@@ -27,6 +30,9 @@ jQuery.fn.nodeResizeWidget = function (nodeId, mapModel, stagePositionForPointEv
 					'span.max-width': nodeTextElement.css('max-width')
 				};
 			}).on('mm:stop-dragging mm:cancel-dragging', function (evt) {
+				if (!mapModel.isEditingEnabled()) {
+					return;
+				}
 				const dragWidth = nodeTextElement.outerWidth();
 				nodeTextElement.css({'max-width': initialStyle['span.max-width'], 'min-width': initialStyle['span.min-width']});
 				element.css('min-width', initialStyle['node.min-width']);
@@ -38,6 +44,9 @@ jQuery.fn.nodeResizeWidget = function (nodeId, mapModel, stagePositionForPointEv
 				}
 				element.trigger(jQuery.Event('mm:resize', {nodeWidth: dragWidth}));
 			}).on('mm:drag', function (evt) {
+				if (!mapModel.isEditingEnabled()) {
+					return;
+				}
 				let dragWidth = calcDragWidth(evt);
 				if (dragWidth) {
 					nodeTextElement.css({'max-width': dragWidth, 'min-width': dragWidth});

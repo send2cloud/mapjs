@@ -15,7 +15,9 @@ describe('nodeResizeWidget', function () {
 		};
 	};
 	beforeEach(function () {
-		mapModel = jasmine.createSpyObj('mapModel', ['selectNode']);
+		mapModel = jasmine.createSpyObj('mapModel', ['selectNode', 'isEditingEnabled']);
+		mapModel.isEditingEnabled.and.returnValue(true);
+
 		stagePositionForPointEvent = jasmine.createSpy('stagePositionForPointEvent').and.callFake(function (evt) {
 			return {x: evt.x};
 		});
@@ -57,6 +59,10 @@ describe('nodeResizeWidget', function () {
 			it('should alter the node min-width when the node is dragged right', function () {
 				dragHandle.trigger(jQuery.Event('mm:drag', eventForX(130)));
 				expect(underTest.css('min-width')).toEqual('130px');
+			});
+			it('should not alter the node min-width if the map editing is disabled', function () {
+				mapModel.isEditingEnabled.and.returnValue(false);
+				expect(underTest.css('min-width')).toEqual('150px');
 			});
 
 			it('should alter the text area min-width when the node is dragged right', function () {
@@ -166,6 +172,13 @@ describe('nodeResizeWidget', function () {
 					dragHandle.trigger(jQuery.Event(args[0], eventForX(130)));
 					expect(listener).toHaveBeenCalled();
 					expect(listener.calls.mostRecent().args[0].nodeWidth).toEqual(130);
+				});
+				it('should not trigger mm:resize if editing is disabled', () => {
+					const listener = jasmine.createSpy('listener');
+					underTest.on('mm:resize', listener);
+					mapModel.isEditingEnabled.and.returnValue(false);
+					dragHandle.trigger(jQuery.Event(args[0], eventForX(130)));
+					expect(listener).not.toHaveBeenCalled();
 				});
 			});
 

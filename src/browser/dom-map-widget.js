@@ -104,7 +104,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, dragContainer
 			.updateStage();
 		let previousPinchScale = false;
 		element.css('overflow', 'auto').attr('tabindex', 1);
-		if (mapModel.isEditingEnabled()) {
+		if (mapModel.getInputEnabled()) {
 			(dragContainer || element).simpleDraggableContainer();
 		}
 
