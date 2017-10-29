@@ -239,7 +239,8 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		}
 		updateCurrentLayout(self.reactivate(layoutCalculator(idea)), sessionId);
 	};
-	this.setIdea = function (anIdea) {
+	this.setIdea = function (anIdea, tryKeepingContext) {
+		const oldSelectedIdea = currentlySelectedIdeaId;
 		if (!layoutCalculator) {
 			throw new Error('layout calculator not set');
 		};
@@ -253,8 +254,13 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		idea = anIdea;
 		idea.addEventListener('changed', onIdeaChanged);
 		onIdeaChanged();
-		self.selectNode(idea.getDefaultRootId(), true);
-		self.dispatchEvent('mapViewResetRequested');
+		if (tryKeepingContext && idea.findSubIdeaById(oldSelectedIdea)) {
+			self.selectNode(oldSelectedIdea, true);
+		} else {
+			self.selectNode(idea.getDefaultRootId(), true);
+			self.dispatchEvent('mapViewResetRequested');
+		}
+
 	};
 	this.setEditingEnabled = function (value) {
 		isEditingEnabled = value;

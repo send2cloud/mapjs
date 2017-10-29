@@ -551,11 +551,11 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		stageElement.children().finish(nodeAnimOptions.queue);
 		stageElement.finish(nodeAnimOptions.queue);
 	});
-	mapModel.addEventListener('layoutChangeComplete', function (options) {
+	mapModel.addEventListener('layoutChangeComplete', function (layoutChangeOptions) {
 		let connectorGroupClone = jQuery(), linkGroupClone = jQuery();
 		const theme = themeSource();
 
-		if ((options && options.themeChanged) || theme.noAnimations()) {
+		if ((options && options.noAnimations) || (layoutChangeOptions && layoutChangeOptions.themeChanged) || theme.noAnimations()) {
 			stageElement.children().andSelf().finish(nodeAnimOptions.queue);
 			jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector({canUseData: true, theme: theme});
 			jQuery(stageElement).find('[data-mapjs-role=link]').updateLink({theme: theme, canUseData: true});
