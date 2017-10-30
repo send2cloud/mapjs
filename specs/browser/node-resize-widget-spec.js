@@ -174,11 +174,14 @@ describe('nodeResizeWidget', function () {
 					expect(listener.calls.mostRecent().args[0].nodeWidth).toEqual(130);
 				});
 				it('should not trigger mm:resize if editing is disabled', () => {
-					const listener = jasmine.createSpy('listener');
+					const listener = jasmine.createSpy('listener'),
+						evt = eventForX(130);
 					underTest.on('mm:resize', listener);
 					mapModel.isEditingEnabled.and.returnValue(false);
-					dragHandle.trigger(jQuery.Event(args[0], eventForX(130)));
+					dragHandle.trigger(jQuery.Event(args[0], evt));
 					expect(listener).not.toHaveBeenCalled();
+					expect(evt.stopPropagation).toHaveBeenCalled();
+					expect(evt.gesture.stopPropagation).toHaveBeenCalled();
 				});
 			});
 

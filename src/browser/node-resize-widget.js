@@ -11,6 +11,14 @@ jQuery.fn.nodeResizeWidget = function (nodeId, mapModel, stagePositionForPointEv
 			minAllowedWidth = 50,
 			nodeTextElement = element.find('span[data-mapjs-role=title]'),
 			nodeTextDOM = nodeTextElement[0],
+			stopEvent = function (evt) {
+				if (evt) {
+					evt.stopPropagation();
+				}
+				if (evt && evt.gesture) {
+					evt.gesture.stopPropagation();
+				}
+			},
 			calcDragWidth = function (evt) {
 				const pos = stagePositionForPointEvent(evt),
 					dx = pos && initialPosition && (pos.x - initialPosition.x),
@@ -19,7 +27,7 @@ jQuery.fn.nodeResizeWidget = function (nodeId, mapModel, stagePositionForPointEv
 			},
 			dragHandle = jQuery('<div>').addClass('resize-node').shadowDraggable().on('mm:start-dragging mm:start-dragging-shadow', function (evt) {
 				if (!mapModel.isEditingEnabled()) {
-					return;
+					return stopEvent(evt);
 				}
 				mapModel.selectNode(nodeId);
 				initialPosition = stagePositionForPointEvent(evt);
@@ -31,7 +39,7 @@ jQuery.fn.nodeResizeWidget = function (nodeId, mapModel, stagePositionForPointEv
 				};
 			}).on('mm:stop-dragging mm:cancel-dragging', function (evt) {
 				if (!mapModel.isEditingEnabled()) {
-					return;
+					return stopEvent(evt);
 				}
 				const dragWidth = nodeTextElement.outerWidth();
 				nodeTextElement.css({'max-width': initialStyle['span.max-width'], 'min-width': initialStyle['span.min-width']});
@@ -45,7 +53,7 @@ jQuery.fn.nodeResizeWidget = function (nodeId, mapModel, stagePositionForPointEv
 				element.trigger(jQuery.Event('mm:resize', {nodeWidth: dragWidth}));
 			}).on('mm:drag', function (evt) {
 				if (!mapModel.isEditingEnabled()) {
-					return;
+					return stopEvent(evt);
 				}
 				let dragWidth = calcDragWidth(evt);
 				if (dragWidth) {
@@ -57,12 +65,7 @@ jQuery.fn.nodeResizeWidget = function (nodeId, mapModel, stagePositionForPointEv
 						element.css('min-width', nodeTextElement.outerWidth());
 					}
 				}
-				if (evt) {
-					evt.stopPropagation();
-				}
-				if (evt && evt.gesture) {
-					evt.gesture.stopPropagation();
-				}
+				stopEvent(evt);
 			});
 		dragHandle.appendTo(element);
 	});
