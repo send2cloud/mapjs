@@ -539,7 +539,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 	});
 	mapModel.addEventListener('mapViewResetRequested', function () {
 		stageElement.data({'scale': 1, 'height': 0, 'width': 0, 'offsetX': 0, 'offsetY': 0}).updateStage();
-		stageElement.children().andSelf().finish(nodeAnimOptions.queue);
+		stageElement.children().addBack().finish(nodeAnimOptions.queue);
 		jQuery(stageElement).find('.mapjs-node').each(ensureSpaceForNode);
 		jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector({canUseData: true, theme: themeSource()});
 		jQuery(stageElement).find('[data-mapjs-role=link]').updateLink({theme: themeSource()});
@@ -556,7 +556,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		const theme = themeSource();
 
 		if ((options && options.noAnimations) || (layoutChangeOptions && layoutChangeOptions.themeChanged) || theme.noAnimations()) {
-			stageElement.children().andSelf().finish(nodeAnimOptions.queue);
+			stageElement.children().addBack().finish(nodeAnimOptions.queue);
 			jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector({canUseData: true, theme: theme});
 			jQuery(stageElement).find('[data-mapjs-role=link]').updateLink({theme: theme, canUseData: true});
 		} else {
@@ -595,12 +595,12 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 			mapModel.setInputEnabled(false);
 			viewPort.finish(); /* close any pending animations */
 			editingElement.editNode(shouldSelectAll)
-			.done(function (newText) {
+			.then(function (newText) {
 				mapModel.setInputEnabled(true);
 				mapModel.updateTitle(nodeId, newText, editingNew);
 				editingElement.focus();
 			})
-			.fail(function () {
+			.catch(function () {
 				mapModel.setInputEnabled(true);
 				if (editingNew) {
 					mapModel.undo('internal');

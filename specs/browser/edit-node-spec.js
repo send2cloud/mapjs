@@ -1,4 +1,4 @@
-/*global describe, it, beforeEach, afterEach, expect, jasmine, spyOn, window, document, require */
+/*global describe, it, beforeEach, afterEach, expect, spyOn, window, document, require */
 const jQuery = require('jquery'),
 	_ = require('underscore');
 
@@ -7,7 +7,7 @@ require('../helpers/jquery-extension-matchers');
 
 describe('editNode', function () {
 	'use strict';
-	let textBox, node, resolved, rejected;
+	let textBox, node, result;
 	const triggerBlur = function (element) {
 		const e = document.createEvent('Event');
 		e.initEvent('blur', true, true);
@@ -18,9 +18,7 @@ describe('editNode', function () {
 		textBox = jQuery('<div>').attr('data-mapjs-role', 'title').text('some old text').appendTo(node);
 		spyOn(jQuery.fn, 'focus').and.callThrough();
 		spyOn(jQuery.fn, 'shadowDraggable').and.callThrough();
-		resolved = jasmine.createSpy('resolved');
-		rejected = jasmine.createSpy('rejected');
-		node.editNode().then(resolved, rejected);
+		result = node.editNode();
 	});
 	it('makes the text box content editable', function () {
 		expect(textBox.attr('contenteditable')).toBeTruthy();
@@ -66,34 +64,38 @@ describe('editNode', function () {
 		expect(selection.baseNode.parentElement).toEqual(textBox[0]);
 		expect(selection.extentNode.parentElement).toEqual(textBox[0]);
 	});
-	it('does not resolve or reject the promise immediately', function () {
-		expect(resolved).not.toHaveBeenCalled();
-		expect(rejected).not.toHaveBeenCalled();
-	});
 	describe('event processing', function () {
 		let options, event;
 		beforeEach(function () {
 			textBox.text('changed text');
 		});
-		it('completes editing when focus is lost', function () {
+		it('completes editing when focus is lost', function (done) {
+			result.then((txt) => {
+				expect(txt).toEqual('changed text');
+				expect(textBox.attr('contenteditable')).toBeFalsy();
+			}).then(done, done.fail);
 			triggerBlur(textBox[0]);
-			expect(textBox.attr('contenteditable')).toBeFalsy();
-			expect(resolved).toHaveBeenCalledWith('changed text');
 		});
-		it('consumes multi-line text', function () {
+		it('consumes multi-line text', function (done) {
 			textBox.html('changed\ntext');
+			result.then((txt) => {
+				expect(txt).toEqual('changed\ntext');
+			}).then(done, done.fail);
 			triggerBlur(textBox[0]);
-			expect(resolved).toHaveBeenCalledWith('changed\ntext');
 		});
-		it('consumes broken firefox contenteditable multi-line text', function () {
+		it('consumes broken firefox contenteditable multi-line text', function (done) {
 			textBox.html('changed<br>text');
+			result.then((txt) => {
+				expect(txt).toEqual('changed\ntext');
+			}).then(done, done.fail);
 			triggerBlur(textBox[0]);
-			expect(resolved).toHaveBeenCalledWith('changed\ntext');
 		});
-		it('converts text box content to text using innerText', function () {
+		it('converts text box content to text using innerText', function (done) {
 			spyOn(jQuery.fn, 'innerText').and.returnValue('hello there');
+			result.then((txt) => {
+				expect(txt).toEqual('hello there');
+			}).then(done, done.fail);
 			triggerBlur(textBox[0]);
-			expect(resolved).toHaveBeenCalledWith('hello there');
 		});
 		it('reactivates dragging when focus is lost', function () {
 			node.attr('mapjs-level', 2);
@@ -102,73 +104,95 @@ describe('editNode', function () {
 			expect(jQuery.fn.shadowDraggable).toHaveBeenCalledOnJQueryObject(node);
 			expect(jQuery.fn.shadowDraggable.calls.mostRecent().args).toEqual([]);
 		});
-		it('completes editing when enter is pressed and prevents further keydown event propagation', function () {
+		it('completes editing when enter is pressed and prevents further keydown event propagation', function (done) {
 			event = jQuery.Event('keydown', { which: 13 });
+			result.then(txt => {
+				expect(textBox.attr('contenteditable')).toBeFalsy();
+				expect(txt).toEqual('changed text');
+				expect(event.isPropagationStopped()).toBeTruthy();
+			}).then(done, done.fail);
 			textBox.trigger(event);
-			expect(textBox.attr('contenteditable')).toBeFalsy();
-			expect(resolved).toHaveBeenCalledWith('changed text');
-			expect(event.isPropagationStopped()).toBeTruthy();
+
 		});
-		it('completes editing when tab is pressed, prevents the default to avoid focusing out, but does not prevents event propagation so stage can add a new node', function () {
+		it('completes editing when tab is pressed, prevents the default to avoid focusing out, but does not prevents event propagation so stage can add a new node', function (done) {
 			event = jQuery.Event('keydown', { which: 9 });
+			result.then(txt => {
+				expect(textBox.attr('contenteditable')).toBeFalsy();
+				expect(txt).toEqual('changed text');
+				expect(event.isPropagationStopped()).toBeFalsy();
+				expect(event.isDefaultPrevented()).toBeTruthy();
+			}).then(done, done.fail);
 			textBox.trigger(event);
-			expect(textBox.attr('contenteditable')).toBeFalsy();
-			expect(resolved).toHaveBeenCalledWith('changed text');
-			expect(event.isPropagationStopped()).toBeFalsy();
-			expect(event.isDefaultPrevented()).toBeTruthy();
 		});
-		it('does not complete editing or prevent propagation if shift+enter is pressed - instead it lets the document handle the line break', function () {
+		it('does not complete editing or prevent propagation if shift+enter is pressed - instead it lets the document handle the line break', function (done) {
 			event = jQuery.Event('keydown', { which: 13, shiftKey: true });
+			textBox.on('keydown-complete', () => {
+				expect(textBox.attr('contenteditable')).toBeTruthy();
+				expect(event.isPropagationStopped()).toBeFalsy();
+				done();
+			});
+			result.then(done.fail, done.fail);
+
 			textBox.trigger(event);
-			expect(textBox.attr('contenteditable')).toBeTruthy();
-			expect(resolved).not.toHaveBeenCalled();
-			expect(event.isPropagationStopped()).toBeFalsy();
 		});
-		it('cancels editing when escape is pressed, restoring original text and stops event propagation', function () {
+		it('cancels editing when escape is pressed, restoring original text and stops event propagation', function (done) {
 			event = jQuery.Event('keydown', { which: 27 });
+			result.then(done.fail).catch(() => {
+				expect(textBox.attr('contenteditable')).toBeFalsy();
+				expect(event.isPropagationStopped()).toBeTruthy();
+				expect(textBox.text()).toBe('some old text');
+			}).then(done, done.fail);
+
 			textBox.trigger(event);
-			expect(textBox.attr('contenteditable')).toBeFalsy();
-			expect(rejected).toHaveBeenCalled();
-			expect(event.isPropagationStopped()).toBeTruthy();
-			expect(textBox.text()).toBe('some old text');
 		});
-		it('cancels editing if the text is not modified, even if the user did not press escape', function () {
+		it('cancels editing if the text is not modified, even if the user did not press escape', function (done) {
 			textBox.text('some title');
+			result.then(done.fail).catch(() => {
+				expect(textBox.attr('contenteditable')).toBeFalsy();
+				expect(textBox.text()).toBe('some old text');
+			}).then(done, done.fail);
+
 			triggerBlur(textBox[0]);
-			expect(textBox.attr('contenteditable')).toBeFalsy();
-			expect(rejected).toHaveBeenCalled();
-			expect(textBox.text()).toBe('some old text');
 		});
 		_.each(['ctrl', 'meta'], function (specialKey) {
-			it('stops editing but lets events propagate when ' + specialKey + ' +s is pressed so map can be saved', function () {
+			it('stops editing but lets events propagate when ' + specialKey + ' +s is pressed so map can be saved', function (done) {
 				options = { which: 83 };
 				options[specialKey + 'Key'] = true;
 				event = jQuery.Event('keydown', options);
+				result.then(txt => {
+					expect(textBox.attr('contenteditable')).toBeFalsy();
+					expect(txt).toEqual('changed text');
+					expect(event.isPropagationStopped()).toBeFalsy();
+					expect(event.isDefaultPrevented()).toBeTruthy();
+				}).then(done, done.fail);
 				textBox.trigger(event);
-				expect(textBox.attr('contenteditable')).toBeFalsy();
-				expect(resolved).toHaveBeenCalledWith('changed text');
-				expect(event.isPropagationStopped()).toBeFalsy();
-				expect(event.isDefaultPrevented()).toBeTruthy();
+
+
 			});
-			it('does not cancel editing if text has changed and ' + specialKey + '+z pressed, but cancels propagation so the map does not get this keyclick as well', function () {
+			it('does not cancel editing if text has changed and ' + specialKey + '+z pressed, but cancels propagation so the map does not get this keyclick as well', function (done) {
 				options = { which: 90 };
 				options[specialKey + 'Key'] = true;
 				event = jQuery.Event('keydown', options);
+				result.then(done.fail, done.fail);
+				textBox.on('keydown-complete', () => {
+					expect(textBox.attr('contenteditable')).toBeTruthy();
+					expect(event.isPropagationStopped()).toBeTruthy();
+					done();
+				});
 				textBox.trigger(event);
-				expect(textBox.attr('contenteditable')).toBeTruthy();
-				expect(rejected).not.toHaveBeenCalled();
-				expect(resolved).not.toHaveBeenCalled();
-				expect(event.isPropagationStopped()).toBeTruthy();
 			});
-			it('cancels editing if text has not changed and ' + specialKey + '+z pressed, also cancels propagation so the map does not get this keyclick as well', function () {
+			it('cancels editing if text has not changed and ' + specialKey + '+z pressed, also cancels propagation so the map does not get this keyclick as well', function (done) {
 				options = { which: 90 };
 				options[specialKey + 'Key'] = true;
 				textBox.text('some title');
 				event = jQuery.Event('keydown', options);
+				result.then(done.fail).catch(() => {
+					expect(textBox.attr('contenteditable')).toBeFalsy();
+					expect(event.isPropagationStopped()).toBeTruthy();
+				}).then(done, done.fail);
 				textBox.trigger(event);
-				expect(textBox.attr('contenteditable')).toBeFalsy();
-				expect(rejected).toHaveBeenCalled();
-				expect(event.isPropagationStopped()).toBeTruthy();
+
+
 			});
 		});
 	});

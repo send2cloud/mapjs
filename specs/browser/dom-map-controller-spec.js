@@ -945,15 +945,18 @@ describe('DomMapController', function () {
 			});
 		});
 		describe('nodeEditRequested', function () {
-			let underTest, node, editDeferred;
+			let underTest, node, editPromise, editResolve, editReject;
 			beforeEach(function () {
 				node = {id: '11', title: 'zeka', x: -80, y: -35, width: 30, height: 20};
 				mapModel.dispatchEvent('nodeCreated', node);
 				underTest = stage.children('[data-mapjs-role=node]').first();
-				editDeferred = jQuery.Deferred();
+				editPromise = new Promise((resolve, reject) => {
+					editResolve = resolve;
+					editReject = reject;
+				});
 				spyOn(jQuery.fn, 'focus');
 				spyOn(jQuery.fn, 'finish');
-				spyOn(jQuery.fn, 'editNode').and.returnValue(editDeferred.promise());
+				spyOn(jQuery.fn, 'editNode').and.returnValue(editPromise);
 			});
 			describe('options', function () {
 				describe('inlineEditingDisabled', function () {
@@ -994,9 +997,10 @@ describe('DomMapController', function () {
 					expect(jQuery.fn.editNode).toHaveBeenCalledOnJQueryObject(underTest);
 				});
 				describe('when editing completes', function () {
-					beforeEach(function () {
+					beforeEach(function (done) {
 						mapModel.setInputEnabled.calls.reset();
-						editDeferred.resolve('new text');
+						editPromise.then(done);
+						editResolve('new text');
 					});
 					it('re-enables input on map model', function () {
 						expect(mapModel.setInputEnabled).toHaveBeenCalledWith(true);
@@ -1011,16 +1015,24 @@ describe('DomMapController', function () {
 				describe('when editing fails', function () {
 					beforeEach(function () {
 						mapModel.setInputEnabled.calls.reset();
-						editDeferred.reject();
 					});
-					it('re-enables input on map model', function () {
-						expect(mapModel.setInputEnabled).toHaveBeenCalledWith(true);
+					it('re-enables input on map model', function (done) {
+						editPromise.then(done.fail).catch(() => {
+							expect(mapModel.setInputEnabled).toHaveBeenCalledWith(true);
+						}).then(done, done.fail);
+						editReject();
 					});
-					it('does not undo the last action', function () {
-						expect(mapModel.undo).not.toHaveBeenCalled();
+					it('does not undo the last action', function (done) {
+						editPromise.then(done.fail).catch(() => {
+							expect(mapModel.undo).not.toHaveBeenCalled();
+						}).then(done, done.fail);
+						editReject();
 					});
-					it('sets the focus back on the node', function () {
-						expect(jQuery.fn.focus).toHaveBeenCalledOnJQueryObject(underTest);
+					it('sets the focus back on the node', function (done) {
+						editPromise.then(done.fail).catch(() => {
+							expect(jQuery.fn.focus).toHaveBeenCalledOnJQueryObject(underTest);
+						}).then(done, done.fail);
+						editReject();
 					});
 				});
 			});
@@ -1028,14 +1040,17 @@ describe('DomMapController', function () {
 				beforeEach(function () {
 					mapModel.dispatchEvent('nodeEditRequested', '11', false, true);
 				});
-				it('passes the editNew correctly to mapModel when updating the title', function () {
-					editDeferred.resolve('new text');
-					expect(mapModel.updateTitle).toHaveBeenCalledWith('11', 'new text', true);
+				it('passes the editNew correctly to mapModel when updating the title', function (done) {
+					editPromise.then(() => {
+						expect(mapModel.updateTitle).toHaveBeenCalledWith('11', 'new text', true);
+					}).then(done, done.fail);
+					editResolve('new text');
 				});
-				it('calls undo to drop the newly added node when editing is cancelled', function () {
-					editDeferred.reject();
-					expect(mapModel.undo).toHaveBeenCalled();
-
+				it('calls undo to drop the newly added node when editing is cancelled', function (done) {
+					editPromise.then(done.fail).catch(() => {
+						expect(mapModel.undo).toHaveBeenCalled();
+					}).then(done, done.fail);
+					editReject();
 				});
 			});
 		});

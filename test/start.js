@@ -10,17 +10,31 @@ const MAPJS = require('../src/npm-main'),
 		const container = jQuery('#container'),
 			idea = content(testMap),
 			touchEnabled = false,
-			mapModel = new MAPJS.MapModel([]);
+			mapModel = new MAPJS.MapModel([]),
+			layoutThemeStyle = function (themeJson) {
+				const themeCSS = themeJson && new MAPJS.ThemeProcessor().process(themeJson).css;
+				if (!themeCSS) {
+					return false;
+				}
+
+				if (!window.themeCSS) {
+					jQuery('<style id="themeCSS" type="text/css"></style>').appendTo('head').text(themeCSS);
+				}
+				return true;
+			},
+			themeJson = themeProvider.default || MAPJS.defaultTheme,
+			theme = new MAPJS.Theme(themeJson),
+			getTheme = () => theme;
 
 		jQuery.fn.attachmentEditorWidget = function (mapModel) {
 			return this.each(function () {
 				mapModel.addEventListener('attachmentOpened', function (nodeId, attachment) {
 					mapModel.setAttachment(
-							'attachmentEditorWidget',
-							nodeId, {
-								contentType: 'text/html',
-								content: window.prompt('attachment', attachment && attachment.content)
-							});
+						'attachmentEditorWidget',
+						nodeId, {
+							contentType: 'text/html',
+							content: window.prompt('attachment', attachment && attachment.content)
+						});
 				});
 			});
 		};
@@ -29,12 +43,18 @@ const MAPJS = require('../src/npm-main'),
 
 		container.domMapWidget(console, mapModel, touchEnabled);
 
-		domMapController = new MAPJS.DomMapController(mapModel, container.find('[data-mapjs-role=stage]'), touchEnabled);
-		jQuery('#themecss').themeCssWidget(themeProvider, new MAPJS.ThemeProcessor(), mapModel, domMapController);
+		domMapController = new MAPJS.DomMapController(
+			mapModel,
+			container.find('[data-mapjs-role=stage]'),
+			touchEnabled,
+			undefined, // resourceTranslator
+			getTheme
+		);
+		//jQuery('#themecss').themeCssWidget(themeProvider, new MAPJS.ThemeProcessor(), mapModel, domMapController);
 		// activityLog, mapModel, touchEnabled, imageInsertController, dragContainer, centerSelectedNodeOnOrientationChange
 
-		jQuery('body').mapToolbarWidget(mapModel);
 		jQuery('body').attachmentEditorWidget(mapModel);
+		layoutThemeStyle(themeJson);
 		mapModel.setIdea(idea);
 
 
