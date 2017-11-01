@@ -39,7 +39,7 @@ jQuery.fn.updateConnector = function (optional) {
 			applyLabel = function () {
 				const labelTheme = (connection.theme && connection.theme.label) || defaultTheme.connector.default.label,
 					labelCenterPoint = calcLabelCenterPont(connection, toBox, pathElement[0], labelTheme);
-				element.data('label-center-point', labelCenterPoint);
+				element.data('labelCenterPoint', labelCenterPoint);
 				updateConnectorText(
 					element,
 					labelCenterPoint,

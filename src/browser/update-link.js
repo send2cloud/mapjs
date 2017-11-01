@@ -46,7 +46,7 @@ jQuery.fn.updateLink = function (optional) {
 			applyLabel = function (connection, toBox, pathElement) {
 				const labelTheme = connection.theme.label,
 					labelCenterPoint = calcLabelCenterPont(connection, toBox, pathElement[0], labelTheme);
-				element.data('label-center-point', labelCenterPoint);
+				element.data('labelCenterPoint', labelCenterPoint);
 				updateConnectorText(
 					element,
 					labelCenterPoint,

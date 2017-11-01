@@ -221,12 +221,12 @@ describe('updateConnector', function () {
 			expect(underTest.data('theme')).toEqual(customTheme);
 
 		});
-		it('appends the label-center-point', function () {
+		it('appends the labelCenterPoint', function () {
 			themePath.theme = customTheme;
 			underTest.updateConnector({connectorBuilder: builder});
 			expect(underTest.data('theme')).toEqual(customTheme);
-			expect(underTest.data('label-center-point').x).toEqual(20);
-			expect(underTest.data('label-center-point').y).toEqual(20);
+			expect(underTest.data('labelCenterPoint').x).toEqual(20);
+			expect(underTest.data('labelCenterPoint').y).toEqual(20);
 
 		});
 		it('paints the text label according to the default theme if no theme supplied', function () {

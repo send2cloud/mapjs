@@ -217,10 +217,10 @@ describe('updateLink', function () {
 			underTest.updateLink({linkBuilder: builder});
 			expect(underTest.data('theme')).toEqual(linkPath.theme);
 		});
-		it('appends the label-center-point', function () {
+		it('appends the labelCenterPoint', function () {
 			underTest.updateLink({linkBuilder: builder});
-			expect(underTest.data('label-center-point').x).toEqual(20);
-			expect(underTest.data('label-center-point').y).toEqual(20);
+			expect(underTest.data('labelCenterPoint').x).toEqual(20);
+			expect(underTest.data('labelCenterPoint').y).toEqual(20);
 		});
 		it('paints the rect element 2 pixels above the text element', function () {
 			linkPath.theme.label.backgroundColor = 'rgb(1, 2, 3)';
