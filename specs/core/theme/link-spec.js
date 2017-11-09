@@ -20,6 +20,10 @@ describe('Connectors', function () {
 			const path = link(parent, child, {arrow: true});
 			expect(path.arrows).toEqual(['M136,106L136,120L127,109Z']);
 		});
+		it('does not calculate the arrow if link arrow attribute is "false"', function () {
+			const path = link(parent, child, {arrow: 'false'});
+			expect(path.arrows).toBeFalsy();
+		});
 		it('returns the default link theme if no theme is provided', function () {
 			const path = link(parent, child);
 			expect(path.theme).toEqual(defaultTheme.link.default);

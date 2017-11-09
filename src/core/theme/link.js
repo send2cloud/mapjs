@@ -128,7 +128,7 @@ const Theme = require ('./theme'),
 		return {
 			d: 'M' + Math.round(conn.from.x - position.left) + ',' + Math.round(conn.from.y - position.top) + 'L' + Math.round(conn.to.x - position.left) + ',' + Math.round(conn.to.y - position.top),
 			position: position,
-			arrows: linkAttr.arrow && arrowPaths(linkAttr.arrow),
+			arrows: (linkAttr.arrow && linkAttr.arrow !== 'false') && arrowPaths(linkAttr.arrow),
 			theme: linkTheme,
 			lineProps: lineProps
 		};
