@@ -32,6 +32,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		currentDroppable = false,
 		connectorsForAnimation = jQuery(),
 		linksForAnimation = jQuery(),
+		stats = false,
 		viewPortDimensions;
 
 	const self = this,
@@ -239,13 +240,37 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		},
 		translateToPixel = function () {
 			return svgPixel;
+		},
+		record = function (evt) {
+			if (!stats) {
+				return false;
+			}
+			if (!stats[evt]) {
+				stats[evt] = 0;
+			}
+			stats[evt] = stats[evt] + 1;
+		},
+		recordCacheMiss = function (actual, expected) {
+			if (!stats) {
+				return false;
+			}
+			if (!stats.cacheMisses) {
+				stats.cacheMisses = [];
+			}
+			stats.cacheMisses.push({old: actual, new: expected});
 		};
+	self.resetStats = function () {
+		stats = {};
+	};
 
 
 	// self.setTheme = function (newTheme) {
 	// 	theme = newTheme;
 
 	// };
+	self.getStats = function () {
+		return stats;
+	};
 	self.setStageMargin = function (newMargins) {
 		stageMargin = newMargins;
 	};
@@ -257,11 +282,15 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 	self.dimensionProvider = function (idea, level) {
 		let result = false,
 			textBox = stageElement.nodeWithId(idea.id);
+		const expectedCacheMark = nodeCacheMark(idea, {level: level, theme: themeSource()});
 		if (textBox && textBox.length > 0) {
-			if (_.isEqual(textBox.data('nodeCacheMark'), nodeCacheMark(idea, {level: level, theme: themeSource()}))) {
+			if (_.isEqual(textBox.data('nodeCacheMark'), expectedCacheMark)) {
+				record('dimension-cache:hit');
 				return _.pick(textBox.data(), 'width', 'height', 'textWidth');
 			}
 		}
+		record('dimension-cache:miss');
+		recordCacheMiss(textBox.data('nodeCacheMark'), expectedCacheMark);
 		textBox = dummyTextBox;
 		textBox.appendTo('body').updateNodeContent(
 			idea,
@@ -453,6 +482,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 	mapModel.addEventListener('nodeTitleChanged nodeAttrChanged nodeLabelChanged', function (n) {
 		stageElement.nodeWithId(n.id).updateNodeContent(n, { resourceTranslator: resourceTranslator, theme: themeSource()}).each(ensureSpaceForNode);
 	});
+
 	mapModel.addEventListener('connectorCreated', function (connector) {
 		const element = stageElement.find('[data-mapjs-role=svg-container]')
 			.createConnector(connector).updateConnector({canUseData: true, theme: themeSource()});
@@ -522,6 +552,8 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		stageElement.data('scale', targetScale).updateStage();
 		centerViewOn(currentCenter.x, currentCenter.y);
 	});
+
+
 	mapModel.addEventListener('nodeVisibilityRequested', function (ideaId) {
 		const id = ideaId || mapModel.getCurrentlySelectedIdeaId(),
 			node = stageElement.nodeWithId(id);
@@ -629,6 +661,9 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		_.each(deactivatedNodes, function (nodeId) {
 			stageElement.nodeWithId(nodeId).removeClass('activated');
 		});
+	});
+	['nodeTitleChanged', 'nodeAttrChanged', 'nodeLabelChanged', 'nodeMoved', 'nodeRemoved', 'nodeCreated', 'connectorCreated', 'connectorRemoved', 'linkCreated', 'linkRemoved', 'linkAttrChanged', 'connectorAttrChanged'].forEach(evt => {
+		mapModel.addEventListener(evt, () => record(evt));
 	});
 };
 
