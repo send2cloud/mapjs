@@ -38,5 +38,8 @@ describe('nodeCacheMark', function () {
 			});
 		});
 	});
+	it('ignores group titles', function () {
+		expect(nodeCacheMark({title: 'zeka', attr: {group: 'supporting'}})).toEqual(nodeCacheMark({title: '', attr: {group: 'supporting'}}));
+	});
 });
 

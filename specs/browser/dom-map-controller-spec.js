@@ -275,6 +275,7 @@ describe('DomMapController', function () {
 			describe('holding node action', function () {
 				let underTest, holdEvent;
 				beforeEach(function () {
+					mapModel = observable(jasmine.createSpyObj('mapModel', ['setLayoutCalculator', 'selectConnector', 'getReorderBoundary', 'dropImage', 'clickNode', 'positionNodeAt', 'dropNode', 'openAttachment', 'toggleCollapse', 'undo', 'editNode', 'isEditingEnabled', 'editNode', 'setInputEnabled', 'getInputEnabled', 'updateTitle', 'getNodeIdAtPosition', 'selectNode', 'getCurrentlySelectedIdeaId', 'requestContextMenu', 'setNodeWidth']));
 					holdEvent = jQuery.Event('hold',
 						{
 							gesture: {
