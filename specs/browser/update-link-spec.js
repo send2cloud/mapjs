@@ -217,10 +217,9 @@ describe('updateLink', function () {
 			underTest.updateLink({linkBuilder: builder});
 			expect(underTest.data('theme')).toEqual(linkPath.theme);
 		});
-		it('appends the labelCenterPoint', function () {
+		it('appends the connector position so it can be used by widgets', function () {
 			underTest.updateLink({linkBuilder: builder});
-			expect(underTest.data('labelCenterPoint').x).toEqual(20);
-			expect(underTest.data('labelCenterPoint').y).toEqual(20);
+			expect(underTest.data('position')).toEqual({left: 101, top: 102, width: 50, height: 60 });
 		});
 		it('paints the rect element 2 pixels above the text element', function () {
 			linkPath.theme.label.backgroundColor = 'rgb(1, 2, 3)';

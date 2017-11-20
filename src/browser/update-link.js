@@ -44,13 +44,13 @@ jQuery.fn.updateLink = function (optional) {
 			shapeTo = element.data('nodeTo'),
 			attrs = element.data('attr') || {},
 			applyLabel = function (connection, toBox, pathElement) {
-				const labelTheme = connection.theme.label,
-					labelCenterPoint = calcLabelCenterPont(connection, toBox, pathElement[0], labelTheme);
-				element.data('labelCenterPoint', labelCenterPoint);
+				const labelText = attrs.label || '',
+					labelTheme = connection.theme.label,
+					labelCenterPoint = labelText && calcLabelCenterPont(connection.position, toBox, pathElement[0], labelTheme);
 				updateConnectorText(
 					element,
 					labelCenterPoint,
-					attrs.label || '',
+					labelText,
 					labelTheme
 				);
 			};
@@ -74,6 +74,7 @@ jQuery.fn.updateLink = function (optional) {
 
 		connection = linkBuilder(fromBox, toBox, attrs, theme);
 		element.data('theme', connection.theme);
+		element.data('position', Object.assign({}, connection.position));
 		element.css(_.extend(convertPositionToTransform(connection.position), {stroke: connection.lineProps.color}));
 
 		if (pathElement.length === 0) {

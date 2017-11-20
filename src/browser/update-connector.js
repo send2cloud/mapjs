@@ -37,13 +37,13 @@ jQuery.fn.updateConnector = function (optional) {
 				}
 			},
 			applyLabel = function () {
-				const labelTheme = (connection.theme && connection.theme.label) || defaultTheme.connector.default.label,
-					labelCenterPoint = calcLabelCenterPont(connection, toBox, pathElement[0], labelTheme);
-				element.data('labelCenterPoint', labelCenterPoint);
+				const labelText = (connectorAttr && connectorAttr.label) || '',
+					labelTheme = (connection.theme && connection.theme.label) || defaultTheme.connector.default.label,
+					labelCenterPoint = labelText && calcLabelCenterPont(connection.position, toBox, pathElement[0], labelTheme);
 				updateConnectorText(
 					element,
 					labelCenterPoint,
-					(connectorAttr && connectorAttr.label) || '',
+					labelText,
 					labelTheme
 				);
 			};
@@ -77,6 +77,7 @@ jQuery.fn.updateConnector = function (optional) {
 
 		connection = _.extend(connectorBuilder(fromBox, toBox, theme), connectorAttr);
 		element.data('theme', connection.theme);
+		element.data('position', Object.assign({}, connection.position));
 		pathElement = element.find('path.mapjs-connector');
 		hitElement = element.find('path.mapjs-link-hit');
 		element.css(_.extend(convertPositionToTransform(connection.position), {stroke: connection.color}));

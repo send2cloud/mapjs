@@ -1,12 +1,15 @@
-/*global module */
-module.exports = function calcLabelCenterPoint(connection, toBox, pathDOM, labelTheme) {
+/*global module, require */
+const defaultTheme = require('../theme/default-theme');
+module.exports = function calcLabelCenterPoint(connectionPosition, toBox, pathDOM, labelTheme) {
 	'use strict';
+	labelTheme = labelTheme || defaultTheme.connector.default.label;
+
 	if (labelTheme.position.ratio) {
 		return pathDOM.getPointAtLength(pathDOM.getTotalLength() * labelTheme.position.ratio);
 	}
 	return {
-		x: toBox.left + (toBox.width / 2) - connection.position.left,
-		y: toBox.top - connection.position.top - labelTheme.position.aboveEnd
+		x: toBox.left + (toBox.width / 2) - connectionPosition.left,
+		y: toBox.top - connectionPosition.top - labelTheme.position.aboveEnd
 	};
 };
 
