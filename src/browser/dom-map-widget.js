@@ -50,11 +50,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, dragContainer
 			'space f2': 'editNode',
 			'f': 'toggleCollapse',
 			'u meta+z ctrl+z': 'undo',
-			'Esc 0 meta+0 ctrl+0': 'resetView',
-			'r meta+shift+z ctrl+shift+z meta+y ctrl+y': 'redo',
-			'meta+plus ctrl+plus z': 'scaleUp',
-			'meta+minus ctrl+minus shift+z': 'scaleDown',
-			'Esc': 'cancelCurrentAction'
+			'r meta+shift+z ctrl+shift+z meta+y ctrl+y': 'redo'
 		},
 		charEventHandlers = {
 			'[': 'activateChildren',

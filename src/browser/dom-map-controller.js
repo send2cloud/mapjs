@@ -641,13 +641,6 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 			});
 		});
 	}
-	mapModel.addEventListener('addLinkModeToggled', function (isOn) {
-		if (isOn) {
-			stageElement.addClass('mapjs-add-link');
-		} else {
-			stageElement.removeClass('mapjs-add-link');
-		}
-	});
 	mapModel.addEventListener('linkAttrChanged', function (l) {
 		stageElement.findLine(l).data('attr', (l.attr && l.attr.style) || {}).updateLink({theme: themeSource()});
 	});

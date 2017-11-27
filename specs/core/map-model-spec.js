@@ -1410,12 +1410,14 @@ describe('MapModel', function () {
 			});
 		});
 		describe('clickNode', function () {
-			let contextMenuRequestedListener, activatedNodesChangedListener;
+			let contextMenuRequestedListener, activatedNodesChangedListener, nodeClickedListener;
 			beforeEach(function () {
 				contextMenuRequestedListener = jasmine.createSpy('contextMenuRequestedListener');
 				underTest.addEventListener('contextMenuRequested', contextMenuRequestedListener);
 				activatedNodesChangedListener = jasmine.createSpy('activatedNodesChanged');
 				underTest.addEventListener('activatedNodesChanged', activatedNodesChangedListener);
+				nodeClickedListener = jasmine.createSpy('nodeClicked');
+				underTest.addEventListener('nodeClicked', nodeClickedListener);
 			});
 			it('should activate a node if shift is pressed', function () {
 				underTest.clickNode(2, {shiftKey: true});
@@ -1428,22 +1430,12 @@ describe('MapModel', function () {
 				underTest.clickNode(2, {shiftKey: true});
 				expect(activatedNodesChangedListener).toHaveBeenCalledWith([], [2]);
 			});
-			it('should select node when not in link mode', function () {
+			it('should dispatch nodeClicked without selecting if no right-click and nothing else handles it', function () {
 				spyOn(underTest, 'selectNode');
-
-				underTest.clickNode(1);
-
-				expect(underTest.selectNode).toHaveBeenCalledWith(1);
-			});
-			it('should toggle link when in link mode', function () {
-				spyOn(underTest, 'selectNode');
-				spyOn(underTest, 'toggleLink');
-				underTest.toggleAddLinkMode();
-
-				underTest.clickNode(2);
-
-				expect(underTest.toggleLink).toHaveBeenCalledWith('mouse', 2);
+				underTest.clickNode(2, {event: 'something'});
+				expect(nodeClickedListener).toHaveBeenCalledWith(2, {event: 'something'});
 				expect(underTest.selectNode).not.toHaveBeenCalled();
+				expect(activatedNodesChangedListener).not.toHaveBeenCalledWith();
 			});
 			it('should select the node and dispatch contextMenuRequested event if node is right clicked', function () {
 				spyOn(underTest, 'selectNode');
@@ -1464,29 +1456,10 @@ describe('MapModel', function () {
 
 				expect(contextMenuRequestedListener).not.toHaveBeenCalled();
 			});
-			it('should not add link if right clicked, should dispatch contextMenuRequested event', function () {
-				underTest.toggleAddLinkMode();
-				spyOn(underTest, 'toggleLink');
+			it('should not dispatch nodeClicked if right clicked, should dispatch contextMenuRequested event', function () {
 				underTest.clickNode(2, {button: 2, layerX: 100, layerY: 200});
 				expect(contextMenuRequestedListener).toHaveBeenCalledWith(2, 100, 200);
-				expect(underTest.toggleLink).not.toHaveBeenCalled();
-			});
-		});
-		describe('cancelCurrentAction', function () {
-			let addLinkModeListener;
-			beforeEach(function () {
-				addLinkModeListener = jasmine.createSpy('addLinkModeToggled');
-				underTest.addEventListener('addLinkModeToggled', addLinkModeListener);
-			});
-			it('cancels addLinkMode if active', function () {
-				underTest.toggleAddLinkMode('source');
-				addLinkModeListener.calls.reset();
-				underTest.cancelCurrentAction();
-				expect(addLinkModeListener).toHaveBeenCalledWith(false);
-			});
-			it('does nothing if addLinkMode not active', function () {
-				underTest.cancelCurrentAction();
-				expect(addLinkModeListener).not.toHaveBeenCalledWith();
+				expect(nodeClickedListener).not.toHaveBeenCalled();
 			});
 		});
 		describe('updateLinkStyle', function () {
@@ -2225,7 +2198,7 @@ describe('MapModel', function () {
 		describe('should dispatch analytic event', function () {
 			const allMethods = ['flip', 'redo', 'undo', 'scaleUp', 'scaleDown', 'move', 'moveRelative', 'addSubIdea',
 				'addSiblingIdea', 'addSiblingIdeaBefore', 'removeSubIdea', 'editNode', 'selectNodeLeft', 'selectNodeRight', 'selectNodeUp', 'selectNodeDown',
-				'resetView', 'openAttachment', 'setAttachment', 'activateNodeAndChildren', 'activateNode', 'activateSiblingNodes', 'activateChildren', 'activateSelectedNode', 'toggleAddLinkMode', 'addLink', 'selectLink',
+				'resetView', 'openAttachment', 'setAttachment', 'activateNodeAndChildren', 'activateNode', 'activateSiblingNodes', 'activateChildren', 'activateSelectedNode', 'addLink', 'selectLink',
 				'selectConnector',
 				'setIcon', 'removeLink', 'unsetSelectedNodeWidth', 'unsetSelectedNodePosition'];
 			_.each(allMethods, function (method) {
@@ -2261,7 +2234,7 @@ describe('MapModel', function () {
 		});
 		describe('when editing is disabled edit methods should not execute ', function () {
 			const editingMethods = ['flip',  'redo', 'undo', 'moveRelative', 'addSubIdea',
-				'addSiblingIdea', 'addSiblingIdeaBefore', 'removeSubIdea', 'editNode', 'setAttachment', 'updateStyle', 'insertIntermediate', 'updateLinkStyle', 'toggleAddLinkMode', 'addLink', 'selectLink', 'removeLink',
+				'addSiblingIdea', 'addSiblingIdeaBefore', 'removeSubIdea', 'editNode', 'setAttachment', 'updateStyle', 'insertIntermediate', 'updateLinkStyle', 'addLink', 'selectLink', 'removeLink',
 				'selectConnector', 'unsetSelectedNodeWidth', 'unsetSelectedNodePosition'];
 			_.each(editingMethods, function (method) {
 				it(method + ' does not execute', function () {

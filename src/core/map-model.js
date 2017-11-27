@@ -6,7 +6,6 @@ const _ = require('underscore'),
 module.exports = function MapModel(selectAllTitles, defaultReorderMargin, optional) {
 	'use strict';
 	let idea,
-		isAddLinkMode,
 		currentLabelGenerator,
 		isInputEnabled = true,
 		isEditingEnabled = true,
@@ -299,14 +298,13 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		} else if (event && event.shiftKey) {
 			/*don't stop propagation, this is needed for drop targets*/
 			self.toggleActivationOnNode('mouse', id);
-		} else if (isAddLinkMode && !button) {
-			this.toggleLink('mouse', id);
-			this.toggleAddLinkMode();
-		} else {
+		} else if (button) {
 			this.selectNode(id);
 			if (button && button !== -1 && isInputEnabled) {
 				self.dispatchEvent('contextMenuRequested', id, event.layerX, event.layerY);
 			}
+		} else {
+			self.dispatchEvent('nodeClicked', id, event);
 		}
 	};
 	this.findIdeaById = function (id) {
@@ -727,29 +725,6 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		}
 		analytic('removeLink', source);
 		idea.removeLink(nodeIdFrom, nodeIdTo);
-	};
-
-	this.toggleAddLinkMode = function (source) {
-		if (!isEditingEnabled) {
-			return false;
-		}
-		if (!isInputEnabled) {
-			return false;
-		}
-		analytic('toggleAddLinkMode', source);
-		isAddLinkMode = !isAddLinkMode;
-		self.dispatchEvent('addLinkModeToggled', isAddLinkMode);
-	};
-	this.cancelCurrentAction = function (source) {
-		if (!isInputEnabled) {
-			return false;
-		}
-		if (!isEditingEnabled) {
-			return false;
-		}
-		if (isAddLinkMode) {
-			this.toggleAddLinkMode(source);
-		}
 	};
 	self.undo = function (source) {
 		const undoSelectionClone = revertSelectionForUndo,

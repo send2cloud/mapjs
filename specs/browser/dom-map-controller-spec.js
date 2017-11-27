@@ -1338,17 +1338,6 @@ describe('DomMapController', function () {
 					expect(jQuery.fn.updateLink.calls.mostRecent().args).toEqual([{theme: theme}]);
 				});
 			});
-			describe('addLinkModeToggled', function () {
-				it('gives the stage the mapjs-add-link class if on', function () {
-					mapModel.dispatchEvent('addLinkModeToggled', true);
-					expect(stage.hasClass('mapjs-add-link')).toBeTruthy();
-				});
-				it('gives the stage the mapjs-add-link class if on', function () {
-					stage.addClass('mapjs-add-link');
-					mapModel.dispatchEvent('addLinkModeToggled', false);
-					expect(stage.hasClass('mapjs-add-link')).toBeFalsy();
-				});
-			});
 		});
 		describe('mapScaleChanged', function () {
 			beforeEach(function () {
