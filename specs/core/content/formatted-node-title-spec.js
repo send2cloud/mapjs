@@ -29,6 +29,10 @@ describe('formattedNodeTitle', function () {
 	it('replaces multiple spaces with a single space', function () {
 		expect(underTest('something    else\t\t  again', 100)).toEqual('something else again');
 	});
+	it('removes non printable characters', () => {
+		expect(underTest('abc\bdef', 100)).toEqual('abcdef');
+		expect(underTest('abc\u0007def\u001Fghi\u0080jkl\u009Fx')).toEqual('abcdefghijklx');
+	});
 	it('trims lines but keeps new lines when replacing spaces', function () {
 		expect(underTest('   something  \n\nelse\t \n\t  again  ', 100)).toEqual('something\n\nelse\nagain');
 	});
