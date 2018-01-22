@@ -3,11 +3,14 @@
 const _ = require('underscore'),
 	observable = require('../util/observable'),
 	contentUpgrade = require('./content-upgrade');
-module.exports = function content(contentAggregate, sessionKey) {
+module.exports = function content(contentAggregate, initialSessionId) {
 	'use strict';
 	let cachedId,
+		sessionKey = initialSessionId,
 		configuration = {},
 		isRedoInProgress = false;
+
+
 	const invalidateIdCache = function () {
 			cachedId = undefined;
 		},
@@ -330,6 +333,12 @@ module.exports = function content(contentAggregate, sessionKey) {
 	};
 	contentAggregate.getSessionKey = function () {
 		return sessionKey;
+	};
+	contentAggregate.setSessionKey = function (newSessionKey) {
+		if (contentAggregate.isBatchActive()) {
+			throw 'batch-is-active';
+		}
+		sessionKey = newSessionKey;
 	};
 	contentAggregate.nextSiblingId = function (subIdeaId) {
 		const parentIdea = contentAggregate.findParent(subIdeaId),
