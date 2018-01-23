@@ -1666,6 +1666,25 @@ describe('MapModel', function () {
 
 				expect(anIdea.updateAttr).toHaveBeenCalledWith(2, 'attachment', false);
 			});
+			it('should set an attachment with a goldAssetId', () => {
+				underTest.setAttachment(
+					'source',
+					2,
+					{
+						contentType: 'text/html',
+						name: 'xx.txt',
+						goldAssetId: '123'
+					}
+				);
+
+				expect(anIdea.updateAttr).toHaveBeenCalledWith(2, 'attachment', {
+					contentType: 'text/htm',
+					name: 'xx.txt',
+					goldAssetId: '123'
+				});
+
+
+			});
 		});
 		describe('setNodeWidth', function () {
 			it('should set the width property of the idea style attribute', function () {

@@ -700,7 +700,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		}
 	};
 	this.setAttachment = function (source, nodeId, attachment) {
-		const hasAttachment = !!(attachment && attachment.content);
+		const hasAttachment = !!(attachment && (attachment.content || attachment.goldAssetId));
 		if (!isEditingEnabled) {
 			return false;
 		}
