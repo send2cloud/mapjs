@@ -1,14 +1,7 @@
 /*global require, module */
 const _ = require('underscore'),
 	LayoutModel = require('./layout/layout-model'),
-	observable = require('./util/observable'),
-	isPromise = function (object) {
-		'use strict';
-		if (!object) {
-			return false;
-		}
-		return Object.getPrototypeOf(object) === Promise.prototype;
-	};
+	observable = require('./util/observable');
 
 module.exports = function MapModel(selectAllTitles, defaultReorderMargin, optional) {
 	'use strict';
@@ -171,7 +164,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 			}
 			revertSelectionForUndo = false;
 			revertActivatedForUndo = false;
-			return self.rebuildRequired(sessionId);
+			self.rebuildRequired(sessionId);
 		},
 		currentlySelectedIdea = function () {
 			return (idea.findSubIdeaById(currentlySelectedIdeaId) || idea);
@@ -223,7 +216,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 	};
 	self.resume = function () {
 		paused = false;
-		return self.rebuildRequired();
+		self.rebuildRequired();
 	};
 	self.getIdea = function () {
 		return idea;
@@ -243,33 +236,10 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		if (layoutModel.getLayout().theme !== (idea.attr && idea.attr.theme)) {
 			self.dispatchEvent('themeChanged', idea.attr && idea.attr.theme);
 		}
-		const layout = layoutCalculator(idea);
-		if (isPromise(layout)) {
-			return layout.then(l => {
-				updateCurrentLayout(self.reactivate(l), sessionId);
-			});
-		} else {
-			return updateCurrentLayout(self.reactivate(layout), sessionId);
-		}
+		updateCurrentLayout(self.reactivate(layoutCalculator(idea)), sessionId);
 	};
 	this.setIdea = function (anIdea, tryKeepingContext) {
-		const oldSelectedIdea = currentlySelectedIdeaId,
-			complete = function () {
-				if (tryKeepingContext && idea.findSubIdeaById(oldSelectedIdea)) {
-					self.selectNode(oldSelectedIdea, true);
-				} else {
-					self.selectNode(idea.getDefaultRootId(), true);
-					self.dispatchEvent('mapViewResetRequested');
-				}
-			},
-			reloadIdea = function () {
-				const reloadResult = onIdeaChanged();
-				if (isPromise(reloadResult)) {
-					return reloadResult.then(complete);
-				} else {
-					complete();
-				}
-			};
+		const oldSelectedIdea = currentlySelectedIdeaId;
 		if (!layoutCalculator) {
 			throw new Error('layout calculator not set');
 		};
@@ -282,8 +252,13 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		}
 		idea = anIdea;
 		idea.addEventListener('changed', onIdeaChanged);
-
-		return reloadIdea();
+		onIdeaChanged();
+		if (tryKeepingContext && idea.findSubIdeaById(oldSelectedIdea)) {
+			self.selectNode(oldSelectedIdea, true);
+		} else {
+			self.selectNode(idea.getDefaultRootId(), true);
+			self.dispatchEvent('mapViewResetRequested');
+		}
 
 	};
 	this.setEditingEnabled = function (value) {
@@ -1251,7 +1226,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 	self.setLabelGenerator = function (labelGenerator, labelGeneratorName) {
 		currentLabelGenerator = labelGenerator;
 		self.dispatchEvent('labelGeneratorChange', labelGeneratorName, !!labelGenerator);
-		return self.rebuildRequired();
+		self.rebuildRequired();
 	};
 	self.getStandardReorderBoundary = function (nodeId) {
 		const node = layoutModel.getNode(nodeId),
