@@ -1547,7 +1547,7 @@ describe('MapModel', function () {
 				);
 
 				expect(anIdea.updateAttr).toHaveBeenCalledWith(2, 'attachment', {
-					contentType: 'text/htm',
+					contentType: 'text/html',
 					name: 'xx.txt',
 					goldAssetId: '123'
 				});
@@ -3317,6 +3317,11 @@ describe('MapModel', function () {
 			it('should be true when the idea can run an undo', function () {
 				underTest.updateTitle(1, 'changed');
 				expect(underTest.contextForNode(1).canUndo).toBe(true);
+			});
+			it('should be false when editing a completely new idea even when there are events in the undo queue', () => {
+				underTest.updateTitle(1, 'changed');
+				underTest.addSubIdea('mouse');
+				expect(underTest.contextForNode(1).canUndo).toBe(false);
 			});
 			it('should be false when the idea can not run an undo any more', function () {
 				underTest.updateTitle(1, 'changed');

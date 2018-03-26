@@ -784,8 +784,8 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 				hasPreferredPosition: !!hasPosition,
 				notRoot: !isRoot,
 				notLastRoot: !isRoot || (rootCount > 1),
-				canUndo: idea.canUndo(),
-				canRedo: idea.canRedo(),
+				canUndo: idea.canUndo() && !revertSelectionForUndo,
+				canRedo: idea.canRedo() && !revertSelectionForUndo,
 				canCollapse: hasChildren && !isCollapsed,
 				canExpand: hasChildren && isCollapsed
 			};
