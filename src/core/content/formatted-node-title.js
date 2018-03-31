@@ -3,6 +3,9 @@ const urlHelper = require('../util/url-helper'),
 	removeLinks = function (nodeTitle, maxUrlLength) {
 		'use strict';
 		const strippedTitle = nodeTitle && urlHelper.stripLink(nodeTitle);
+		if (!maxUrlLength) {
+			maxUrlLength = 25;
+		}
 		if (strippedTitle.trim() === '') {
 			return (!maxUrlLength || (nodeTitle.length < maxUrlLength) ? nodeTitle : (nodeTitle.substring(0, maxUrlLength) + '...'));
 		}  else {
