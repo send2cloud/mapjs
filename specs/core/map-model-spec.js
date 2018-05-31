@@ -518,7 +518,7 @@ describe('MapModel', function () {
 				});
 				underTest.setLayoutCalculator(function () {
 					return {
-						nodes: {1: {level: 1}, 2: {level: 2}, 3: {level: 3}}
+						nodes: {1: {level: 1, x: 100, y: 200}, 2: {level: 2}, 3: {level: 3}}
 					};
 				}, []);
 				underTest.setIdea(anIdea);
@@ -549,10 +549,15 @@ describe('MapModel', function () {
 			});
 		});
 		describe('updateTitle', function () {
+			let layout;
 			beforeEach(function () {
+				layout = {
+					nodes: {1: {level: 1, x: 100, y: 200}, 2: {level: 2}, 3: {level: 3}}
+				};
 				spyOn(anIdea, 'updateTitle');
 				spyOn(anIdea, 'initialiseTitle');
 				underTest.selectNode(123);
+				underTest.setLayoutCalculator(() => layout, []);
 			});
 			it('should invoke idea.updateTitle with the arguments', function () {
 				underTest.updateTitle(123, 'abc');
@@ -566,6 +571,12 @@ describe('MapModel', function () {
 				underTest.setInputEnabled(false);
 				underTest.updateTitle(123, 'abc');
 				expect(anIdea.updateTitle).toHaveBeenCalledWith(123, 'abc');
+			});
+			it('should change root node positions if required', () => {
+				layout.nodes[1].x = 99;
+				layout.nodes[1].y = 55;
+				underTest.updateTitle(123, 'abc', true);
+				expect(anIdea.getAttrById(1, 'position')).toEqual([99, 55, 1]);
 			});
 		});
 		describe('addSubIdea', function () {
@@ -983,7 +994,15 @@ describe('MapModel', function () {
 			});
 		});
 		describe('standardPositionNodeAt', function () {
+			let layout;
 			beforeEach(function () {
+				layout = {
+					nodes: {
+						1: {level: 1, rootId: 1, x: 99, y: 100},
+						2: {level: 2, rootId: 1},
+						3: {level: 3, rootId: 1}
+					}
+				};
 				anIdea = content({
 					id: 1,
 					title: 'root',
@@ -997,17 +1016,27 @@ describe('MapModel', function () {
 						}
 					}
 				});
-				underTest.setLayoutCalculator(function () {
-					return {
-						nodes: {1: {level: 1, rootId: 1}, 2: {level: 2, rootId: 1}, 3: {level: 3, rootId: 1}}
-					};
-				});
+				underTest.setLayoutCalculator(() => layout);
 				underTest.setIdea(anIdea);
 			});
-			it('assigns position for root nodes', function () {
+			it('assigns position for root nodes according to layout', function () {
+				layout.nodes[1].x = 40;
+				layout.nodes[1].y = 50;
 				underTest.standardPositionNodeAt(1, 2, 3, true);
-				expect(anIdea.findSubIdeaById(1).attr.position).toEqual([2, 3, 1]);
+				expect(anIdea.findSubIdeaById(1).attr.position).toEqual([40, 50, 1]);
 			});
+			it('assigns position for non-root nodes relative to their parent', function () {
+				underTest.standardPositionNodeAt(2, 130, 200, true);
+				expect(anIdea.findSubIdeaById(2).attr.position).toEqual([31, 100, 1]);
+			});
+			it('re-assigns root node positions when moving child nodes', function () {
+				layout.nodes[1].x = 40;
+				layout.nodes[1].y = 50;
+				underTest.standardPositionNodeAt(2, 130, 200, true);
+				expect(anIdea.findSubIdeaById(1).attr.position).toEqual([40, 50, 1]);
+			});
+
+
 		});
 		describe('topDownPositionNodeAt', function () {
 			let listener;
@@ -1232,6 +1261,15 @@ describe('MapModel', function () {
 				expect(anIdea.updateAttr).toHaveBeenCalledWith(1, 'collapsed', false);
 				expect(anIdea.dispatchEvent.calls.count()).toBe(1);
 			});
+			it('should move root nodes if required', () => {
+				layout.nodes[1].x = 134;
+				layout.nodes[1].y = 567;
+				underTest.selectNode(2);
+				spyOn(anIdea, 'dispatchEvent');
+				underTest.addSiblingIdea();
+				expect(anIdea.dispatchEvent.calls.count()).toBe(1);
+				expect(anIdea.getAttrById(1, 'position')).toEqual([134, 567, 1]);
+			});
 			it('should not expand the parent node if it is the aggregate root', function () {
 				anIdea.attr.collapsed =  true;
 				spyOn(anIdea, 'updateAttr').and.callThrough();
@@ -1365,6 +1403,16 @@ describe('MapModel', function () {
 				underTest.addSiblingIdeaBefore();
 				expect(anIdea.findSubIdeaById(3).attr).toBeFalsy();
 			});
+			it('should move root nodes if required', () => {
+				layout.nodes[1].x = 134;
+				layout.nodes[1].y = 567;
+				underTest.selectNode(2);
+				spyOn(anIdea, 'dispatchEvent');
+				underTest.addSiblingIdeaBefore();
+				expect(anIdea.dispatchEvent.calls.count()).toBe(1);
+				expect(anIdea.getAttrById(1, 'position')).toEqual([134, 567, 1]);
+			});
+
 
 			it('should not invoke anything if input is disabled', function () {
 				underTest.setInputEnabled(false);
@@ -2104,6 +2152,7 @@ describe('MapModel', function () {
 					});
 					it('should not update style on leaf nodes', function () {
 						underTest.selectNode(2);
+						anIdea.updateAttr.calls.reset();
 						underTest.collapse('source', true);
 						expect(anIdea.updateAttr).not.toHaveBeenCalled();
 					});
@@ -3426,7 +3475,10 @@ describe('MapModel', function () {
 				}
 			});
 			layout = {
-				nodes: {1: {level: 1, rootId: 1}, 2: {level: 2, width: 50, x: 100, y: 200, rootId: 1}, 3: {level: 3, rootId: 1}}
+				nodes: {
+					1: { level: 1, rootId: 1, x: 100, y: 100 },
+					2: {level: 2, width: 50, x: 100, y: 200, rootId: 1},
+					3: {level: 3, rootId: 1}}
 			};
 			underTest.setLayoutCalculator(function () {
 				return layout;
@@ -3479,12 +3531,49 @@ describe('MapModel', function () {
 					underTest.makeSelectedNodeRoot();
 					expect(anIdea.getAttrById(1, 'position')).toEqual([50, 60, 1]);
 				});
-				it('should not update the parent position if it was already set', function () {
-					anIdea.updateAttr(1, 'position', [1, 1, 4]);
+				it('should not update the parent position if it was already set correctly', function () {
+					anIdea.updateAttr(1, 'position', [50, 60, 1]);
 					underTest.makeSelectedNodeRoot();
-					expect(anIdea.getAttrById(1, 'position')).toEqual([1, 1, 4]);
+					expect(anIdea.getAttrById(1, 'position')).toEqual([50, 60, 1]);
 				});
+				it('should update the parent position if it was incorrect', function () {
+					anIdea.updateAttr(1, 'position', [1, 1, 2]);
+					underTest.makeSelectedNodeRoot();
+					expect(anIdea.getAttrById(1, 'position')).toEqual([50, 60, 1]);
+				});
+
 			});
+			describe('when layout is standard', function () {
+				beforeEach(function () {
+					layout.orientation = 'standard';
+					layout.nodes[1].x = 50;
+					layout.nodes[1].y = 60;
+					underTest.selectNode(2);
+				});
+				it('should set the position as a batch while changing the parent', function () {
+					underTest.makeSelectedNodeRoot();
+					expect(changeListener.calls.count()).toEqual(1);
+					expect(anIdea.findParent(2)).toBeFalsy();
+					expect(anIdea.getAttrById(2, 'position')).toEqual([100, 200, 1]);
+				});
+				it('should fix the parent position as well if it was not set before', function () {
+					underTest.makeSelectedNodeRoot();
+					expect(anIdea.getAttrById(1, 'position')).toEqual([50, 60, 1]);
+				});
+				it('should not update the parent position if it was already set correctly', function () {
+					anIdea.updateAttr(1, 'position', [50, 60, 1]);
+					underTest.makeSelectedNodeRoot();
+					expect(anIdea.getAttrById(1, 'position')).toEqual([50, 60, 1]);
+				});
+				it('should update the parent position if it was incorrect', function () {
+					anIdea.updateAttr(1, 'position', [1, 1, 2]);
+					underTest.makeSelectedNodeRoot();
+					expect(anIdea.getAttrById(1, 'position')).toEqual([50, 60, 1]);
+				});
+
+			});
+
+
 
 		});
 		describe('insertRoot', function () {
@@ -3507,12 +3596,17 @@ describe('MapModel', function () {
 				expect(underTest.getSelectedNodeId()).toBe(4);
 			});
 			it('should relatively position the node to the right of the currently selected node', function () {
-
 				underTest.selectNode(2);
 				underTest.insertRoot();
 				expect(anIdea.findSubIdeaById(4).attr.position).toEqual([190, 200, 1]);
 			});
-
+			it('should position other root nodes if required', () => {
+				layout.nodes[1].x = 50;
+				layout.nodes[1].y = 60;
+				underTest.selectNode(2);
+				underTest.insertRoot();
+				expect(anIdea.findSubIdeaById(1).attr.position).toEqual([50, 60, 1]);
+			});
 		});
 
 	});

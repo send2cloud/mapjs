@@ -21,6 +21,18 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		autoThemedIdeaUtils = (optional && optional.autoThemedIdeaUtils) || require('./content/auto-themed-idea-utils'),
 		reorderMargin = (optional && optional.reorderMargin) || 20,
 		layoutModel = (optional && optional.layoutModel) || new LayoutModel({nodes: {}, connectors: {}}),
+		setRootNodePositionsForPrecalculatedLayout = function (specificLayout) {
+			const rootIdeas = Object.keys(idea.ideas).map(rank => idea.ideas[rank]),
+				layout = specificLayout || layoutCalculator(idea);
+			rootIdeas.forEach(rootIdea => {
+				const existingPosition = rootIdea.attr && rootIdea.attr.position,
+					rootNodeInLayout = layout.nodes && layout.nodes[rootIdea.id],
+					shouldUpdatePosition = rootNodeInLayout && (!existingPosition || existingPosition[0] !== rootNodeInLayout.x || existingPosition[1] !== rootNodeInLayout.y);
+				if (shouldUpdatePosition) {
+					idea.updateAttr(rootIdea.id, 'position', [rootNodeInLayout.x, rootNodeInLayout.y, 1]);
+				}
+			});
+		},
 		addSubIdea = (parentId, ideaTitle, optionalNewId, optionalIdeaAttr) => {
 			const themeObj = themeSource && themeSource();
 			return autoThemedIdeaUtils.addSubIdea(idea, themeObj, parentId, ideaTitle, optionalNewId, optionalIdeaAttr);
@@ -408,6 +420,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		if (isInputEnabled) {
 			idea.batch(function () {
 				newId = addSubIdeaToTargetNode(source, target, initialTitle);
+				setRootNodePositionsForPrecalculatedLayout();
 			});
 			if (newId) {
 				if (initialTitle) {
@@ -436,6 +449,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 					idea.updateAttr(newGroupId, 'group', group);
 					newId = addSubIdea(newGroupId);
 				}
+				setRootNodePositionsForPrecalculatedLayout();
 			});
 			if (newId) {
 				editNewIdea(newId);
@@ -523,6 +537,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 					idea.positionBefore(newId, currentlySelectedIdeaId);
 				}
 			}
+			setRootNodePositionsForPrecalculatedLayout();
 		});
 		if (newId) {
 			editNewIdea(newId);
@@ -566,6 +581,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 						}
 					}
 				}
+				setRootNodePositionsForPrecalculatedLayout();
 			});
 			if (newId) {
 				if (optionalInitialText) {
@@ -590,11 +606,14 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		return removed;
 	};
 	this.updateTitle = function (ideaId, title, isNew) {
-		if (isNew) {
-			idea.initialiseTitle(ideaId, title);
-		} else {
-			idea.updateTitle(ideaId, title);
-		}
+		idea.batch(() => {
+			if (isNew) {
+				idea.initialiseTitle(ideaId, title);
+			} else {
+				idea.updateTitle(ideaId, title);
+			}
+			setRootNodePositionsForPrecalculatedLayout();
+		});
 	};
 	this.editNode = function (source, shouldSelectAll, editingNew) {
 		const currentIdea = currentlySelectedIdea(),
@@ -1116,6 +1135,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 				result = manuallyPositionSubNode() || result;
 			}
 		}
+		setRootNodePositionsForPrecalculatedLayout();
 		idea.endBatch();
 		return result;
 	};
@@ -1367,21 +1387,16 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 	// 	autoThemedIdeaUtils.themeChanged(idea, themeObj, themeId);
 	// };
 	self.makeSelectedNodeRoot = function () {
-		const nodeId = self.getSelectedNodeId(),
-			node = nodeId && layoutModel.getNode(nodeId),
-			oldRootId = node && node.rootId;
+		const nodeId = self.getSelectedNodeId();
 		if (!nodeId || idea.isRootNode(nodeId)) {
 			return false;
 		}
 		if (isInputEnabled && isEditingEnabled) {
 			return idea.batch(function () {
+				setRootNodePositionsForPrecalculatedLayout(layoutModel.getLayout());
 				const result = changeParent(nodeId, 'root');
-				if (layoutModel.getOrientation() === 'top-down') {
-					if (!idea.getAttrById(oldRootId, 'position')) {
-						setNodePositionFromCurrentLayout(oldRootId);
-					}
-					setNodePositionFromCurrentLayout(nodeId);
-				}
+				setNodePositionFromCurrentLayout(nodeId);
+				setRootNodePositionsForPrecalculatedLayout();
 				return result;
 			});
 		}
@@ -1422,6 +1437,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 			idea.batch(function () {
 				newId = createNode();
 				positionNextTo(newId, self.getSelectedNodeId());
+				setRootNodePositionsForPrecalculatedLayout();
 			});
 			if (newId) {
 				if (initialTitle) {
