@@ -56,6 +56,7 @@ jQuery.fn.editNode = function (shouldSelectAll) {
 					e.stopPropagation();
 				} else if (e.which === ESC_KEY_CODE) {
 					cancelEditing();
+					e.preventDefault();
 					e.stopPropagation();
 				} else if (e.which === TAB_KEY_CODE || (e.which === S_KEY_CODE && (e.metaKey || e.ctrlKey) && !e.altKey)) {
 					finishEditing();
