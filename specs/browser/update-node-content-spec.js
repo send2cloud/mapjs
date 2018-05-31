@@ -663,7 +663,7 @@ describe('updateNodeContent', function () {
 			expect(underTest.data('innerRect').height).toBe(40);
 		});
 
-		it('adds a top margin for decorations when they are on the top without overlap', function () {
+		it('does not add a top margin for decorations', function () {
 			const theme = new Theme(
 				{
 					node: [{
@@ -678,11 +678,11 @@ describe('updateNodeContent', function () {
 			);
 			jQuery('<div data-mapjs-role=decorations>').css('height', '21px').appendTo(underTest);
 			underTest.updateNodeContent(nodeContent, {theme: theme});
-			expect(underTest.css('margin-top')).toEqual('21px');
+			expect(underTest.css('margin-top')).toEqual('0px');
 			expect(underTest.data('innerRect').dx).toBe(0);
-			expect(underTest.data('innerRect').dy).toBe(21);
+			expect(underTest.data('innerRect').dy).toBe(0);
 			expect(underTest.data('innerRect').width).toBe(30);
-			expect(underTest.data('innerRect').height).toBe(19);
+			expect(underTest.data('innerRect').height).toBe(40);
 
 		});
 		it('clears a top margin for decorations when the node does not have decorations', function () {
@@ -708,7 +708,7 @@ describe('updateNodeContent', function () {
 
 		});
 
-		it('adds a top margin for decorations when they are on the top with overlap', function () {
+		it('does not add a top margin for decorations', function () {
 			const theme = new Theme(
 				{
 					node: [{
@@ -724,11 +724,11 @@ describe('updateNodeContent', function () {
 			);
 			jQuery('<div data-mapjs-role=decorations>').css('height', '22px').appendTo(underTest);
 			underTest.updateNodeContent(nodeContent, {theme: theme});
-			expect(underTest.css('margin-top')).toEqual('11px');
+			expect(underTest.css('margin-top')).toEqual('0px');
 			expect(underTest.data('innerRect').dx).toBe(0);
-			expect(underTest.data('innerRect').dy).toBe(11);
+			expect(underTest.data('innerRect').dy).toBe(0);
 			expect(underTest.data('innerRect').width).toBe(30);
-			expect(underTest.data('innerRect').height).toBe(29);
+			expect(underTest.data('innerRect').height).toBe(40);
 
 		});
 

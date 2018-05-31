@@ -294,7 +294,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		textBox = dummyTextBox;
 		textBox.appendTo('body').updateNodeContent(
 			idea,
-			{resourceTranslator: translateToPixel, level: level, theme: themeSource()}
+			{resourceTranslator: translateToPixel, level: level, theme: themeSource(), decorations: ['left', 'right']}
 		);
 		result = {
 			width: textBox.outerWidth(true),

@@ -268,10 +268,14 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 		updateText('');
 	} else {
 		updateText(nodeContent.title);
-		applyLinkUrl(nodeContent.title);
-		applyLabel(nodeContent.label);
-		applyNote();
-		applyAttachment();
+		if (optional && optional.decorations && !optional.decorations.includes(decorationEdge)) {
+			decorations().empty();
+		} else {
+			applyLinkUrl(nodeContent.title);
+			applyLabel(nodeContent.label);
+			applyNote();
+			applyAttachment();
+		};
 		this.css({margin: '', width: '', height: ''});
 		if (decorationEdge === 'left') {
 			nodeCacheData.innerRect.dx = decorations().outerWidth();
@@ -281,13 +285,12 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 			nodeCacheData.innerRect.width = nodeCacheData.width - decorations().outerWidth();
 			self.css('margin-right', decorations().outerWidth());
 		} else if (decorationEdge === 'top') {
-			offset = (decorations().outerHeight() * (decorationOverlap ? 0.5 : 1));
-			nodeCacheData.innerRect.dy = offset;
-			nodeCacheData.innerRect.height = nodeCacheData.height - offset;
-			if (offset) {
-				self.css('margin-top', offset);
-			}
-
+			//offset = (decorations().outerHeight() * (decorationOverlap ? 0.25 : 0.5));
+			//nodeCacheData.innerRect.dy = offset;
+			//nodeCacheData.innerRect.height = nodeCacheData.height - offset;
+			//if (offset) {
+			//	self.css('margin-top', offset);
+			//}
 		} else if (decorationEdge === 'bottom') {
 			offset = decorations().outerHeight() * (decorationOverlap ? 0.5 : 1);
 			nodeCacheData.innerRect.height = nodeCacheData.height - offset;
