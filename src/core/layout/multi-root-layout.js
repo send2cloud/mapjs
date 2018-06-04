@@ -31,14 +31,17 @@ module.exports = function MultiRootLayout() {
 		isPositioned = function (rootIdea) {
 			return globalIdeaTopLeftPosition(rootIdea).priority;
 		},
-		calcDesiredRootNodeCenter = function (storedLayout) {
-			const rootPosition = globalIdeaTopLeftPosition(storedLayout.rootIdea);
-			if (!rootPosition || !rootPosition.priority || !storedLayout.rootNode) {
+		getDesiredRootNodeOffset = function (storedLayout) {
+			let rootPosition = globalIdeaTopLeftPosition(storedLayout.rootIdea);
+			if (!storedLayout.rootNode) {
 				return {x: 0, y: 0};
 			}
+			if (!rootPosition || !rootPosition.priority) {
+				rootPosition = {x: Math.round(storedLayout.rootNode.width / -2), y: Math.round(storedLayout.rootNode.height / -2)};
+			}
 			return {
-				x: (rootPosition.x + storedLayout.rootNode.width / 2),
-				y: (rootPosition.y + storedLayout.rootNode.height / 2)
+				x: (rootPosition.x - storedLayout.rootNode.x),
+				y: (rootPosition.y - storedLayout.rootNode.y)
 			};
 		},
 		positionedLayouts = [],
@@ -59,12 +62,11 @@ module.exports = function MultiRootLayout() {
 		const mostRecentlyPositioned = positionedLayouts.length && _.max(positionedLayouts, function (layout) {
 				return globalIdeaTopLeftPosition(layout.rootIdea).priority;
 			}),
-			origin = {x: 0, y: 0}, //mostRecentlyPositioned && calcDesiredRootNodeCenter(mostRecentlyPositioned),
 			rootDistance = function (storedLayout) {
 				// return globalIdeaTopLeftPosition(storedLayout.rootIdea).priority * -1;
 				// return storedLayout.rootIdea.id;
-				const rootCenter = calcDesiredRootNodeCenter(storedLayout);
-				return Math.pow(rootCenter.x - origin.x, 2) + Math.pow(rootCenter.y - origin.y, 2);
+				const rootCenter = getDesiredRootNodeOffset(storedLayout);
+				return Math.pow(rootCenter.x, 2) + Math.pow(rootCenter.y, 2);
 			},
 			sortedPositionedLayouts = _.sortBy(positionedLayouts, rootDistance),
 			placedLayouts = [],
@@ -76,12 +78,16 @@ module.exports = function MultiRootLayout() {
 					translationResult,
 					storedLayoutPoly;
 
-				const placedRootCenter = calcDesiredRootNodeCenter(storedLayout),
-					initialTranslation = layoutGeometry.roundVector([placedRootCenter.x, placedRootCenter.y]),
+				const placedRootOffset = getDesiredRootNodeOffset(storedLayout),
+					initialTranslation = layoutGeometry.roundVector([placedRootOffset.x, placedRootOffset.y]),
 					placeNewLayout = function () {
-						let vector = layoutGeometry.unitVector([placedRootCenter.x - origin.x, placedRootCenter.y - origin.y]);
+						let vector = layoutGeometry.unitVector([placedRootOffset.x, placedRootOffset.y]);
 						if (vector[0] === 0 && vector[1] === 0) {
 							vector = [1, 0];
+						} else if (Math.abs(vector[0]) > Math.abs(vector[1])) {
+							vector = [Math.sign(vector[0]), 0];
+						} else {
+							vector = [0, Math.sign(vector[1])];
 						}
 						translationResult = layoutGeometry.translatePolyToNotOverlap(storedLayoutPoly, placedLayoutPoly, initialTranslation, vector, initialTranslation);
 						offset = {x: translationResult.translation[0], y: translationResult.translation[1]};
@@ -99,7 +105,7 @@ module.exports = function MultiRootLayout() {
 				if (placedLayouts.length) {
 					placeNewLayout();
 				} else {
-					offset = placedRootCenter;
+					offset = placedRootOffset;
 				}
 
 				mergeNodes(storedLayout, offset);
