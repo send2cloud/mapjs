@@ -40,10 +40,15 @@ describe('layoutGeometry', function () {
 			it('when vector is 0', function () {
 				expect(function () {
 					layoutGeometry.projectPointOnLineVector([3, 0], [2, 0], [0, 0]);
-				}).toThrow('invalid-args');
+				}).toThrowError('invalid-args');
 			});
 		});
 
+	});
+	describe('extension', function () {
+		it('returns the squared length of a vector', () => {
+			expect(layoutGeometry.extension([4, 3])).toEqual(25);
+		});
 	});
 	describe('orderPointsOnVector', function () {
 		let points;

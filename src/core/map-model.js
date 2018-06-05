@@ -21,9 +21,9 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		autoThemedIdeaUtils = (optional && optional.autoThemedIdeaUtils) || require('./content/auto-themed-idea-utils'),
 		reorderMargin = (optional && optional.reorderMargin) || 20,
 		layoutModel = (optional && optional.layoutModel) || new LayoutModel({nodes: {}, connectors: {}}),
-		setRootNodePositionsForPrecalculatedLayout = function (specificLayout) {
+		setRootNodePositionsForPrecalculatedLayout = function (contextNode, specificLayout) {
 			const rootIdeas = Object.keys(idea.ideas).map(rank => idea.ideas[rank]),
-				layout = specificLayout || layoutCalculator(idea);
+				layout = specificLayout || layoutCalculator(idea, contextNode);
 			rootIdeas.forEach(rootIdea => {
 				const existingPosition = rootIdea.attr && rootIdea.attr.position,
 					rootNodeInLayout = layout.nodes && layout.nodes[rootIdea.id],
@@ -420,7 +420,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		if (isInputEnabled) {
 			idea.batch(function () {
 				newId = addSubIdeaToTargetNode(source, target, initialTitle);
-				setRootNodePositionsForPrecalculatedLayout();
+				setRootNodePositionsForPrecalculatedLayout(newId);
 			});
 			if (newId) {
 				if (initialTitle) {
@@ -449,7 +449,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 					idea.updateAttr(newGroupId, 'group', group);
 					newId = addSubIdea(newGroupId);
 				}
-				setRootNodePositionsForPrecalculatedLayout();
+				setRootNodePositionsForPrecalculatedLayout(newId);
 			});
 			if (newId) {
 				editNewIdea(newId);
@@ -536,8 +536,8 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 					}
 					idea.positionBefore(newId, currentlySelectedIdeaId);
 				}
+				setRootNodePositionsForPrecalculatedLayout(newId);
 			}
-			setRootNodePositionsForPrecalculatedLayout();
 		});
 		if (newId) {
 			editNewIdea(newId);
@@ -580,8 +580,8 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 							idea.positionBefore(newId, nextId);
 						}
 					}
+					setRootNodePositionsForPrecalculatedLayout(newId);
 				}
-				setRootNodePositionsForPrecalculatedLayout();
 			});
 			if (newId) {
 				if (optionalInitialText) {
@@ -612,7 +612,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 			} else {
 				idea.updateTitle(ideaId, title);
 			}
-			setRootNodePositionsForPrecalculatedLayout();
+			setRootNodePositionsForPrecalculatedLayout(ideaId);
 		});
 	};
 	this.editNode = function (source, shouldSelectAll, editingNew) {
@@ -1135,7 +1135,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 				result = manuallyPositionSubNode() || result;
 			}
 		}
-		setRootNodePositionsForPrecalculatedLayout();
+		setRootNodePositionsForPrecalculatedLayout(nodeId);
 		idea.endBatch();
 		return result;
 	};
@@ -1393,10 +1393,10 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		}
 		if (isInputEnabled && isEditingEnabled) {
 			return idea.batch(function () {
-				setRootNodePositionsForPrecalculatedLayout(layoutModel.getLayout());
+				setRootNodePositionsForPrecalculatedLayout(nodeId, layoutModel.getLayout());
 				const result = changeParent(nodeId, 'root');
 				setNodePositionFromCurrentLayout(nodeId);
-				setRootNodePositionsForPrecalculatedLayout();
+				setRootNodePositionsForPrecalculatedLayout(nodeId);
 				return result;
 			});
 		}
@@ -1437,7 +1437,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 			idea.batch(function () {
 				newId = createNode();
 				positionNextTo(newId, self.getSelectedNodeId());
-				setRootNodePositionsForPrecalculatedLayout();
+				setRootNodePositionsForPrecalculatedLayout(newId);
 			});
 			if (newId) {
 				if (initialTitle) {

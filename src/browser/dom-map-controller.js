@@ -305,8 +305,8 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		return result;
 	};
 
-	mapModel.setLayoutCalculator(function (contentAggregate) {
-		return calculateLayout(contentAggregate, self.dimensionProvider, {theme: themeSource()});
+	mapModel.setLayoutCalculator(function (contentAggregate, contextNode) {
+		return calculateLayout(contentAggregate, self.dimensionProvider, {contextNode: contextNode, theme: themeSource()});
 	});
 
 	viewPort.on('scroll', function () {

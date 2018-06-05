@@ -38,7 +38,7 @@ module.exports = function calculateLayout(idea, dimensionProvider, optional) {
 		multiRootLayout.appendRootNodeLayout(rootResult, rootIdea);
 	});
 
-	return formatResult (multiRootLayout.getCombinedLayout(10), idea, theme, orientation);
+	return formatResult (multiRootLayout.getCombinedLayout(10, optional), idea, theme, orientation);
 	// result = calculator(idea, dimensionProvider, {h: (margin.h || margin), v: (margin.v || margin)});
 
 };

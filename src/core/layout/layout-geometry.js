@@ -89,7 +89,7 @@ const _ = require('underscore'),
 				vectorOrigin[1] + ((valDp * vector[1]) / len2)
 			];
 		if (!vector[0] && !vector[1]) {
-			throw 'invalid-args';
+			throw new Error('invalid-args');
 		}
 		return resultVector;
 	},
@@ -183,7 +183,7 @@ const _ = require('underscore'),
 			y = vector1[1] + vector2[1];
 		if (isNaN(x) || isNaN(y)) {
 			//console.log('addVectors invalid-args x', x, 'y', y, 'vector1', vector1, 'vector2', vector2);
-			throw 'invalid-args';
+			throw new Error('invalid-args');
 		}
 		return [x, y];
 	},
@@ -193,7 +193,7 @@ const _ = require('underscore'),
 			y = vector1[1] - vector2[1];
 		if (isNaN(x) || isNaN(y)) {
 			//console.log('subtractVectors invalid-args vector1', vector1, 'vector2', vector2);
-			throw 'invalid-args';
+			throw new Error('invalid-args');
 		}
 		return [x, y];
 	},
@@ -258,6 +258,10 @@ const _ = require('underscore'),
 			translation: previousTranslation,
 			translatedPoly: polyToFit
 		};
+	},
+	extension = function (vector) {
+		'use strict';
+		return Math.pow(vector[0], 2) + Math.pow(vector[1], 2);
 	};
 
 module.exports = {
@@ -275,5 +279,6 @@ module.exports = {
 	unitVector: unitVector,
 	roundVector: roundVector,
 	polygonIntersectionPoints: polygonIntersectionPoints,
-	shapeContainingIntersection: shapeContainingIntersection
+	shapeContainingIntersection: shapeContainingIntersection,
+	extension: extension
 };
