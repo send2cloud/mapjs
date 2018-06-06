@@ -88,7 +88,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 			}
 			element.show();
 		},
-		updateFontSize = function () {
+		updateTextStyle = function () {
 			const level = forcedLevel || 1,
 				styles = nodeContent.styles || (theme && theme.nodeStyles(level, nodeContent.attr)) || [],
 				nodeTheme = theme && theme.nodeTheme && applyIdeaAttributesToNodeTheme(nodeContent, theme.nodeTheme(styles));
@@ -98,6 +98,11 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 				});
 			} else {
 				self.css({'font-size': ''});
+			}
+			if (nodeTheme && nodeTheme.text && nodeTheme.text.alignment) {
+				self.css('text-align', nodeTheme.text.alignment);
+			} else {
+				self.css('text-align', '');
 			}
 		},
 		updateText = function (title) {
@@ -262,7 +267,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 	nodeCacheData.innerRect.dx = 0;
 	nodeCacheData.innerRect.dy = 0;
 
-	updateFontSize();
+	updateTextStyle();
 	if (isGroup) {
 		this.css({margin: '', width: nodeContent.width, height: nodeContent.height});
 		updateText('');

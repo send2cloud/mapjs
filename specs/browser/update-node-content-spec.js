@@ -52,6 +52,17 @@ describe('updateNodeContent', function () {
 			expect(underTest[0].style['font-size']).toEqual('18pt');
 		});
 	});
+	describe('text alignment', function () {
+		it('sets a text-align on the node if there is a text.alignment', () => {
+			nodeContent.attr = {
+				style: {
+					textAlign: 'left'
+				}
+			};
+			underTest.updateNodeContent(nodeContent, {theme: new Theme({})});
+			expect(underTest[0].style['text-align']).toEqual('left');
+		});
+	});
 	describe('dimensions', function () {
 		it('sets the x, y, width, height properties according to node values', function () {
 			underTest.updateNodeContent(nodeContent);

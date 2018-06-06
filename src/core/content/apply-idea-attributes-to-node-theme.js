@@ -1,15 +1,21 @@
 /*global module*/
 module.exports = function applyIdeaAttributesToNodeTheme(idea, nodeTheme) {
 	'use strict';
-	if (nodeTheme && nodeTheme.hasFontMultiplier) {
+	if (!nodeTheme  || !idea || !idea.attr || !idea.attr.style) {
 		return nodeTheme;
 	}
-	if (!nodeTheme || !nodeTheme.font || !idea || !idea.attr || !idea.attr.style || !idea.attr.style.fontMultiplier) {
-		return nodeTheme;
-	}
-	const fontMultiplier = idea.attr.style.fontMultiplier;
+	const fontMultiplier = idea.attr.style.fontMultiplier,
+		textAlign = idea.attr.style.textAlign;
 
-	if (Math.abs(fontMultiplier) <= 0.01 || Math.abs(fontMultiplier - 1) <= 0.01) {
+	if (textAlign) {
+		nodeTheme.text = Object.assign({}, nodeTheme.text, {alignment: textAlign});
+	}
+
+	if ((nodeTheme && nodeTheme.hasFontMultiplier)) {
+		return nodeTheme;
+	}
+
+	if (!nodeTheme.font || !fontMultiplier || Math.abs(fontMultiplier) <= 0.01 || Math.abs(fontMultiplier - 1) <= 0.01) {
 		return nodeTheme;
 	}
 	if (nodeTheme.font.size) {

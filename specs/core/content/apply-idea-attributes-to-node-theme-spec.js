@@ -12,15 +12,22 @@ describe('applyIdeaAttributesToNodeTheme', () => {
 				sizePx: 12,
 				lineSpacing: 3,
 				lineSpacingPx: 5
+			},
+			text: {
+				alignment: 'center'
 			}
 		};
 		idea = {
 			attr: {
 				style: {
-					fontMultiplier: 1.5
+					fontMultiplier: 1.5,
+					textAlign: 'left'
 				}
 			}
 		};
+	});
+	it('should set the text alignment', () => {
+		expect(underTest(idea, nodeTheme).text.alignment).toEqual('left');
 	});
 	it('should multiply the font size', () => {
 		expect(underTest(idea, nodeTheme).font.size).toEqual(15);
