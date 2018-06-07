@@ -5,7 +5,7 @@ const jQuery = require('jquery'),
 	convertPositionToTransform = require('../core/util/convert-position-to-transform'),
 	updateConnectorText = require('./update-connector-text'),
 	themeLink = require('../core/theme/link'),
-	calcLabelCenterPont = require('../core/util/calc-label-center-point'),
+	calcLabelCenterPont = require('./calc-label-center-point'),
 	showArrows = function (connection, element) {
 		'use strict';
 		const arrowElements = element.find('path.mapjs-arrow');
@@ -46,7 +46,7 @@ jQuery.fn.updateLink = function (optional) {
 			applyLabel = function (connection, toBox, pathElement) {
 				const labelText = attrs.label || '',
 					labelTheme = connection.theme.label,
-					labelCenterPoint = labelText && calcLabelCenterPont(connection.position, toBox, pathElement[0], labelTheme);
+					labelCenterPoint = labelText && calcLabelCenterPont(connection.position, toBox, connection.d, labelTheme);
 				updateConnectorText(
 					element,
 					labelCenterPoint,
@@ -62,8 +62,11 @@ jQuery.fn.updateLink = function (optional) {
 			element.hide();
 			return;
 		}
-		fromBox = shapeFrom.getBox();
-		toBox = shapeTo.getBox();
+		fromBox = shapeFrom.getDataBox();
+		toBox = shapeTo.getDataBox();
+
+		// fromBox = shapeFrom.getBox();
+		// toBox = shapeTo.getBox();
 
 		changeCheck = {from: fromBox, to: toBox, attrs: attrs, theme: theme &&  theme.name};
 		if (_.isEqual(changeCheck, element.data('changeCheck'))) {

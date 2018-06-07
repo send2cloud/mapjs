@@ -1,26 +1,19 @@
 /*global module, require */
 const _ = require('underscore'),
 	formattedNodeTitle = require('../content/formatted-node-title'),
-	applyIdeaAttributesToNodeTheme = require('../content/apply-idea-attributes-to-node-theme');
+	applyIdeaAttributesToNodeTheme = require('../content/apply-idea-attributes-to-node-theme'),
+	calcMaxWidth = require('../utils/calc-max-width');
 
 module.exports = function ThemeDimensionProvider(textSizer, options) {
 	'use strict';
-	const self = this,
-		calcMaxWidth = function (attr, nodeTheme) {
-			const maxWidth = (attr && attr.style && attr.style.width) || (nodeTheme && nodeTheme.text && nodeTheme.text.maxWidth),
-				margin = (nodeTheme && nodeTheme.margin) || (nodeTheme && nodeTheme.text && nodeTheme.text.margin) || 0;
-			if (options && options.substractMarginFromMaxWidth && margin) {
-				return  maxWidth - (2 * margin);
-			}
-			return maxWidth;
-		};
+	const self = this;
 
 	self.dimensionProviderForTheme = function (theme) {
 		return function (idea, level) {
 			const icon = idea.attr && idea.attr.icon,
 				nodeTheme = applyIdeaAttributesToNodeTheme(idea, theme.nodeTheme(theme.nodeStyles(level, idea.attr))),
 				title = formattedNodeTitle(idea.title),
-				maxWidth = calcMaxWidth(idea.attr, nodeTheme),
+				maxWidth = calcMaxWidth(idea.attr, nodeTheme, options),
 				requestedWidth = (idea.attr && idea.attr.style && idea.attr.style.width) || 0,
 				textBox = _.extend({}, textSizer(title, maxWidth, nodeTheme.font));
 
@@ -54,7 +47,7 @@ module.exports = function ThemeDimensionProvider(textSizer, options) {
 			const image = node.attr && node.attr.icon,
 				nodeTheme = applyIdeaAttributesToNodeTheme(node, theme.nodeTheme(theme.nodeStyles(node.level, node.attr))),
 				title = formattedNodeTitle(node.title),
-				maxWidth = calcMaxWidth(node.attr, nodeTheme),
+				maxWidth = calcMaxWidth(node.attr, nodeTheme, options),
 				textBox = textSizer(title, maxWidth, nodeTheme.font);
 			let textWidth = Math.min(node.width - (2 * nodeTheme.margin), textBox.width),
 				textLayout,

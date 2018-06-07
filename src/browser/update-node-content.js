@@ -5,7 +5,8 @@ const jQuery = require('jquery'),
 	foregroundStyle = require('../core/theme/foreground-style'),
 	formattedNodeTitle = require('../core/content/formatted-node-title'),
 	nodeCacheMark = require('./node-cache-mark'),
-	applyIdeaAttributesToNodeTheme = require('../core/content/apply-idea-attributes-to-node-theme');
+	applyIdeaAttributesToNodeTheme = require('../core/content/apply-idea-attributes-to-node-theme'),
+	calcMaxWidth = require('../core/util/calc-max-width');
 
 require('./set-theme-class-list');
 
@@ -88,10 +89,10 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 			}
 			element.show();
 		},
+		level = forcedLevel || 1,
+		styles = nodeContent.styles || (theme && theme.nodeStyles(level, nodeContent.attr)) || [],
+		nodeTheme = theme && theme.nodeTheme && applyIdeaAttributesToNodeTheme(nodeContent, theme.nodeTheme(styles)),
 		updateTextStyle = function () {
-			const level = forcedLevel || 1,
-				styles = nodeContent.styles || (theme && theme.nodeStyles(level, nodeContent.attr)) || [],
-				nodeTheme = theme && theme.nodeTheme && applyIdeaAttributesToNodeTheme(nodeContent, theme.nodeTheme(styles));
 			if (nodeTheme && nodeTheme.hasFontMultiplier) {
 				self.css({
 					'font-size': nodeTheme.font.size + 'pt'
@@ -162,8 +163,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 		setIcon = function (icon) {
 			let textHeight,
 				textWidth,
-				maxTextWidth,
-				padding;
+				maxTextWidth;
 			const textBox = textSpan(),
 				selfProps = {
 					'min-height': '',
@@ -176,13 +176,15 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 				textProps = {
 					'margin-top': '',
 					'margin-left': ''
-				};
+				},
+				padding = (nodeTheme && nodeTheme.margin) || 10;
 			self.css({padding: ''});
 			if (icon) {
-				padding = parseInt(self.css('padding-left'), 10);
+				//padding = parseInt(self.css('padding-left'), 10);
 				textHeight = textBox.outerHeight();
 				textWidth = textBox.outerWidth();
-				maxTextWidth = parseInt(textBox.css('max-width'), 10);
+				maxTextWidth = calcMaxWidth(nodeContent.attr, nodeTheme);
+				// maxTextWidth = parseInt(textBox.css('max-width'), 10);
 				_.extend(selfProps, {
 					'background-image': 'url("' + (resourceTranslator ? resourceTranslator(icon.url) : icon.url) + '")',
 					'background-repeat': 'no-repeat',

@@ -163,12 +163,18 @@ module.exports = function ThemeProcessor() {
 				appendDecorationStyles(styleSelector, nodeStyle);
 				appendSpanStyles(styleSelector, nodeStyle);
 			});
-			return result.join('');
+			return result;
+		},
+		processThemeStyles = (theme) => {
+			if (theme.noAnimations) {
+				return [];
+			}
+			return ['.mapjs-node:not(.noTransition):not(.dragging), [data-mapjs-role="svg-container"] :not(.noTransition), [data-mapjs-role="svg-container"] :not(.noTransition) * { transition-property: transform left top width height max-width max-height; transition-duration: 400ms;}'];
 		};
 	self.process = function (theme) {
 		let nodeStyles = '';
 		if (theme.node) {
-			nodeStyles = processNodeStyles(theme.node);
+			nodeStyles = processThemeStyles(theme).concat(processNodeStyles(theme.node)).join('');
 		}
 		return {
 			css: nodeStyles

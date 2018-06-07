@@ -40,7 +40,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		nodeAnimOptions = { duration: 400, queue: 'nodeQueue', easing: 'linear' },
 		reorderBounds = mapModel.isEditingEnabled() ? stageElement.createReorderBounds() : jQuery('<div>'),
 		svgPixel = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>',
-		dummyTextBox = jQuery('<div>').addClass('mapjs-node').css({position: 'absolute', visibility: 'hidden'}),
+		dummyTextBox = jQuery('<div>').addClass('mapjs-node').addClass('noTransition').css({position: 'absolute', visibility: 'hidden'}),
 		getViewPortDimensions = function () {
 			if (viewPortDimensions) {
 				return viewPortDimensions;
@@ -583,38 +583,39 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		stageElement.children().finish(nodeAnimOptions.queue);
 		stageElement.finish(nodeAnimOptions.queue);
 	});
-	mapModel.addEventListener('layoutChangeComplete', function (layoutChangeOptions) {
-		let connectorGroupClone = jQuery(), linkGroupClone = jQuery();
+	mapModel.addEventListener('layoutChangeComplete', function (/*layoutChangeOptions*/) {
+		// let connectorGroupClone = jQuery(),
+		// 	linkGroupClone = jQuery();
 		const theme = themeSource();
 
-		if ((options && options.noAnimations) || (layoutChangeOptions && layoutChangeOptions.themeChanged) || theme.noAnimations()) {
-			stageElement.children().addBack().finish(nodeAnimOptions.queue);
-			jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector({canUseData: true, theme: theme});
-			jQuery(stageElement).find('[data-mapjs-role=link]').updateLink({theme: theme, canUseData: true});
-		} else {
-			connectorsForAnimation.each(function () {
-				if (!jQuery(this).animateConnectorToPosition(nodeAnimOptions, 2)) {
-					connectorGroupClone = connectorGroupClone.add(this);
-				}
-			});
-			linksForAnimation.each(function () {
-				if (!jQuery(this).animateConnectorToPosition(nodeAnimOptions, 2)) {
-					linkGroupClone = linkGroupClone.add(this);
-				}
-			});
-			stageElement.animate({'opacity': 1}, _.extend({
-				progress: function () {
-					connectorGroupClone.updateConnector({theme: theme});
-					linkGroupClone.updateLink({theme: theme});
-				},
-				complete: function () {
-					connectorGroupClone.updateConnector({canUseData: true, theme: theme});
-					linkGroupClone.updateLink({theme: theme, canUseData: true});
-				}
-			}, nodeAnimOptions));
-			stageElement.children().dequeue(nodeAnimOptions.queue);
-			stageElement.dequeue(nodeAnimOptions.queue);
-		}
+		// if ((options && options.noAnimations) || (layoutChangeOptions && layoutChangeOptions.themeChanged) || theme.noAnimations()) {
+		stageElement.children().addBack().finish(nodeAnimOptions.queue);
+		jQuery(stageElement).find('[data-mapjs-role=connector]').updateConnector({canUseData: true, theme: theme});
+		jQuery(stageElement).find('[data-mapjs-role=link]').updateLink({theme: theme, canUseData: true});
+		// } else {
+		// 	connectorsForAnimation.each(function () {
+		// 		if (!jQuery(this).animateConnectorToPosition(nodeAnimOptions, 2)) {
+		// 			connectorGroupClone = connectorGroupClone.add(this);
+		// 		}
+		// 	});
+		// 	linksForAnimation.each(function () {
+		// 		if (!jQuery(this).animateConnectorToPosition(nodeAnimOptions, 2)) {
+		// 			linkGroupClone = linkGroupClone.add(this);
+		// 		}
+		// 	});
+		// 	stageElement.animate({'opacity': 1}, _.extend({
+		// 		progress: function () {
+		// 			connectorGroupClone.updateConnector({theme: theme});
+		// 			linkGroupClone.updateLink({theme: theme});
+		// 		},
+		// 		complete: function () {
+		// 			connectorGroupClone.updateConnector({canUseData: true, theme: theme});
+		// 			linkGroupClone.updateLink({theme: theme, canUseData: true});
+		// 		}
+		// 	}, nodeAnimOptions));
+		// 	stageElement.children().dequeue(nodeAnimOptions.queue);
+		// 	stageElement.dequeue(nodeAnimOptions.queue);
+		// }
 		connectorsForAnimation = jQuery();
 		linksForAnimation = jQuery();
 		ensureNodeVisible(stageElement.nodeWithId(mapModel.getCurrentlySelectedIdeaId()));

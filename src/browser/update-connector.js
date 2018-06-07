@@ -8,7 +8,7 @@ const jQuery = require('jquery'),
 	lineStrokes = require('../core/theme/line-strokes'),
 	convertPositionToTransform = require('../core/util/convert-position-to-transform'),
 	updateConnectorText = require('./update-connector-text'),
-	calcLabelCenterPont = require('../core/util/calc-label-center-point');
+	calcLabelCenterPont = require('./calc-label-center-point');
 
 
 require('./get-box');
@@ -39,7 +39,7 @@ jQuery.fn.updateConnector = function (optional) {
 			applyLabel = function () {
 				const labelText = (connectorAttr && connectorAttr.label) || '',
 					labelTheme = (connection.theme && connection.theme.label) || defaultTheme.connector.default.label,
-					labelCenterPoint = labelText && calcLabelCenterPont(connection.position, toBox, pathElement[0], labelTheme);
+					labelCenterPoint = labelText && calcLabelCenterPont(connection.position, toBox, connection.d, labelTheme);
 				updateConnectorText(
 					element,
 					labelCenterPoint,
@@ -104,8 +104,9 @@ jQuery.fn.updateConnector = function (optional) {
 				hitElement.remove();
 			}
 		}
-
 		applyLabel();
+		// setTimeout(() => applyLabel(), 500);
+		// applyLabel();
 
 	});
 };

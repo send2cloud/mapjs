@@ -17,10 +17,12 @@ const createSVG = require('./create-svg'),
 	},
 	updateConnectorText = function (parentElement, centrePoint, labelText, labelTheme) {
 		'use strict';
-		const rectElement = getTextElement(parentElement, labelText, 'rect'),
-			textElement = getTextElement(parentElement, labelText),
+		const g = getTextElement(parentElement, labelText, 'g'),
+			rectElement = g && getTextElement(g, labelText, 'rect'),
+			textElement = g && getTextElement(g, labelText),
 			textDOM = textElement && textElement[0],
-			rectDOM = rectElement && rectElement[0];
+			rectDOM = rectElement && rectElement[0],
+			translate = {};
 
 		let dimensions = false;
 		if (!textDOM) {
@@ -33,10 +35,18 @@ const createSVG = require('./create-svg'),
 		textDOM.style.dominantBaseline = 'hanging';
 		textElement.text(labelText.trim());
 		dimensions = textDOM.getClientRects()[0];
-		textDOM.setAttribute('x', Math.round(centrePoint.x - dimensions.width / 2));
-		textDOM.setAttribute('y', Math.round(centrePoint.y - dimensions.height));
-		rectDOM.setAttribute('x', Math.round(centrePoint.x - dimensions.width / 2));
-		rectDOM.setAttribute('y', Math.round(centrePoint.y - dimensions.height - 2));
+		translate.x = Math.round(centrePoint.x - dimensions.width / 2);
+		translate.y = Math.round(centrePoint.y - dimensions.height - 2);
+		// textDOM.style.left = Math.round(centrePoint.x - dimensions.width / 2);
+		// textDOM.style.top = Math.round(centrePoint.y - dimensions.height);
+		g[0].style.transform = `translate(${translate.x}px, ${translate.y}px)`;
+		textDOM.setAttribute('x', 0); //Math.round(centrePoint.x - dimensions.width / 2));
+		textDOM.setAttribute('y', 2); //Math.round(centrePoint.y - dimensions.height));
+
+		// rectDOM.style.left = Math.round(centrePoint.x - dimensions.width / 2);
+		// rectDOM.style.top = Math.round(centrePoint.y - dimensions.height - 2);
+		rectDOM.setAttribute('x', 0); //Math.round(centrePoint.x - dimensions.width / 2));
+		rectDOM.setAttribute('y', 0); //Math.round(centrePoint.y - dimensions.height - 2));
 		rectDOM.setAttribute('height', Math.round(dimensions.height));
 		rectDOM.setAttribute('width', Math.round(dimensions.width));
 		rectDOM.style.fill = labelTheme.backgroundColor;
