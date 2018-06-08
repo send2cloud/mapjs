@@ -169,7 +169,7 @@ module.exports = function ThemeProcessor() {
 			if (theme.noAnimations) {
 				return [];
 			}
-			return ['.mapjs-node:not(.noTransition):not(.dragging), [data-mapjs-role="svg-container"] :not(.noTransition), [data-mapjs-role="svg-container"] :not(.noTransition) * { transition-property: transform left top width height max-width max-height; transition-duration: 400ms;}'];
+			return ['body:not(.noTransition) .mapjs-node:not(.noTransition):not(.dragging), body:not(.noTransition) [data-mapjs-role="svg-container"] :not(.noTransition), body:not(.noTransition) [data-mapjs-role="svg-container"] :not(.noTransition) :not(.noTransition) { transition-property: transform, left, d, top, opacity; transition-duration: 400ms;}'];
 		};
 	self.process = function (theme) {
 		let nodeStyles = '';

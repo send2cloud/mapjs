@@ -2,7 +2,7 @@
 const _ = require('underscore'),
 	formattedNodeTitle = require('../content/formatted-node-title'),
 	applyIdeaAttributesToNodeTheme = require('../content/apply-idea-attributes-to-node-theme'),
-	calcMaxWidth = require('../utils/calc-max-width');
+	calcMaxWidth = require('../util/calc-max-width');
 
 module.exports = function ThemeDimensionProvider(textSizer, options) {
 	'use strict';

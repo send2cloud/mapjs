@@ -271,7 +271,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 
 	updateTextStyle();
 	if (isGroup) {
-		this.css({margin: '', width: nodeContent.width, height: nodeContent.height});
+		this.css({margin: '', width: nodeContent.width, height: nodeContent.height, opacity: 1});
 		updateText('');
 	} else {
 		updateText(nodeContent.title);
@@ -283,7 +283,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 			applyNote();
 			applyAttachment();
 		};
-		this.css({margin: '', width: '', height: ''});
+		this.css({margin: '', width: '', height: '', opacity: 1});
 		if (decorationEdge === 'left') {
 			nodeCacheData.innerRect.dx = decorations().outerWidth();
 			nodeCacheData.innerRect.width = nodeCacheData.width - decorations().outerWidth();

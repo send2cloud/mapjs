@@ -43,7 +43,7 @@ jQuery.fn.updateLink = function (optional) {
 			shapeFrom = element.data('nodeFrom'),
 			shapeTo = element.data('nodeTo'),
 			attrs = element.data('attr') || {},
-			applyLabel = function (connection, toBox, pathElement) {
+			applyLabel = function (connection, toBox) {
 				const labelText = attrs.label || '',
 					labelTheme = connection.theme.label,
 					labelCenterPoint = labelText && calcLabelCenterPont(connection.position, toBox, connection.d, labelTheme);
@@ -92,7 +92,7 @@ jQuery.fn.updateLink = function (optional) {
 		});
 
 		if (hitElement.length === 0) {
-			hitElement = createSVG('path').attr('class', 'mapjs-link-hit').appendTo(element);
+			hitElement = createSVG('path').attr('class', 'mapjs-link-hit noTransition').appendTo(element);
 		}
 		hitElement.attr({
 			'd': connection.d,

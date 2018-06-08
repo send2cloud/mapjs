@@ -1,6 +1,6 @@
 /*global module, require */
 const createSVG = require('./create-svg'),
-	getTextElement = function (parentElement, labelText, elementType) {
+	getTextElement = function (parentElement, labelText, elementType, centrePoint) {
 		'use strict';
 		elementType = elementType || 'text';
 		let textElement = parentElement.find(elementType + '.mapjs-connector-text');
@@ -10,6 +10,9 @@ const createSVG = require('./create-svg'),
 		} else {
 			if (textElement.length === 0) {
 				textElement = createSVG(elementType).attr('class', 'mapjs-connector-text');
+				if (centrePoint) {
+					textElement[0].style.transform = `translate(${centrePoint.x}px, ${centrePoint.y}px)`;
+				}
 				textElement.appendTo(parentElement);
 			}
 			return textElement;
@@ -17,7 +20,7 @@ const createSVG = require('./create-svg'),
 	},
 	updateConnectorText = function (parentElement, centrePoint, labelText, labelTheme) {
 		'use strict';
-		const g = getTextElement(parentElement, labelText, 'g'),
+		const g = getTextElement(parentElement, labelText, 'g', centrePoint),
 			rectElement = g && getTextElement(g, labelText, 'rect'),
 			textElement = g && getTextElement(g, labelText),
 			textDOM = textElement && textElement[0],
