@@ -1,4 +1,4 @@
-/*global describe, it, beforeEach, afterEach, expect, spyOn, window, document, require */
+/*global describe, it, beforeEach, afterEach, expect, spyOn, document, require */
 const jQuery = require('jquery'),
 	_ = require('underscore');
 
@@ -18,6 +18,7 @@ describe('editNode', function () {
 		textBox = jQuery('<div>').attr('data-mapjs-role', 'title').text('some old text').appendTo(node);
 		spyOn(jQuery.fn, 'focus').and.callThrough();
 		spyOn(jQuery.fn, 'shadowDraggable').and.callThrough();
+		spyOn(jQuery.fn, 'placeCaretAtEnd').and.callThrough();
 		result = node.editNode();
 	});
 	it('makes the text box content editable', function () {
@@ -57,12 +58,7 @@ describe('editNode', function () {
 		expect(jQuery.fn.shadowDraggable).toHaveBeenCalledWith({disable: true});
 	});
 	it('puts the caret at the end of the textbox', function () {
-		const selection = window.getSelection();
-		expect(selection.type).toEqual('Caret');
-		expect(selection.baseOffset).toEqual(10);
-		expect(selection.extentOffset).toEqual(10);
-		expect(selection.baseNode.parentElement).toEqual(textBox[0]);
-		expect(selection.extentNode.parentElement).toEqual(textBox[0]);
+		expect(jQuery.fn.placeCaretAtEnd).toHaveBeenCalledOnJQueryObject(textBox);
 	});
 	describe('event processing', function () {
 		let options, event;
