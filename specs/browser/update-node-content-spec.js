@@ -9,7 +9,7 @@ require('../helpers/jquery-extension-matchers');
 
 describe('updateNodeContent', function () {
 	'use strict';
-	let underTest, nodeContent, style;
+	let underTest, nodeContent, style, theme;
 	const isHeadless = function () {
 		return (navigator.userAgent.indexOf('PhantomJS')  !== -1);
 	};
@@ -26,6 +26,7 @@ describe('updateNodeContent', function () {
 			height: 40,
 			id: 44
 		};
+		theme = new Theme({node: [{name: 'default', text: {margin: 5, maxWidth: 160}}]});
 	});
 	afterEach(function () {
 		underTest.remove();
@@ -37,7 +38,7 @@ describe('updateNodeContent', function () {
 	describe('styles', function () {
 		it('sets the data styles from the theme', function () {
 			nodeContent.attr = { group: 'blue' };
-			underTest.updateNodeContent(nodeContent, {theme: new Theme({})});
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.data('styles')).toEqual(['attr_group_blue', 'attr_group', 'level_3', 'default']);
 		});
 	});
@@ -48,7 +49,7 @@ describe('updateNodeContent', function () {
 					fontMultiplier: 2
 				}
 			};
-			underTest.updateNodeContent(nodeContent, {theme: new Theme({})});
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest[0].style['font-size']).toEqual('18pt');
 		});
 	});
@@ -59,7 +60,7 @@ describe('updateNodeContent', function () {
 					textAlign: 'left'
 				}
 			};
-			underTest.updateNodeContent(nodeContent, {theme: new Theme({})});
+			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest[0].style['text-align']).toEqual('left');
 		});
 	});
@@ -151,11 +152,6 @@ describe('updateNodeContent', function () {
 
 	});
 	describe('setting the styles', function () {
-		let theme;
-		beforeEach(function () {
-			theme = new Theme({name: 'test'});
-		});
-
 		it('sets the level attribute to the node content level', function () {
 			underTest.updateNodeContent(nodeContent, {theme: theme});
 			expect(underTest.attr('mapjs-level')).toBe('3');
@@ -299,7 +295,6 @@ describe('updateNodeContent', function () {
 				};
 				nodeContent.title = 'AAAA';
 
-				underTest.addClass('test-padding');
 			});
 			it('sets the generic background properties to the image which does not repeat', function () {
 				underTest.updateNodeContent(nodeContent);
@@ -334,7 +329,7 @@ describe('updateNodeContent', function () {
 			});
 			it('positions left icons left of node text and vertically centers the text', function () {
 				nodeContent.attr.icon.position = 'left';
-				underTest.updateNodeContent(nodeContent);
+				underTest.updateNodeContent(nodeContent, {theme: theme});
 				expect(underTest.css('background-position')).toBe('5px 50%');
 				expect(underTest.css('padding-left')).toEqual('410px');
 				if (!isHeadless()) {
@@ -343,7 +338,7 @@ describe('updateNodeContent', function () {
 			});
 			it('positions right icons right of node text and vertically centers the text', function () {
 				nodeContent.attr.icon.position = 'right';
-				underTest.updateNodeContent(nodeContent);
+				underTest.updateNodeContent(nodeContent, {theme: theme});
 
 				if (!isHeadless()) {
 					expect(underTest.css('background-position')).toBe('right 5px 50%');
@@ -356,7 +351,7 @@ describe('updateNodeContent', function () {
 			});
 			it('positions right icons right of node text and vertically centers the text for a fixed layouts', function () {
 				nodeContent.attr.icon.position = 'right';
-				underTest.updateNodeContent(nodeContent, {fixedLayout: true});
+				underTest.updateNodeContent(nodeContent, {fixedLayout: true, theme: theme});
 				expect(underTest.css('background-position')).toBe('170px 50%');
 				expect(underTest.css('padding-right')).toEqual('410px');
 				if (!isHeadless()) {
@@ -365,7 +360,7 @@ describe('updateNodeContent', function () {
 			});
 			it('positions top icons top of node text and horizontally centers the text', function () {
 				nodeContent.attr.icon.position = 'top';
-				underTest.updateNodeContent(nodeContent);
+				underTest.updateNodeContent(nodeContent, {theme: theme});
 
 				expect(underTest.css('background-position')).toBe('50% 5px');
 				expect(underTest.css('padding-top')).toEqual('510px');
@@ -374,7 +369,7 @@ describe('updateNodeContent', function () {
 			});
 			it('positions bottom icons bottom of node text and horizontally centers the text', function () {
 				nodeContent.attr.icon.position = 'bottom';
-				underTest.updateNodeContent(nodeContent);
+				underTest.updateNodeContent(nodeContent, {theme: theme});
 
 				if (!isHeadless()) {
 					expect(underTest.css('background-position')).toBe('50% bottom 5px');
@@ -385,7 +380,7 @@ describe('updateNodeContent', function () {
 			});
 			it('positions bottom icons bottom of node text and horizontally centers the text for fixed layout', function () {
 				nodeContent.attr.icon.position = 'bottom';
-				underTest.updateNodeContent(nodeContent, {fixedLayout: true});
+				underTest.updateNodeContent(nodeContent, {fixedLayout: true, theme: theme});
 				if (!isHeadless()) {
 					expect(underTest.css('background-position')).toBe('50% 23px');
 				}
@@ -711,7 +706,7 @@ describe('updateNodeContent', function () {
 			);
 			jQuery('<div data-mapjs-role=decorations>').css('height', '0').appendTo(underTest);
 			underTest.updateNodeContent(nodeContent, {theme: theme});
-			expect(underTest.attr('style')).toBeFalsy();
+			expect(underTest.attr('style')).toEqual('opacity: 1;');
 			expect(underTest.data('innerRect').dx).toBe(0);
 			expect(underTest.data('innerRect').dy).toBe(0);
 			expect(underTest.data('innerRect').width).toBe(30);

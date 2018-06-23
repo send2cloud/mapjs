@@ -180,11 +180,9 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 				padding = (nodeTheme && nodeTheme.margin) || 10;
 			self.css({padding: ''});
 			if (icon) {
-				//padding = parseInt(self.css('padding-left'), 10);
 				textHeight = textBox.outerHeight();
 				textWidth = textBox.outerWidth();
 				maxTextWidth = calcMaxWidth(nodeContent.attr, nodeTheme);
-				// maxTextWidth = parseInt(textBox.css('max-width'), 10);
 				_.extend(selfProps, {
 					'background-image': 'url("' + (resourceTranslator ? resourceTranslator(icon.url) : icon.url) + '")',
 					'background-repeat': 'no-repeat',
@@ -291,13 +289,6 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 		} else if (decorationEdge === 'right') {
 			nodeCacheData.innerRect.width = nodeCacheData.width - decorations().outerWidth();
 			self.css('margin-right', decorations().outerWidth());
-		} else if (decorationEdge === 'top') {
-			//offset = (decorations().outerHeight() * (decorationOverlap ? 0.25 : 0.5));
-			//nodeCacheData.innerRect.dy = offset;
-			//nodeCacheData.innerRect.height = nodeCacheData.height - offset;
-			//if (offset) {
-			//	self.css('margin-top', offset);
-			//}
 		} else if (decorationEdge === 'bottom') {
 			offset = decorations().outerHeight() * (decorationOverlap ? 0.5 : 1);
 			nodeCacheData.innerRect.height = nodeCacheData.height - offset;
