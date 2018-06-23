@@ -95,6 +95,11 @@ describe('updateConnector', function () {
 		expect(path.attr('d')).toEqual('M50,20Q50,190 140,142');
 		expect(path.attr('stroke-width')).toEqual('13');
 	});
+	it('adds a noTransition class to the link hit', () => {
+		underTest.updateConnector();
+		const path = underTest.find('path.mapjs-link-hit');
+		expect(path.hasClass('noTransition')).toBeTruthy();
+	});
 
 	it('positions the connector to the upper left edge of the nodes, and expands it to the bottom right edge of the nodes', function () {
 		underTest.updateConnector();
@@ -173,10 +178,7 @@ describe('updateConnector', function () {
 	});
 	describe('painting labels', function () {
 		let themePath,
-			textField,
-			textDims,
 			builder,
-			rectField,
 			customTheme;
 		beforeEach(() => {
 			customTheme = {
@@ -210,7 +212,7 @@ describe('updateConnector', function () {
 		});
 		it('adds a text label if it is in the attributes', function () {
 			underTest.updateConnector({connectorBuilder: builder});
-			textField = underTest.find('text');
+			const textField = underTest.find('text');
 			expect(textField.length).toEqual(1);
 			expect(textField.text()).toEqual('blah blah blah');
 			expect(textField[0].style.dominantBaseline).toEqual('hanging');
@@ -229,10 +231,15 @@ describe('updateConnector', function () {
 		});
 		it('paints the text label according to the default theme if no theme supplied', function () {
 			underTest.updateConnector({connectorBuilder: builder});
-			textField = underTest.find('text');
-			textDims = textField[0].getClientRects()[0];
-			expect(parseInt(textField.attr('x'))).toEqual(Math.round(30 - textDims.width / 2));
-			expect(parseInt(textField.attr('y'))).toEqual(Math.round(30 - textDims.height));
+			const textField = underTest.find('text'),
+				textG = textField.parent(),
+				textDims = textField[0].getClientRects()[0],
+				expectedX = Math.round(30 - textDims.width / 2),
+				expectedPadding = 2,
+				expectedY = Math.round(30 - textDims.height) - expectedPadding;
+			expect(parseInt(textField.attr('x'))).toEqual(0);
+			expect(parseInt(textField.attr('y'))).toEqual(expectedPadding);
+			expect(textG.attr('style')).toEqual(`transform: translate(${expectedX}px, ${expectedY}px);`);
 			expect(textField[0].style.stroke).toEqual('none');
 			expect(textField[0].style.fill).toEqual('rgb(79, 79, 79)');
 			expect(textField[0].style.fontSize).toEqual('12px');
@@ -241,10 +248,16 @@ describe('updateConnector', function () {
 		it('positions the text label according to the theme settings returned from themePath', function () {
 			themePath.theme = customTheme;
 			underTest.updateConnector({connectorBuilder: builder});
-			textField = underTest.find('text');
-			textDims = textField[0].getClientRects()[0];
-			expect(parseInt(textField.attr('x'))).toEqual(Math.round(20 - textDims.width / 2));
-			expect(parseInt(textField.attr('y'))).toEqual(Math.round(20 - textDims.height));
+			const textField = underTest.find('text'),
+				textG = textField.parent(),
+				textDims = textField[0].getClientRects()[0],
+				expectedX = Math.round(20 - textDims.width / 2),
+				expectedPadding = 2,
+				expectedY = Math.round(20 - textDims.height) - expectedPadding;
+			expect(parseInt(textField.attr('x'))).toEqual(0);
+			expect(parseInt(textField.attr('y'))).toEqual(expectedPadding);
+			expect(textG.attr('style')).toEqual(`transform: translate(${expectedX}px, ${expectedY}px);`);
+
 			expect(textField[0].style.fill).toEqual('rgb(10, 20, 30)');
 			expect(textField[0].style.fontSize).toEqual('12px');
 			expect(textField[0].style.fontWeight).toEqual('bold');
@@ -256,24 +269,30 @@ describe('updateConnector', function () {
 			customTheme.label.position = {aboveEnd: 10};
 			themePath.theme = customTheme;
 			underTest.updateConnector({connectorBuilder: builder});
-			textField = underTest.find('text');
-			textDims = textField[0].getClientRects()[0];
+			const textField = underTest.find('text'),
+				textG = textField.parent(),
+				textDims = textField[0].getClientRects()[0],
+				expectedX = Math.round(44 - textDims.width / 2),
+				expectedPadding = 2,
+				expectedY = Math.round(8 - textDims.height) - expectedPadding;
 			// cx = 130 - 101 + 30/2 = 44
 			// cy = 120 - 102 - 10  = 8
-			expect(parseInt(textField.attr('x'))).toEqual(Math.round(44 - textDims.width / 2));
-			expect(parseInt(textField.attr('y'))).toEqual(Math.round(8 - textDims.height));
+			expect(parseInt(textField.attr('x'))).toEqual(0);
+			expect(parseInt(textField.attr('y'))).toEqual(expectedPadding);
+			expect(textG.attr('style')).toEqual(`transform: translate(${expectedX}px, ${expectedY}px);`);
 		});
 		it('paints the rect element 2 pixels above the text element', function () {
 			customTheme.label.backgroundColor = 'rgb(1, 2, 3)';
 			customTheme.label.borderColor = 'rgb(4, 5, 6)';
 			themePath.theme = customTheme;
 			underTest.updateConnector({connectorBuilder: builder});
-			textField = underTest.find('text');
-			textDims = textField[0].getClientRects()[0];
-			rectField = underTest.find('rect');
+			const textField = underTest.find('text'),
+				textDims = textField[0].getClientRects()[0],
+				textG = textField.parent(),
+				rectField = textG.find('rect');
 
-			expect(parseInt(rectField.attr('x'))).toEqual(parseInt(textField.attr('x')));
-			expect(parseInt(rectField.attr('y'))).toEqual(parseInt(textField.attr('y') - 2));
+			expect(parseInt(rectField.attr('x'))).toEqual(0);
+			expect(parseInt(rectField.attr('y'))).toEqual(0);
 			expect(parseInt(rectField.attr('width'))).toEqual(Math.round(textDims.width));
 			expect(parseInt(rectField.attr('height'))).toEqual(Math.round(textDims.height));
 			expect(rectField[0].style.stroke).toEqual('rgb(4, 5, 6)');

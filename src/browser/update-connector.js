@@ -9,38 +9,25 @@ const jQuery = require('jquery'),
 	updateConnectorText = require('./update-connector-text'),
 	calcLabelCenterPont = require('./calc-label-center-point'),
 	buildConnection = require('../browser/build-connection'),
-	connectionIsUpdated = (element, connection) => {
+	connectionIsUpdated = (element, connection, theme) => {
 		'use strict';
-		if (!connection || _.isEqual(connection, element.data('changeCheck'))) {
+		const connectionPropCheck = JSON.stringify(connection) + (theme && theme.name);
+		if (!connection || connectionPropCheck === element.data('changeCheck')) {
 			return false;
 		}
-		element.data('changeCheck', connection);
-		return  connection;
+		element.data('changeCheck', connectionPropCheck);
+		return connection;
 	};
-
-
-// require('./get-box');
 require('./get-data-box');
 
 jQuery.fn.updateConnector = function (optional) {
 	'use strict';
-	const //connectorBuilder = optional && optional.connectorBuilder || themeConnector,
-		theme = optional && optional.theme;
+	const theme = optional && optional.theme;
 	return jQuery.each(this, function () {
-		let pathElement, hitElement/*, fromBox, toBox*/;
-		// changeCheck = false;
+		let pathElement, hitElement;
 		const element = jQuery(this),
 			connectorAttr = element.data('attr'),
 			allowParentConnectorOverride = !(theme && theme.blockParentConnectorOverride),
-			// applyInnerRect = function (shape, box) {
-			// 	const innerRect = shape.data().innerRect;
-			// 	if (innerRect) {
-			// 		box.left += innerRect.dx;
-			// 		box.top += innerRect.dy;
-			// 		box.width = innerRect.width;
-			// 		box.height = innerRect.height;
-			// 	}
-			// },
 			connection = buildConnection(element, optional),
 			applyLabel = function () {
 				const labelText = (connectorAttr && connectorAttr.label) || '',
@@ -55,35 +42,12 @@ jQuery.fn.updateConnector = function (optional) {
 				);
 			};
 
-
-
-
 		if (!connection) {
 			element.remove();
 			return;
 		}
-		// if (canUseData) {
-		// 	fromBox = shapeFrom.getDataBox();
-		// 	toBox = shapeTo.getDataBox();
-		// } else {
-		// 	fromBox = shapeFrom.getBox();
-		// 	toBox = shapeTo.getBox();
-		// }
-		// applyInnerRect(shapeFrom, fromBox);
-		// applyInnerRect(shapeTo, toBox);
-		/*
-		fromBox.level = shapeFrom.attr('mapjs-level');
-		toBox.level = shapeTo.attr('mapjs-level');
-		*/
-		// fromBox.styles = shapeFrom.data('styles');
-		// toBox.styles = shapeTo.data('styles');
-		// changeCheck = {from: fromBox, to: toBox, theme: theme &&  theme.name, attr: connectorAttr};
-		// if (_.isEqual(changeCheck, element.data('changeCheck'))) {
-		// 	return;
-		// }
-		// element.data('changeCheck', changeCheck);
 
-		if (!connectionIsUpdated(element, connection)) {
+		if (!connectionIsUpdated(element, connection, theme)) {
 			return;
 		}
 		element.data('theme', connection.theme);
@@ -115,13 +79,6 @@ jQuery.fn.updateConnector = function (optional) {
 			}
 		}
 		applyLabel();
-		// if (appendPathElement) {
-		//element.removeClass('noTransition');
-		// }
-
-		// setTimeout(() => applyLabel(), 500);
-		// applyLabel();
-
 	});
 };
 
