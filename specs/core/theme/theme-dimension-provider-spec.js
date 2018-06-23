@@ -188,13 +188,6 @@ describe('ThemeDimensionProvider', function () {
 					nlpFunc(node);
 					expect(textSizer).toHaveBeenCalledWith('my node text', 20, 'theme font info here');
 				});
-				it('should remove margin from max width if option set', function () {
-					options.substractMarginFromMaxWidth = true;
-					node.title = 'my node text www.google.com';
-					nlpFunc(node);
-					expect(textSizer).toHaveBeenCalledWith('my node text', 18, 'theme font info here');
-
-				});
 				it('should pass the title, idea preferred width and theme font to textsizer', function () {
 					node.attr.style = {
 						width: 25

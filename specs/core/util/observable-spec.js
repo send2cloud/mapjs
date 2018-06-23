@@ -47,7 +47,7 @@ describe('Observable', function () {
 			throw barf;
 		}, 1);
 		obs.addEventListener('TestEvt', listener);
-		spyOn(console, 'log');
+		spyOn(console, 'trace');
 		try {
 			obs.dispatchEvent('TestEvt', 'some', 'args');
 		} catch (e) {
@@ -55,7 +55,7 @@ describe('Observable', function () {
 		}
 
 		expect(listener).toHaveBeenCalledWith('some', 'args');
-		expect(console.log).toHaveBeenCalledWith('dispatchEvent failed',  barf, jasmine.any(Object));
+		expect(console.trace).toHaveBeenCalledWith('dispatchEvent failed',  barf, jasmine.any(Object));
 	});
 	it('does not dispatch events to unsubscribed listeners', function () {
 		obs.addEventListener('TestEvt', listener);

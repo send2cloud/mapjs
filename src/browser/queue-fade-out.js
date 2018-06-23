@@ -1,4 +1,4 @@
-/*global require, console */
+/*global require, setTimeout */
 const jQuery = require('jquery');
 jQuery.fn.queueFadeOut = function (theme) {
 	'use strict';
@@ -7,17 +7,14 @@ jQuery.fn.queueFadeOut = function (theme) {
 			if (element.is(':focus')) {
 				element.parents('[tabindex]').focus();
 			}
-			console.log('removing');
 			return element.remove();
 		};
 	if (!theme || theme.noAnimations()) {
-		console.log('not fading');
 		return removeElement();
 	}
-	console.log('fading');
 	return element
 	.on('transitionend', removeElement)
 	.css('opacity', 0);
-
+	setTimeout(removeElement, 500);
 };
 

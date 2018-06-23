@@ -32,7 +32,6 @@ describe('DomMapController', function () {
 		resourceTranslator = jasmine.createSpy('resourceTranslator');
 		themeSource = () => themeFromSource;
 		domMapController = new DomMapController(mapModel, stage, false, resourceTranslator, themeSource);
-		spyOn(jQuery.fn, 'queueFadeIn').and.callThrough();
 	});
 	afterEach(function () {
 		viewPort.remove();
@@ -176,9 +175,6 @@ describe('DomMapController', function () {
 					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node, {theme: theme, resourceTranslator: resourceTranslator});
 					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledOnJQueryObject(underTest);
 					expect(jQuery.fn.updateNodeContent.calls.count()).toBe(1);
-				});
-				it('schedules a fade-in animation', function () {
-					expect(jQuery.fn.queueFadeIn).toHaveBeenCalledOnJQueryObject(underTest);
 				});
 				it('connects the node tap event to mapModel clickNode', function () {
 					const event = jQuery.Event('tap');
@@ -754,7 +750,6 @@ describe('DomMapController', function () {
 				mapModel.dispatchEvent('nodeVisibilityRequested', '11.12');
 				expect(jQuery.fn.animate).toHaveBeenCalledOnJQueryObject(viewPort);
 				expect(jQuery.fn.animate.calls.first().args[0]).toEqual({scrollLeft: 30, scrollTop: 50});
-				expect(viewPort.queue()).toEqual([]);
 			});
 		});
 
@@ -767,8 +762,11 @@ describe('DomMapController', function () {
 				spyOn(jQuery.fn, 'queueFadeOut');
 			});
 			it('animates a fade-out', function () {
+				const theme = new Theme({name: 'test'});
+				setTheme(theme);
 				mapModel.dispatchEvent('nodeRemoved', node);
 				expect(jQuery.fn.queueFadeOut).toHaveBeenCalledOnJQueryObject(underTest);
+				expect(jQuery.fn.queueFadeOut.calls.mostRecent().args).toEqual([theme]);
 			});
 		});
 		describe('nodeMoved', function () {
@@ -847,47 +845,15 @@ describe('DomMapController', function () {
 					spyOn(jQuery.fn, 'animate').and.returnValue(underTest);
 				});
 				_.each([
+					['above', 20, -30],
+					['below', 20, 45],
+					['left of', -35, 10],
+					['right of', 95, 10],
 					['on left edge of', -20, 10],
 					['on right edge of', 80, 10],
 					['on top edge of', 20, -15],
 					['on bottom edge of', 20, 35],
 					['inside', 20, 10]
-				],
-				function (testArgs) {
-					const caseName = testArgs[0], nodeX = testArgs[1], nodeY = testArgs[2];
-					describe('when ' + caseName + ' viewport', function () {
-						beforeEach(function () {
-							mapModel.dispatchEvent('nodeMoved', {x: nodeX, y: nodeY, width: 20, height: 10, id: 1});
-						});
-						it('does not update screen coordinates immediately', function () {
-							expect(underTest.css('left')).toBe('0px');
-							expect(underTest.css('top')).toBe('0px');
-						});
-						it('does not fire the moved event immediately', function () {
-							expect(moveListener).not.toHaveBeenCalled();
-						});
-						it('fires the moveanimate event', function () {
-							expect(animateMoveListener).toHaveBeenCalled();
-						});
-						it('schedules an animation to move the coordinates', function () {
-							expect(jQuery.fn.animate).toHaveBeenCalledOnJQueryObject(underTest);
-							expect(jQuery.fn.animate.calls.first().args[0]).toEqual({left: nodeX, top: nodeY, opacity: 1});
-						});
-						it('fires the move event after the animation completes', function () {
-							jQuery.fn.animate.calls.first().args[1].complete();
-							expect(underTest.css('left')).toBe(nodeX + 'px');
-							expect(underTest.css('top')).toBe(nodeY + 'px');
-							expect(moveListener).toHaveBeenCalled();
-							expect(underTest).not.toHaveOwnStyle('opacity');
-						});
-
-					});
-				});
-				_.each([
-					['above', 20, -30],
-					['below', 20, 45],
-					['left of', -35, 10],
-					['right of', 95, 10]
 				], function (testArgs) {
 					const caseName = testArgs[0], nodeX = testArgs[1], nodeY = testArgs[2];
 					describe('when ' + caseName + ' viewport', function () {
@@ -1071,14 +1037,17 @@ describe('DomMapController', function () {
 				mapModel.dispatchEvent('nodeCreated', {id: '1.to', title: 'zeka2', x: 80, y: 35, width: 50, height: 34});
 				nodeFrom = jQuery('#node_1_from');
 				nodeTo = jQuery('#node_1_to');
+				spyOn(jQuery.fn, 'createConnector').and.callThrough();
 				spyOn(jQuery.fn, 'updateConnector').and.callThrough();
-				jQuery.fn.queueFadeIn.calls.reset();
-
 				mapModel.dispatchEvent('connectorCreated', connector);
 				underTest = svgContainer.children('[data-mapjs-role=connector]').first();
 
 			});
 			describe('connectorCreated', function () {
+				it('invokes createConnector with the theme options', () => {
+					expect(jQuery.fn.createConnector).toHaveBeenCalledOnJQueryObject(svgContainer);
+					expect(jQuery.fn.createConnector.calls.mostRecent().args).toEqual([connector, {theme: theme}]);
+				});
 				it('adds a connector element to the stage', function () {
 					expect(underTest.length).toBe(1);
 					expect(underTest.parent()[0]).toEqual(svgContainer[0]);
@@ -1095,7 +1064,7 @@ describe('DomMapController', function () {
 				});
 				it('updates the connector content', function () {
 					expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(underTest);
-					expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{canUseData: true, theme: theme}]);
+					expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{theme: theme}]);
 				});
 				it('sets the connector attributes as data', function () {
 					expect(underTest.data('attr')).toEqual({lovely: true});
@@ -1125,61 +1094,22 @@ describe('DomMapController', function () {
 				describe('event wiring for node updates', function () {
 					beforeEach(function () {
 						jQuery.fn.updateConnector.calls.reset();
-						spyOn(jQuery.fn, 'animateConnectorToPosition');
 					});
 					_.each(['from', 'to'], function (node) {
-						describe('moving node ' + node, function () {
-							beforeEach(function () {
-								jQuery('#node_1_' + node).trigger('mapjs:move');
-							});
-							it('updates connector', function () {
-								expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(underTest);
-								expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{theme: theme, canUseData: true}]);
-							});
-							it('does not add connectors to animation list', function () {
-								mapModel.dispatchEvent('layoutChangeComplete');
-								expect(jQuery.fn.animateConnectorToPosition).not.toHaveBeenCalled();
-							});
-						});
-						it('updates the connector immediately on theme change', function () {
-							mapModel.dispatchEvent('layoutChangeComplete', {themeChanged: true});
+						it('moving node ' + node  + ' updates connector', function () {
+							jQuery('#node_1_' + node).trigger('mapjs:move');
 							expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(underTest);
-							expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{theme: theme, canUseData: true}]);
-						});
-						describe('animating node ' + node, function () {
-							beforeEach(function () {
-								jQuery('#node_1_' + node).trigger('mapjs:animatemove');
-							});
-							it('does not update the connector immediately', function () {
-								expect(jQuery.fn.updateConnector).not.toHaveBeenCalled();
-							});
-							it('does not animate the connector immediately', function () {
-								expect(jQuery.fn.animateConnectorToPosition).not.toHaveBeenCalled();
-							});
-							it('animates the connector after the layout change is complete', function () {
-								mapModel.dispatchEvent('layoutChangeComplete');
-								expect(jQuery.fn.animateConnectorToPosition).toHaveBeenCalledOnJQueryObject(underTest);
-							});
-							it('if a connector cannot simply be animated, updates with each animation progress tick', function () {
-								jQuery.fn.animateConnectorToPosition.and.returnValue(false);
-								jQuery.fn.updateConnector.calls.reset();
-
-								spyOn(jQuery.fn, 'animate');
-								mapModel.dispatchEvent('layoutChangeComplete');
-
-								jQuery.fn.animate.calls.mostRecent().args[1].progress();
-								expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(underTest);
-								expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{theme: theme}]);
-
-							});
+							expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{theme: theme}]);
 						});
 					});
 				});
 			});
 			describe('connectorRemoved', function () {
-				it('removes the element', function () {
+				it('queues fadeout for the element', function () {
+					spyOn(jQuery.fn, 'queueFadeOut').and.callThrough();
 					mapModel.dispatchEvent('connectorRemoved', connector);
-					expect(underTest.parent().length).toEqual(0);
+					expect(jQuery.fn.queueFadeOut).toHaveBeenCalledOnJQueryObject(underTest);
+					expect(jQuery.fn.queueFadeOut.calls.mostRecent().args).toEqual([theme]);
 				});
 			});
 
@@ -1191,7 +1121,7 @@ describe('DomMapController', function () {
 					jQuery.fn.updateConnector.calls.reset();
 					mapModel.dispatchEvent('connectorAttrChanged', connector);
 					expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(underTest);
-					expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{canUseData: true, theme: theme}]);
+					expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{theme: theme}]);
 				});
 				it('updates the connector data attributes', function () {
 					mapModel.dispatchEvent('connectorAttrChanged', connector);
@@ -1219,13 +1149,17 @@ describe('DomMapController', function () {
 				nodeFrom = jQuery('#node_1_from');
 				nodeTo = jQuery('#node_1_to');
 				spyOn(jQuery.fn, 'updateLink').and.callThrough();
-				jQuery.fn.queueFadeIn.calls.reset();
-
+				spyOn(jQuery.fn, 'createLink').and.callThrough();
 				mapModel.dispatchEvent('linkCreated', link);
 				underTest = svgContainer.children('[data-mapjs-role=link]').first();
 
 			});
 			describe('linkCreated', function () {
+				it('calls createLink with theme options', function () {
+					expect(jQuery.fn.createLink).toHaveBeenCalledOnJQueryObject(svgContainer);
+					expect(jQuery.fn.createLink.calls.mostRecent().args).toEqual([link, {theme: theme}]);
+				});
+
 				it('adds a link element to the stage', function () {
 					expect(underTest.length).toBe(1);
 					expect(underTest.parent()[0]).toEqual(svgContainer[0]);
@@ -1255,7 +1189,6 @@ describe('DomMapController', function () {
 
 					beforeEach(function () {
 						jQuery.fn.updateLink.calls.reset();
-						spyOn(jQuery.fn, 'animateConnectorToPosition');
 
 					});
 					_.each(['from', 'to'], function (node) {
@@ -1267,50 +1200,17 @@ describe('DomMapController', function () {
 								expect(jQuery.fn.updateLink).toHaveBeenCalledOnJQueryObject(underTest);
 								expect(jQuery.fn.updateLink.calls.mostRecent().args).toEqual([{theme: theme}]);
 							});
-							it('does not add links to animation list', function () {
-								mapModel.dispatchEvent('layoutChangeComplete');
-								expect(jQuery.fn.animateConnectorToPosition).not.toHaveBeenCalled();
-							});
-						});
-						it('updates the connector immediately on theme change', function () {
-							mapModel.dispatchEvent('layoutChangeComplete', {themeChanged: true});
-							expect(jQuery.fn.updateLink).toHaveBeenCalledOnJQueryObject(underTest);
-							expect(jQuery.fn.updateLink.calls.mostRecent().args).toEqual([{theme: theme, canUseData: true}]);
-						});
-
-						describe('animating node ' + node, function () {
-							beforeEach(function () {
-								jQuery('#node_1_' + node).trigger('mapjs:animatemove');
-							});
-							it('does not update the link immediately', function () {
-								expect(jQuery.fn.updateLink).not.toHaveBeenCalled();
-							});
-							it('does not animate the link immediately', function () {
-								expect(jQuery.fn.animateConnectorToPosition).not.toHaveBeenCalled();
-							});
-							it('animates the link after the layout change is complete', function () {
-								mapModel.dispatchEvent('layoutChangeComplete');
-								expect(jQuery.fn.animateConnectorToPosition).toHaveBeenCalledOnJQueryObject(underTest);
-							});
-							it('if a link cannot simply be animated, updates with each animation progress tick', function () {
-								jQuery.fn.animateConnectorToPosition.and.returnValue(false);
-								jQuery.fn.updateLink.calls.reset();
-
-								spyOn(jQuery.fn, 'animate');
-								mapModel.dispatchEvent('layoutChangeComplete');
-
-								jQuery.fn.animate.calls.mostRecent().args[1].progress();
-								expect(jQuery.fn.updateLink).toHaveBeenCalledOnJQueryObject(underTest);
-								expect(jQuery.fn.updateLink.calls.mostRecent().args).toEqual([{theme: theme}]);
-							});
 						});
 					});
 				});
 			});
 			describe('linkRemoved', function () {
 				it('schedules a fade out animation', function () {
+					spyOn(jQuery.fn, 'queueFadeOut').and.callThrough();
 					mapModel.dispatchEvent('linkRemoved', link);
-					expect(underTest.parent().length).toEqual(0);
+					expect(jQuery.fn.queueFadeOut).toHaveBeenCalledOnJQueryObject(underTest);
+					expect(jQuery.fn.queueFadeOut.calls.mostRecent().args).toEqual([theme]);
+
 				});
 			});
 			describe('linkAttrChanged', function () {
@@ -1411,7 +1311,7 @@ describe('DomMapController', function () {
 				jQuery.fn.updateConnector.calls.reset();
 				mapModel.dispatchEvent('mapViewResetRequested');
 				expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(jQuery('[data-mapjs-role=connector]'));
-				expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{canUseData: true, theme: theme}]);
+				expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{theme: theme}]);
 			});
 			it('should update Links', function () {
 				jQuery.fn.updateLink.calls.reset();

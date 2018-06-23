@@ -3,8 +3,9 @@ const ThemeProcessor = require('../../../src/core/theme/theme-processor'),
 	underTest = new ThemeProcessor();
 describe('MAPJS.ThemeProcessor', function () {
 	'use strict';
+	const processWithoutAnimations = obj => underTest.process(Object.assign({noAnimations: true}, obj));
 	it('converts a trivial single-item theme file to css', function () {
-		const result = underTest.process({
+		const result = processWithoutAnimations({
 			node: [
 				{
 					name: 'default',
@@ -16,8 +17,20 @@ describe('MAPJS.ThemeProcessor', function () {
 			'border-radius:12px;' +
 		'}');
 	});
-	it('converts a trivial multi-property item theme file to css', function () {
+	it('adds css transition properties if animations are not explicitly blocked', function () {
 		const result = underTest.process({
+			node: [
+				{
+					name: 'default',
+					cornerRadius: 12
+				}
+			]
+		});
+		expect(result.css).toEqual(`body:not(.noTransition) .mapjs-node:not(.noTransition):not(.dragging), body:not(.noTransition) [data-mapjs-role="svg-container"] :not(.noTransition), body:not(.noTransition) [data-mapjs-role="svg-container"] :not(.noTransition) :not(.noTransition) { transition-property: transform, left, d, top, opacity; transition-duration: 400ms;}.mapjs-node{border-radius:12px;}`);
+	});
+
+	it('converts a trivial multi-property item theme file to css', function () {
+		const result = processWithoutAnimations({
 			node: [
 				{
 					name: 'default',
@@ -34,7 +47,7 @@ describe('MAPJS.ThemeProcessor', function () {
 		'}');
 	});
 	it('converts a multi-style theme to css', function () {
-		const result = underTest.process({
+		const result = processWithoutAnimations({
 			node: [{
 				name: 'default',
 				cornerRadius: 12,
@@ -57,7 +70,7 @@ describe('MAPJS.ThemeProcessor', function () {
 		);
 	});
 	it('replaces spaces with underscores in theme names', function () {
-		const result = underTest.process({
+		const result = processWithoutAnimations({
 			node: [
 				{
 					name: 'def au lt',
@@ -85,19 +98,19 @@ describe('MAPJS.ThemeProcessor', function () {
 		describe('text', function () {
 			describe('alignment', function () {
 				it('reads it into the text-align', function () {
-					const result = underTest.process({node: [{name: 'default', text: {alignment: 'left'}}]});
+					const result = processWithoutAnimations({node: [{name: 'default', text: {alignment: 'left'}}]});
 					expect(result.css).toEqual('.mapjs-node{text-align:left;}');
 				});
 			});
 			describe('margin', function () {
 				it('reads it into the padding of the node style and sets margin to 0', function () {
-					const result = underTest.process({node: [{name: 'default', text: {margin: 5}}]});
+					const result = processWithoutAnimations({node: [{name: 'default', text: {margin: 5}}]});
 					expect(result.css).toEqual('.mapjs-node{padding:5px;}');
 				});
 			});
 			describe('font', function () {
 				it('combines line spacing and font styles', function () {
-					const result = underTest.process({node: [{name: 'default',
+					const result = processWithoutAnimations({node: [{name: 'default',
 						text: {
 							font: {
 								lineSpacing: 5,
@@ -111,7 +124,7 @@ describe('MAPJS.ThemeProcessor', function () {
 			});
 			describe('regular/dark/light colours', function () {
 				it('converts dark/light/regular into separate styles', function () {
-					const result = underTest.process({node: [{name: 'default',
+					const result = processWithoutAnimations({node: [{name: 'default',
 						text: {
 							color: '#4F4F4F',
 							lightColor: '#EEEEEE',
@@ -141,19 +154,19 @@ describe('MAPJS.ThemeProcessor', function () {
 					theme.node[0].decorations.edge = 'top';
 				});
 				it('creates link position styles', function () {
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:0;top:-8px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:0;top:-8px;}');
 				});
 				it('will position above if overlap is false', function () {
 					theme.node[0].decorations.overlap = false;
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:0;top:-16px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:0;top:-16px;}');
 				});
 				it('will position in the middle if position is center', function () {
 					theme.node[0].decorations.position = 'center';
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:0;width:100%;text-align:center;top:-8px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:0;width:100%;text-align:center;top:-8px;}');
 				});
 				it('will position to the left if position is start', function () {
 					theme.node[0].decorations.position = 'start';
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:0;top:-8px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:0;top:-8px;}');
 				});
 			});
 			describe('when working on bottom edge', function () {
@@ -161,19 +174,19 @@ describe('MAPJS.ThemeProcessor', function () {
 					theme.node[0].decorations.edge = 'bottom';
 				});
 				it('creates link position styles', function () {
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:0;bottom:-8px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:0;bottom:-8px;}');
 				});
 				it('will position above if overlap is false', function () {
 					theme.node[0].decorations.overlap = false;
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:0;bottom:-16px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:0;bottom:-16px;}');
 				});
 				it('will position in the middle if position is center', function () {
 					theme.node[0].decorations.position = 'center';
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:0;width:100%;text-align:center;bottom:-8px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:0;width:100%;text-align:center;bottom:-8px;}');
 				});
 				it('will position to the left if position is start', function () {
 					theme.node[0].decorations.position = 'start';
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:0;bottom:-8px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:0;bottom:-8px;}');
 				});
 			});
 
@@ -183,19 +196,19 @@ describe('MAPJS.ThemeProcessor', function () {
 					theme.node[0].decorations.overlap = false;
 				});
 				it('creates link position styles', function () {
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:100%;bottom:0;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:100%;bottom:0;}');
 				});
 				it('ignores overlap', function () {
 					theme.node[0].decorations.overlap = false;
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:100%;bottom:0;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:100%;bottom:0;}');
 				});
 				it('will position in the middle if position is center', function () {
 					theme.node[0].decorations.position = 'center';
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:100%;top:calc(50% - 8px);}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:100%;top:calc(50% - 8px);}');
 				});
 				it('will position to the left if position is start', function () {
 					theme.node[0].decorations.position = 'start';
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:100%;top:0;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:100%;top:0;}');
 				});
 			});
 			describe('when working on right edge', function () {
@@ -204,19 +217,19 @@ describe('MAPJS.ThemeProcessor', function () {
 					theme.node[0].decorations.overlap = false;
 				});
 				it('creates link position styles', function () {
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:100%;bottom:0;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:100%;bottom:0;}');
 				});
 				it('ignores overlap', function () {
 					theme.node[0].decorations.overlap = false;
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:100%;bottom:0;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:100%;bottom:0;}');
 				});
 				it('will position in the middle if position is center', function () {
 					theme.node[0].decorations.position = 'center';
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:100%;top:calc(50% - 8px);}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:100%;top:calc(50% - 8px);}');
 				});
 				it('will position to the left if position is start', function () {
 					theme.node[0].decorations.position = 'start';
-					expect(underTest.process(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:100%;top:0;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:100%;top:0;}');
 				});
 			});
 
@@ -239,23 +252,23 @@ describe('MAPJS.ThemeProcessor', function () {
 			});
 
 			it('reads it into the border css when border type is surround', function () {
-				const result = underTest.process(theme);
+				const result = processWithoutAnimations(theme);
 				expect(result.css).toEqual('.mapjs-node{border:1px solid #707070;margin:-1px;}');
 
 			});
 			it('interprets line style dashed', function () {
 				theme.node[0].border.line.style = 'dashed';
-				expect(underTest.process(theme).css).toEqual('.mapjs-node{border:1px dashed #707070;margin:-1px;}');
+				expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{border:1px dashed #707070;margin:-1px;}');
 			});
 			it('sets no border in css if the border is underline -- will be handled with a connector', function () {
 				delete theme.node[0].border.line;
-				result = underTest.process(theme);
+				result = processWithoutAnimations(theme);
 				expect(result.css).toEqual('.mapjs-node{border:0;}');
 			});
 		});
 		describe('background-color', function () {
 			it('should return color when opacity is not defined', function () {
-				const result = underTest.process({
+				const result = processWithoutAnimations({
 					node: [{
 						name: 'default',
 						background: {
@@ -266,7 +279,7 @@ describe('MAPJS.ThemeProcessor', function () {
 				expect(result.css).toEqual('.mapjs-node{background-color:#22AAE0;}');
 			});
 			it('should return color with opacity when defined', function () {
-				const result = underTest.process({
+				const result = processWithoutAnimations({
 					node: [{
 						name: 'default',
 						background: {
@@ -278,7 +291,7 @@ describe('MAPJS.ThemeProcessor', function () {
 				expect(result.css).toEqual('.mapjs-node{background-color:rgba(34,170,224,0.8);}');
 			});
 			it('should return transparent when opacity is 0', function () {
-				const result = underTest.process({
+				const result = processWithoutAnimations({
 					node: [{
 						name: 'default',
 						background: {
@@ -290,7 +303,7 @@ describe('MAPJS.ThemeProcessor', function () {
 				expect(result.css).toEqual('.mapjs-node{background-color:transparent;}');
 			});
 			it('should return transparent when no color configured', function () {
-				const result = underTest.process({
+				const result = processWithoutAnimations({
 					node: [{
 						name: 'default',
 						background: {
@@ -303,7 +316,7 @@ describe('MAPJS.ThemeProcessor', function () {
 		});
 		describe('shadow', function () {
 			it('should return a single shadow', function () {
-				const result = underTest.process({
+				const result = processWithoutAnimations({
 					node: [{
 						name: 'default',
 						shadow: [
@@ -319,7 +332,7 @@ describe('MAPJS.ThemeProcessor', function () {
 				expect(result.css).toEqual('.mapjs-node{box-shadow:1px 2px 3px rgba(34,170,224,0.8);}');
 			});
 			it('should return multiple shadows as a single box-shadow', function () {
-				const result = underTest.process({
+				const result = processWithoutAnimations({
 					node: [{
 						name: 'default',
 						shadow: [
@@ -346,7 +359,7 @@ describe('MAPJS.ThemeProcessor', function () {
 				expect(result.css).toEqual('.mapjs-node{box-shadow:1px 2px 3px rgba(34,170,224,0.8),4px 5px 6px #000000,7px 8px 9px #FF0000;}');
 			});
 			it('should return box-shadow none when shadow is transparent', function () {
-				const result = underTest.process({
+				const result = processWithoutAnimations({
 					node: [{
 						name: 'default',
 						shadow: [{
