@@ -1,7 +1,6 @@
 /*global require */
 
 const jQuery = require('jquery'),
-	_ = require('underscore'),
 	createSVG = require('./create-svg'),
 	defaultTheme = require('../core/theme/default-theme'),
 	lineStrokes = require('../core/theme/line-strokes'),
@@ -54,7 +53,7 @@ jQuery.fn.updateConnector = function (optional) {
 		element.data('position', Object.assign({}, connection.position));
 		pathElement = element.find('path.mapjs-connector');
 		hitElement = element.find('path.mapjs-link-hit');
-		element.css(_.extend(convertPositionToTransform(connection.position), {stroke: connection.color}));
+		element.css(Object.assign(convertPositionToTransform(connection.position), {stroke: connection.color}));
 		if (pathElement.length === 0) {
 			pathElement = createSVG('path').attr('class', 'mapjs-connector').appendTo(element);
 		}

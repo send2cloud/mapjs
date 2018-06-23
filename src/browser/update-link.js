@@ -1,6 +1,5 @@
 /*global require */
 const jQuery = require('jquery'),
-	_ = require('underscore'),
 	createSVG = require('./create-svg'),
 	convertPositionToTransform = require('../core/util/convert-position-to-transform'),
 	updateConnectorText = require('./update-connector-text'),
@@ -30,8 +29,6 @@ const jQuery = require('jquery'),
 		}
 	};
 
-
-require('./get-box');
 require('./get-data-box');
 
 jQuery.fn.updateLink = function (optional) {
@@ -65,20 +62,17 @@ jQuery.fn.updateLink = function (optional) {
 		fromBox = shapeFrom.getDataBox();
 		toBox = shapeTo.getDataBox();
 
-		// fromBox = shapeFrom.getBox();
-		// toBox = shapeTo.getBox();
-
-		changeCheck = {from: fromBox, to: toBox, attrs: attrs, theme: theme &&  theme.name};
-		if (_.isEqual(changeCheck, element.data('changeCheck'))) {
+		connection = linkBuilder(fromBox, toBox, attrs, theme);
+		changeCheck = JSON.stringify(connection) + (theme && theme.name);
+		if (changeCheck === element.data('changeCheck')) {
 			return;
 		}
-
 		element.data('changeCheck', changeCheck);
 
-		connection = linkBuilder(fromBox, toBox, attrs, theme);
+
 		element.data('theme', connection.theme);
 		element.data('position', Object.assign({}, connection.position));
-		element.css(_.extend(convertPositionToTransform(connection.position), {stroke: connection.lineProps.color}));
+		element.css(Object.assign(convertPositionToTransform(connection.position), {stroke: connection.lineProps.color}));
 
 		if (pathElement.length === 0) {
 			pathElement = createSVG('path').attr('class', 'mapjs-link').appendTo(element);

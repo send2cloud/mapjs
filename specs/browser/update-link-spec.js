@@ -37,6 +37,12 @@ describe('updateLink', function () {
 		expect(path.filter('.mapjs-link').attr('d')).toEqual('M100,20L136,120');
 		expect(path.filter('.mapjs-link-hit').attr('d')).toEqual('M100,20L136,120');
 	});
+	it('adds a noTransition class to the link hit', () => {
+		underTest.updateLink();
+		const path = underTest.find('path.mapjs-link-hit');
+		expect(path.hasClass('noTransition')).toBeTruthy();
+	});
+
 	it('positions the link to the upper left edge of the nodes, and expands it to the bottom right edge of the nodes', function () {
 		underTest.updateLink();
 
@@ -208,10 +214,16 @@ describe('updateLink', function () {
 		});
 		it('positions the label according to the center point', function () {
 			underTest.updateLink({linkBuilder: builder});
-			textField = underTest.find('text');
-			const textDims = textField[0].getClientRects()[0];
-			expect(parseInt(textField.attr('x'))).toEqual(Math.round(20 - textDims.width / 2));
-			expect(parseInt(textField.attr('y'))).toEqual(Math.round(20 - textDims.height));
+			const textField = underTest.find('text'),
+				textG = textField.parent(),
+				textDims = textField[0].getClientRects()[0],
+				expectedX = Math.round(20 - textDims.width / 2),
+				expectedPadding = 2,
+				expectedY = Math.round(20 - textDims.height) - expectedPadding;
+			expect(parseInt(textField.attr('x'))).toEqual(0);
+			expect(parseInt(textField.attr('y'))).toEqual(expectedPadding);
+			expect(textG.attr('style')).toEqual(`transform: translate(${expectedX}px, ${expectedY}px);`);
+
 		});
 		it('appends the active label theme to the attributes so they can be used for editor widgets', function () {
 			underTest.updateLink({linkBuilder: builder});
