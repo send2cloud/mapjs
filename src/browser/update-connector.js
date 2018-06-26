@@ -26,7 +26,7 @@ jQuery.fn.updateConnector = function (optional) {
 			shapeFrom = element.data('nodeFrom'),
 			shapeTo = element.data('nodeTo'),
 			connectorAttr = element.data('attr'),
-			allowParentConnectorOverride = !(theme && theme.blockParentConnectorOverride),
+			allowParentConnectorOverride = !theme || !theme.connectorEditingContext || (theme.connectorEditingContext.allowed && theme.connectorEditingContext.allowed.length),
 			applyInnerRect = function (shape, box) {
 				const innerRect = shape.data().innerRect;
 				if (innerRect) {

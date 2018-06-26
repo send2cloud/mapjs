@@ -65,16 +65,27 @@ describe('extractConnectors', function () {
 				attr: {great: true}
 			}));
 		});
-		it('adds parentConnector if the theme is set and does not block parent connector overrides', function () {
-			const result = extractConnectors(idea, visibleNodes, {blockParentConnectorOverride: false});
+		it('adds parentConnector if the theme is set and does not have a connectorEditingContext', function () {
+			const result = extractConnectors(idea, visibleNodes, {connectorEditingContext: false});
 			expect(result[12]).toEqual(makeConnector({
 				from: 1,
 				to: 12,
 				attr: {great: true}
 			}));
 		});
+		it('adds parentConnector if the theme is set and has connectorEditingContext with allowed values', function () {
+			const result = extractConnectors(idea, visibleNodes, {connectorEditingContext: {allowed: ['great']}});
+			expect(result[12]).toEqual(makeConnector({
+				connectorEditingContext: {
+					allowed: ['great']
+				},
+				from: 1,
+				to: 12,
+				attr: {great: true}
+			}));
+		});
 		it('ignores parentConnector properties when the theme blocks overrides', function () {
-			const result = extractConnectors(idea, visibleNodes, {blockParentConnectorOverride: true});
+			const result = extractConnectors(idea, visibleNodes, {connectorEditingContext: {allowed: []}});
 			expect(result[12]).toEqual(makeConnector({
 				from: 1,
 				to: 12

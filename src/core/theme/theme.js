@@ -39,7 +39,7 @@ module.exports = function Theme(themeJson) {
 		return self.attributeValue(['node'], themeStyles, ['text', 'margin'], themeFallbackValues.nodeTheme.margin);
 	};
 	self.name = themeJson && themeJson.name;
-	self.blockParentConnectorOverride = themeJson && themeJson.blockParentConnectorOverride;
+	self.connectorEditingContext = themeJson && themeJson.connectorEditingContext;
 	self.attributeValue = function (prefixes, styles, postfixes, fallback) {
 		const rootElement = getElementForPath(themeDictionary, prefixes);
 		let merged = {};

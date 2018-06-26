@@ -1106,8 +1106,16 @@ describe('DomMapController', function () {
 					expect(mapModel.selectConnector).toHaveBeenCalledWith('mouse', connector, undefined);
 					expect(evt.isPropagationStopped()).toBeTruthy();
 				});
-				it('should ignore the link hit event if the theme has blockParentConnectorOverride set', () => {
-					theme = new Theme({name: 'fromTest', blockParentConnectorOverride: true});
+				it('wires a link hit event to mapModel selectConnector if the theme has connectorEditingContext set with allowed values', () => {
+					theme = new Theme({name: 'fromTest', connectorEditingContext: {allowed: ['width']}});
+					setTheme(theme);
+					const evt = new jQuery.Event('tap');
+					underTest.find('path.mapjs-link-hit').trigger(evt);
+					expect(mapModel.selectConnector).toHaveBeenCalledWith('mouse', connector, undefined);
+					expect(evt.isPropagationStopped()).toBeTruthy();
+				});
+				it('should ignore the link hit event if the theme has connectorEditingContext set with no allowed values', () => {
+					theme = new Theme({name: 'fromTest', connectorEditingContext: {allowed: []}});
 					setTheme(theme);
 					const evt = new jQuery.Event('tap');
 					underTest.find('path.mapjs-link-hit').trigger(evt);

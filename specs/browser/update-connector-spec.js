@@ -58,23 +58,38 @@ describe('updateConnector', function () {
 		it('sets the path fill to transparent', function () {
 			expect(path.attr('fill')).toEqual('transparent');
 		});
-		describe('when the theme has blockParentConnectorOverride flag', function () {
+		describe('when the theme has connectorEditingContext flag', function () {
 			let theme;
-			beforeEach(function () {
-				theme = new Theme({name: 'blocked', blockParentConnectorOverride: true});
+			describe('when has allowed', () => {
+				beforeEach(function () {
+					theme = new Theme({name: 'blocked', connectorEditingContext: {allowed: ['width']}});
+				});
+				it('still adds a connector path', function () {
+					underTest.updateConnector({theme: theme, connectorBuilder: builder});
+					expect(underTest.find('path.mapjs-connector').length).toBe(1);
+				});
+				it('adds a link-hit element', function () {
+					underTest.updateConnector({theme: theme, connectorBuilder: builder});
+					expect(underTest.find('path.mapjs-link-hit').length).toBe(1);
+				});
 			});
-			it('still adds a connector path', function () {
-				underTest.updateConnector({theme: theme, connectorBuilder: builder});
-				expect(underTest.find('path.mapjs-connector').length).toBe(1);
-			});
-			it('does not add a link-hit element', function () {
-				underTest.updateConnector({theme: theme, connectorBuilder: builder});
-				expect(underTest.find('path.mapjs-link-hit').length).toBe(0);
-			});
-			it('removes a pre-existing link-hit element', function () {
-				createSVG('path').addClass('mapjs-link-hit').appendTo(underTest);
-				underTest.updateConnector({theme: theme, connectorBuilder: builder});
-				expect(underTest.find('path.mapjs-link-hit').length).toBe(0);
+			describe('when not allowed', () => {
+				beforeEach(function () {
+					theme = new Theme({name: 'blocked', connectorEditingContext: {allowed: []}});
+				});
+				it('still adds a connector path', function () {
+					underTest.updateConnector({theme: theme, connectorBuilder: builder});
+					expect(underTest.find('path.mapjs-connector').length).toBe(1);
+				});
+				it('does not add a link-hit element', function () {
+					underTest.updateConnector({theme: theme, connectorBuilder: builder});
+					expect(underTest.find('path.mapjs-link-hit').length).toBe(0);
+				});
+				it('removes a pre-existing link-hit element', function () {
+					createSVG('path').addClass('mapjs-link-hit').appendTo(underTest);
+					underTest.updateConnector({theme: theme, connectorBuilder: builder});
+					expect(underTest.find('path.mapjs-link-hit').length).toBe(0);
+				});
 			});
 		});
 	});

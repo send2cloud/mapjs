@@ -115,14 +115,14 @@ describe('Theme', function () {
 	it('should set the theme name', function () {
 		expect(underTest.name).toEqual('Mike');
 	});
-	describe('blockParentConnectorOverride', function () {
-		it('should be falsy if blockParentConnectorOverride flag is ommitted', function () {
-			expect(underTest.blockParentConnectorOverride).toBeFalsy();
+	describe('connectorEditingContext', function () {
+		it('should be falsy if connectorEditingContext flag is ommitted', function () {
+			expect(underTest.connectorEditingContext).toBeFalsy();
 		});
-		it('should be truthy when blockParentConnectorOverride flag is set', function () {
-			theme.blockParentConnectorOverride = true;
+		it('should be truthy when connectorEditingContext flag is set', function () {
+			theme.connectorEditingContext = {allowed: ['width']};
 			underTest = new Theme(theme);
-			expect(underTest.blockParentConnectorOverride).toBeTruthy();
+			expect(underTest.connectorEditingContext).toEqual({allowed: ['width']});
 		});
 
 	});
