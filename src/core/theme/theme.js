@@ -40,6 +40,9 @@ module.exports = function Theme(themeJson) {
 	};
 	self.name = themeJson && themeJson.name;
 	self.connectorEditingContext = themeJson && themeJson.connectorEditingContext;
+	//TODO: rempve blockParentConnectorOverride once site has been live for a while
+	self.blockParentConnectorOverride = themeJson && themeJson.blockParentConnectorOverride;
+
 	self.attributeValue = function (prefixes, styles, postfixes, fallback) {
 		const rootElement = getElementForPath(themeDictionary, prefixes);
 		let merged = {};

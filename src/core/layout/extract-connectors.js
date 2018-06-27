@@ -3,7 +3,7 @@ const _ = require('underscore');
 module.exports = function extractConnectors(aggregate, visibleNodes, theme) {
 	'use strict';
 	const result = {},
-		allowParentConnectorOverride = !(theme && theme.connectorEditingContext),
+		allowParentConnectorOverride = !(theme && (theme.connectorEditingContext || theme.blockParentConnectorOverride)), //TODO: rempve blockParentConnectorOverride once site has been live for a while
 		traverse = function (idea, parentId, isChildNode) {
 			if (isChildNode) {
 				const visibleNode = visibleNodes[idea.id];
