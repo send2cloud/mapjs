@@ -2401,7 +2401,7 @@ describe('MapModel', function () {
 
 			underTest.selectConnector('source', {from: 1, to: 10}, { x: 100, y: 100 });
 
-			expect(connectorSelected).toHaveBeenCalledWith(10, {x: 100, y: 100}, undefined);
+			expect(connectorSelected).toHaveBeenCalledWith({from: 1, to: 10}, {x: 100, y: 100}, undefined);
 		});
 		it('should send any parentConnector attributes of the TO node with the event', function () {
 			const connectorSelected = jasmine.createSpy('connectorSelected');
@@ -2409,7 +2409,7 @@ describe('MapModel', function () {
 			underTest.getIdea().mergeAttrProperty(1, 'parentConnector', 'color', 'green');
 			underTest.selectConnector('source', {from: 10, to: 1}, { x: 100, y: 100 });
 
-			expect(connectorSelected).toHaveBeenCalledWith(1, {x: 100, y: 100}, {color: 'green'});
+			expect(connectorSelected).toHaveBeenCalledWith({from: 10, to: 1}, {x: 100, y: 100}, {color: 'green'});
 
 		});
 	});

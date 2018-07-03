@@ -202,7 +202,7 @@ describe('calculateLayout', function () {
 				});
 			});
 			it('should allow the theme to block connector overrides', function () {
-				optional.theme = new Theme({blockParentConnectorOverride: true});
+				optional.theme = new Theme({connectorEditingContext: {allowed: []}});
 				result = calculateLayout(idea, dimensionProvider, optional);
 				expect(result.connectors[11].attr).toBeFalsy();
 				expect(result.connectors[12].attr).toBeFalsy();

@@ -464,7 +464,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 			});
 		element.on('tap', function (event) {
 			const theme = themeSource();
-			if (!theme || !theme.blockParentConnectorOverride) {
+			if (!theme || !theme.connectorEditingContext || (theme.connectorEditingContext.allowed && theme.connectorEditingContext.allowed.length)) {
 				if (event.target && event.target.tagName === 'text') {
 					mapModel.lineLabelClicked(connector);
 				} else 	{

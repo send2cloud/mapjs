@@ -26,7 +26,7 @@ jQuery.fn.updateConnector = function (optional) {
 		let pathElement, hitElement;
 		const element = jQuery(this),
 			connectorAttr = element.data('attr'),
-			allowParentConnectorOverride = !(theme && theme.blockParentConnectorOverride),
+			allowParentConnectorOverride = !theme || !(theme.connectorEditingContext || theme.blockParentConnectorOverride) || (theme.connectorEditingContext && theme.connectorEditingContext.allowed && theme.connectorEditingContext.allowed.length), //TODO: rempve blockParentConnectorOverride once site has been live for a while
 			connection = buildConnection(element, optional),
 			applyLabel = function () {
 				const labelText = (connectorAttr && connectorAttr.label) || '',

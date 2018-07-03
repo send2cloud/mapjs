@@ -736,7 +736,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		if (!connector) {
 			return false;
 		}
-		self.dispatchEvent('connectorSelected', connector.to, selectionPoint, idea.getAttrById(connector.to, 'parentConnector'));
+		self.dispatchEvent('connectorSelected', connector, selectionPoint, idea.getAttrById(connector.to, 'parentConnector'));
 	};
 	this.removeLink = function (source, nodeIdFrom, nodeIdTo) {
 		if (!isEditingEnabled) {
