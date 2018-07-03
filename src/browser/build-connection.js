@@ -1,5 +1,6 @@
 /*global module, require*/
 const themeConnector = require('../core/theme/connector');
+require('./get-data-box');
 module.exports = function buildConnection(element, optional) {
 	'use strict';
 	const applyInnerRect = (shape, box) => {
@@ -19,7 +20,6 @@ module.exports = function buildConnection(element, optional) {
 		fromBox = shapeFrom && shapeFrom.getDataBox(),
 		toBox = shapeTo && shapeTo.getDataBox();
 	if (!shapeFrom || !shapeTo || shapeFrom.length === 0 || shapeTo.length === 0) {
-		// element.hide();
 		return;
 	}
 
