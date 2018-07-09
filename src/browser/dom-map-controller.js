@@ -495,7 +495,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 			event.gesture.stopPropagation();
 		});
 		stageElement.nodeWithId(line.ideaIdFrom).add(stageElement.nodeWithId(line.ideaIdTo))
-			.on('mapjs:move mm:drag', function () {
+			.on('mapjs:move mm:drag mapjs:resize', function () {
 				link.updateLink({theme: themeSource()});
 			});
 	});

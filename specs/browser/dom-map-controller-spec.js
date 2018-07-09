@@ -1199,12 +1199,10 @@ describe('DomMapController', function () {
 						jQuery.fn.updateLink.calls.reset();
 
 					});
-					_.each(['from', 'to'], function (node) {
-						describe('moving node ' + node, function () {
-							beforeEach(function () {
-								jQuery('#node_1_' + node).trigger('mapjs:move');
-							});
-							it('updates link', function () {
+					['from', 'to'].forEach(node => {
+						['mapjs:move', 'mm:drag',  'mapjs:resize'].forEach(evt => {
+							it(evt + ' node ' + node + 'updates link', function () {
+								jQuery('#node_1_' + node).trigger(evt);
 								expect(jQuery.fn.updateLink).toHaveBeenCalledOnJQueryObject(underTest);
 								expect(jQuery.fn.updateLink.calls.mostRecent().args).toEqual([{theme: theme}]);
 							});

@@ -130,7 +130,8 @@ const Theme = require ('./theme'),
 			position: position,
 			arrows: (linkAttr.arrow && linkAttr.arrow !== 'false') && arrowPaths(linkAttr.arrow),
 			theme: linkTheme,
-			lineProps: lineProps
+			lineProps: lineProps,
+			label: linkAttr.label
 		};
 	};
 

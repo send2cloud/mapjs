@@ -154,19 +154,19 @@ describe('MAPJS.ThemeProcessor', function () {
 					theme.node[0].decorations.edge = 'top';
 				});
 				it('creates link position styles', function () {
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:0;top:-8px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;right:0;top:-8px;}');
 				});
 				it('will position above if overlap is false', function () {
 					theme.node[0].decorations.overlap = false;
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:0;top:-16px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;right:0;top:-16px;}');
 				});
 				it('will position in the middle if position is center', function () {
 					theme.node[0].decorations.position = 'center';
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:0;width:100%;text-align:center;top:-8px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;left:0;width:100%;text-align:center;top:-8px;}');
 				});
 				it('will position to the left if position is start', function () {
 					theme.node[0].decorations.position = 'start';
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:0;top:-8px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;left:0;top:-8px;}');
 				});
 			});
 			describe('when working on bottom edge', function () {
@@ -174,19 +174,19 @@ describe('MAPJS.ThemeProcessor', function () {
 					theme.node[0].decorations.edge = 'bottom';
 				});
 				it('creates link position styles', function () {
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:0;bottom:-8px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;right:0;bottom:-8px;}');
 				});
 				it('will position above if overlap is false', function () {
 					theme.node[0].decorations.overlap = false;
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:0;bottom:-16px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;right:0;bottom:-16px;}');
 				});
 				it('will position in the middle if position is center', function () {
 					theme.node[0].decorations.position = 'center';
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:0;width:100%;text-align:center;bottom:-8px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;left:0;width:100%;text-align:center;bottom:-8px;}');
 				});
 				it('will position to the left if position is start', function () {
 					theme.node[0].decorations.position = 'start';
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:0;bottom:-8px;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;left:0;bottom:-8px;}');
 				});
 			});
 
@@ -196,19 +196,19 @@ describe('MAPJS.ThemeProcessor', function () {
 					theme.node[0].decorations.overlap = false;
 				});
 				it('creates link position styles', function () {
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:100%;bottom:0;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;right:100%;bottom:0;}');
 				});
 				it('ignores overlap', function () {
 					theme.node[0].decorations.overlap = false;
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:100%;bottom:0;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;right:100%;bottom:0;}');
 				});
 				it('will position in the middle if position is center', function () {
 					theme.node[0].decorations.position = 'center';
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:100%;top:calc(50% - 8px);}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;right:100%;top:calc(50% - 8px);}');
 				});
 				it('will position to the left if position is start', function () {
 					theme.node[0].decorations.position = 'start';
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;right:100%;top:0;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;right:100%;top:0;}');
 				});
 			});
 			describe('when working on right edge', function () {
@@ -217,19 +217,19 @@ describe('MAPJS.ThemeProcessor', function () {
 					theme.node[0].decorations.overlap = false;
 				});
 				it('creates link position styles', function () {
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:100%;bottom:0;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;left:100%;bottom:0;}');
 				});
 				it('ignores overlap', function () {
 					theme.node[0].decorations.overlap = false;
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:100%;bottom:0;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;left:100%;bottom:0;}');
 				});
 				it('will position in the middle if position is center', function () {
 					theme.node[0].decorations.position = 'center';
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:100%;top:calc(50% - 8px);}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;left:100%;top:calc(50% - 8px);}');
 				});
 				it('will position to the left if position is start', function () {
 					theme.node[0].decorations.position = 'start';
-					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;left:100%;top:0;}');
+					expect(processWithoutAnimations(theme).css).toEqual('.mapjs-node{}.mapjs-node .mapjs-decorations{position:absolute;font-size:9pt;left:100%;top:0;}');
 				});
 			});
 

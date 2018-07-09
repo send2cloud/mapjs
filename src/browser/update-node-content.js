@@ -201,7 +201,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 					selfProps['padding-' + icon.position] = icon.height + (padding * 2);
 					selfProps['min-width'] = icon.width;
 					if (icon.width > maxTextWidth) {
-						textProps['margin-left'] =  Math.round((icon.width - maxTextWidth) / 2);
+						textProps['max-width'] = `${icon.width}px`;
 					}
 				} else if (icon.position === 'left' || icon.position === 'right') {
 					if (icon.position === 'left') {
@@ -224,7 +224,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 					}
 					selfProps['min-width'] = icon.width;
 					if (icon.width > maxTextWidth) {
-						textProps['margin-left'] =  Math.round((icon.width - maxTextWidth) / 2);
+						textProps['max-width'] = `${icon.width}px`;
 					}
 				}
 			}

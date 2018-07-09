@@ -116,12 +116,14 @@ module.exports = function ThemeProcessor() {
 				},
 				appendDecorationStyles = function (styleSelector, nodeStyle) {
 					const style = nodeStyle.decorations,
-						margin = nodeStyle.text && nodeStyle.text.margin || 0;
+						margin = nodeStyle.text && nodeStyle.text.margin || 0,
+						fontSize = (nodeStyle && nodeStyle.text && nodeStyle.text.font && nodeStyle.text.font.size) || 9;
 					if (!style) {
 						return;
 					}
 					result.push(styleSelector);
 					result.push(' .mapjs-decorations{position:absolute;');
+					result.push(`font-size:${fontSize}pt;`);
 					if (style.edge === 'top' || style.edge === 'bottom') {
 						if (style.position === 'end') {
 							result.push('right:0;');

@@ -1,4 +1,4 @@
-/*global describe, it, beforeEach, afterEach, expect, navigator, jasmine, require */
+/*global describe, it, beforeEach, afterEach, expect, jasmine, require */
 
 const jQuery = require('jquery'),
 	_ = require('underscore'),
@@ -10,9 +10,6 @@ require('../helpers/jquery-extension-matchers');
 describe('updateNodeContent', function () {
 	'use strict';
 	let underTest, nodeContent, style, theme;
-	const isHeadless = function () {
-		return (navigator.userAgent.indexOf('PhantomJS')  !== -1);
-	};
 	beforeEach(function () {
 		style = jQuery('<style type="text/css"> .test-padding { padding: 5px;}  .test-max-width { max-width:160px; display: block }</style>').appendTo('head');
 		underTest = jQuery('<span>').appendTo('body');
@@ -314,9 +311,7 @@ describe('updateNodeContent', function () {
 				expect(underTest.css('background-position')).toBe('50% 50%');
 				expect(underTest.css('min-width')).toEqual('400px');
 				expect(underTest.css('min-height')).toEqual('500px');
-				if (!isHeadless()) {
-					expect(textBox.css('margin-top')).toBe('241px');
-				}
+				expect(textBox.css('margin-top')).toBe('241px');
 			});
 			it('positions center icons behind text and does not expand the node if not needed', function () {
 				nodeContent.attr.icon.width = 5;
@@ -332,31 +327,23 @@ describe('updateNodeContent', function () {
 				underTest.updateNodeContent(nodeContent, {theme: theme});
 				expect(underTest.css('background-position')).toBe('5px 50%');
 				expect(underTest.css('padding-left')).toEqual('410px');
-				if (!isHeadless()) {
-					expect(textBox.css('margin-top')).toBe('241px');
-				}
+				expect(textBox.css('margin-top')).toBe('241px');
 			});
 			it('positions right icons right of node text and vertically centers the text', function () {
 				nodeContent.attr.icon.position = 'right';
 				underTest.updateNodeContent(nodeContent, {theme: theme});
 
-				if (!isHeadless()) {
-					expect(underTest.css('background-position')).toBe('right 5px 50%');
-				}
+				expect(underTest.css('background-position')).toBe('right 5px 50%');
 
 				expect(underTest.css('padding-right')).toEqual('410px');
-				if (!isHeadless()) {
-					expect(textBox.css('margin-top')).toBe('241px');
-				}
+				expect(textBox.css('margin-top')).toBe('241px');
 			});
 			it('positions right icons right of node text and vertically centers the text for a fixed layouts', function () {
 				nodeContent.attr.icon.position = 'right';
 				underTest.updateNodeContent(nodeContent, {fixedLayout: true, theme: theme});
 				expect(underTest.css('background-position')).toBe('170px 50%');
 				expect(underTest.css('padding-right')).toEqual('410px');
-				if (!isHeadless()) {
-					expect(textBox.css('margin-top')).toBe('241px');
-				}
+				expect(textBox.css('margin-top')).toBe('241px');
 			});
 			it('positions top icons top of node text and horizontally centers the text', function () {
 				nodeContent.attr.icon.position = 'top';
@@ -365,28 +352,24 @@ describe('updateNodeContent', function () {
 				expect(underTest.css('background-position')).toBe('50% 5px');
 				expect(underTest.css('padding-top')).toEqual('510px');
 				expect(underTest.css('min-width')).toEqual('400px');
-				expect(textBox.css('margin-left')).toBe('120px');
+				expect(textBox.css('max-width')).toEqual('400px');
 			});
 			it('positions bottom icons bottom of node text and horizontally centers the text', function () {
 				nodeContent.attr.icon.position = 'bottom';
 				underTest.updateNodeContent(nodeContent, {theme: theme});
 
-				if (!isHeadless()) {
-					expect(underTest.css('background-position')).toBe('50% bottom 5px');
-				}
+				expect(underTest.css('background-position')).toBe('50% bottom 5px');
 				expect(underTest.css('padding-bottom')).toEqual('510px');
 				expect(underTest.css('min-width')).toEqual('400px');
-				expect(textBox.css('margin-left')).toBe('120px');
+				expect(textBox.css('max-width')).toEqual('400px');
 			});
 			it('positions bottom icons bottom of node text and horizontally centers the text for fixed layout', function () {
 				nodeContent.attr.icon.position = 'bottom';
 				underTest.updateNodeContent(nodeContent, {fixedLayout: true, theme: theme});
-				if (!isHeadless()) {
-					expect(underTest.css('background-position')).toBe('50% 23px');
-				}
+				expect(underTest.css('background-position')).toBe('50% 23px');
 				expect(underTest.css('padding-bottom')).toEqual('510px');
 				expect(underTest.css('min-width')).toEqual('400px');
-				expect(textBox.css('margin-left')).toBe('120px');
+				expect(textBox.css('max-width')).toEqual('400px');
 			});
 
 		});

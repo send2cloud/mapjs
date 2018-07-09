@@ -16,6 +16,10 @@ describe('Connectors', function () {
 			expect(path.position).toEqual({ left: 200, top: 100, width: 142, height: 164 });
 
 		});
+		it('includes the label in result if attribute set', function () {
+			const path = link(parent, child, {label: 'is here'});
+			expect(path.label).toEqual('is here');
+		});
 		it('calculates the arrow if link attributes require it', function () {
 			const path = link(parent, child, {arrow: true});
 			expect(path.arrows).toEqual(['M136,106L136,120L127,109Z']);
