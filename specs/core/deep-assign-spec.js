@@ -23,6 +23,15 @@ describe('deepAssign', () => {
 		underTest(assignee, {a: 2}, {c: 3});
 		expect(assignee).toEqual({a: 2, b: 1, c: 3});
 	});
+	it('does not mutate the other objects with primitive assignments', () => {
+		const assignee = {a: 1, b: 1},
+			assigner1 = {b: {c: '2'}},
+			assigner2 = {b: {d: '3'}};
+		underTest(assignee, assigner1, assigner2);
+		expect(assignee).toEqual({a: 1, b: {c: '2', d: '3'}});
+		expect(assigner1).toEqual({b: {c: '2'}});
+		expect(assigner2).toEqual({b: {d: '3'}});
+	});
 	it('replaces primitives with objects for the same key', () => {
 		expect(underTest({a: 1, b: 1}, {a: {c: '2'}})).toEqual({a: {c: '2'}, b: 1});
 	});
