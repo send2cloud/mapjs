@@ -3,11 +3,13 @@ const _ = require('underscore'),
 	AUTO_COLOR = 'theme-auto-color',
 	colorParser = require('./color-parser'),
 	themeFallbackValues = require('./theme-fallback-values'),
+	themeToDictionary = require('./theme-to-dictionary'),
 	defaultTheme = require('./default-theme');
 module.exports = function Theme(themeJson) {
 	'use strict';
+
 	const self = this,
-		themeDictionary = _.extend({}, themeJson),
+		themeDictionary = themeToDictionary(themeJson),
 		getElementForPath = function (object, pathArray) {
 			let remaining = pathArray.slice(0),
 				current = object;
@@ -128,14 +130,6 @@ module.exports = function Theme(themeJson) {
 			fromDefaultTheme = defaultTheme.link.default;
 		return _.extend({}, fromDefaultTheme, fromCurrentTheme);
 	};
-	if (themeDictionary && themeDictionary.node && themeDictionary.node.forEach) {
-		themeDictionary.nodeArray = themeDictionary.node;
-		themeDictionary.node = {};
-		themeDictionary.nodeArray.forEach(function (nodeStyle) {
-			themeDictionary.node[nodeStyle.name] = nodeStyle;
-		});
-		delete themeDictionary.nodeArray;
-	}
 
 	self.noAnimations = () => !!(themeDictionary.noAnimations);
 	self.getLayoutConnectorAttributes = (styles) => {
