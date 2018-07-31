@@ -23,6 +23,15 @@ describe('deepAssign', () => {
 		underTest(assignee, {a: 2}, {c: 3});
 		expect(assignee).toEqual({a: 2, b: 1, c: 3});
 	});
+	it('creates copies of new assigned object attributes', () => {
+		const assignee = {},
+			assigner1 = {b: {c: '2'}};
+		underTest(assignee, assigner1);
+		assigner1.b.c = '2after';
+		assigner1.c = 'newafter';
+		expect(assignee).toEqual({b: {c: '2'}});
+
+	});
 	it('does not mutate the other objects with primitive assignments', () => {
 		const assignee = {a: 1, b: 1},
 			assigner1 = {b: {c: '2'}},

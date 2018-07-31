@@ -17,6 +17,8 @@ module.exports = function deepAssign() {
 		.forEach(key => {
 			if (isObjectObject(assigner[key]) && isObjectObject(assignee[key])) {
 				assignee[key] = deepAssign({}, assignee[key], assigner[key]);
+			} else if (isObjectObject(assigner[key])) {
+				assignee[key] = deepAssign({}, assigner[key]);
 			} else {
 				assignee[key] = assigner[key];
 			}

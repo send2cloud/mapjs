@@ -5,10 +5,10 @@ const deepAssign = require('../deep-assign'),
 	attributeForPath = function (object, pathArray, fallback) {
 		'use strict';
 		if (!object || !pathArray || !pathArray.length) {
-			return object || fallback;
+			return (object === undefined && fallback) || object;
 		}
 		if (pathArray.length === 1) {
-			return object[pathArray[0]] || fallback;
+			return (object[pathArray[0]] === undefined && fallback) || object[pathArray[0]];
 		}
 		let remaining = pathArray.slice(0),
 			current = object;

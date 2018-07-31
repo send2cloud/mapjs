@@ -15,6 +15,13 @@ describe('themeAttributeUtils', () => {
 		it('should return attribute value for path', () => {
 			expect(underTest.attributeForPath(themeDictionary, ['node'], 'fallbackValueHere')).toEqual(themeDictionary.node);
 			expect(underTest.attributeForPath(themeDictionary, ['node', 'default'], 'fallbackValueHere')).toEqual(themeDictionary.node.default);
+			expect(underTest.attributeForPath(themeDictionary.connector.default.controlPoint.above, ['width'], 'fallbackValueHere')).toEqual(0);
+		});
+		it('return attribute 0 value for path', () => {
+			expect(underTest.attributeForPath(themeDictionary.connector.default.controlPoint, ['above', 'width'], 'fallbackValueHere')).toEqual(0);
+			expect(underTest.attributeForPath(themeDictionary.connector.default.controlPoint.above, ['width'], 'fallbackValueHere')).toEqual(0);
+			expect(underTest.attributeForPath(themeDictionary.connector.default.controlPoint.above.width, [], 'fallbackValueHere')).toEqual(0);
+
 		});
 		describe('should return root object', () => {
 			it('when pathArray is empty', () => {
