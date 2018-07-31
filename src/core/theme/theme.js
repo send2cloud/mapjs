@@ -1,9 +1,9 @@
 /*global module, require */
 const _ = require('underscore'),
 	AUTO_COLOR = 'theme-auto-color',
-	colorParser = require('./color-parser'),
 	themeFallbackValues = require('./theme-fallback-values'),
 	themeToDictionary = require('./theme-to-dictionary'),
+	themeAttributeUtils = require('./theme-attribute-utils'),
 	defaultTheme = require('./default-theme');
 module.exports = function Theme(themeJson) {
 	'use strict';
@@ -22,13 +22,6 @@ module.exports = function Theme(themeJson) {
 				remaining = remaining.slice(1);
 			}
 			return current;
-		},
-		extractElement = function (merged, postfixes, fallback) {
-			const result = getElementForPath(merged, postfixes);
-			if (result === undefined) {
-				return fallback;
-			}
-			return result;
 		};
 
 	self.getFontForStyles = function (themeStyles) {
@@ -45,21 +38,8 @@ module.exports = function Theme(themeJson) {
 	//TODO: rempve blockParentConnectorOverride once site has been live for a while
 	self.blockParentConnectorOverride = themeJson && themeJson.blockParentConnectorOverride;
 
-	self.attributeValue = function (prefixes, styles, postfixes, fallback) {
-		const rootElement = getElementForPath(themeDictionary, prefixes);
-		let merged = {};
-		if (!rootElement) {
-			return fallback;
-		}
-		if (styles && styles.length) {
-			styles.slice(0).reverse().forEach(function (style) {
-				merged = _.extend(merged, rootElement[style]);
-			});
-		} else {
-			merged = _.extend({}, rootElement);
-		}
-		return extractElement(merged, postfixes, fallback);
-	};
+	self.attributeValue = (prefixes, styles, postfixes, fallback) => themeAttributeUtils.themeAttributeValue(themeDictionary, prefixes, styles, postfixes, fallback);
+
 	self.nodeStyles = function (nodeLevel, nodeAttr) {
 		const result = ['level_' + nodeLevel, 'default'];
 		if (nodeAttr && nodeAttr.group) {
@@ -71,32 +51,8 @@ module.exports = function Theme(themeJson) {
 		return result;
 	};
 	self.nodeTheme = function (styles) {
-		let merged = {};
-		const getBackgroundColor = function () {
-				const colorObj = getElementForPath(merged, ['background']);
-				if (colorObj) {
-					return colorParser(colorObj);
-				}
-				return getElementForPath(merged, ['backgroundColor']);
-			},
-			rootElement = getElementForPath(themeDictionary, ['node']),
-			result = _.extend({}, themeFallbackValues.nodeTheme);
-		if (!rootElement) {
-			result.font = _.extend({}, result.font);
-			result.text = _.extend({}, result.text);
-			return result;
-		}
-		styles.slice(0).reverse().forEach(function (style) {
-			merged = _.extend(merged, rootElement[style]);
-		});
-		result.margin = getElementForPath(merged, ['text', 'margin']) || result.margin;
-		result.font = _.extend({}, result.font, getElementForPath(merged, ['text', 'font']));
-		result.text = _.extend({}, result.text, getElementForPath(merged, ['text']));
-		result.borderType = getElementForPath(merged, ['border', 'type']) || result.borderType;
-		result.backgroundColor = getBackgroundColor() || result.backgroundColor;
-		result.cornerRadius = getElementForPath(merged, ['cornerRadius']) || result.cornerRadius;
-		result.lineColor = getElementForPath(merged, ['border', 'line', 'color']) || result.lineColor;
-		return result;
+		const nodeAttribute = themeAttributeUtils.themeAttributeValue(themeDictionary, ['node'], styles);
+		return themeAttributeUtils.nodeAttributeToNodeTheme(nodeAttribute);
 	};
 
 	self.connectorControlPoint = function (childPosition, connectorStyle) {
