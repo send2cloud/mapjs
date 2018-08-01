@@ -1,11 +1,13 @@
-/*global describe, beforeEach, it, expect, spyOn, require*/
+/*global describe, beforeEach, it, expect, require*/
 const defaultTheme = require('../../../src/core/theme/default-theme'),
 	Theme = require('../../../src/core/theme/theme'),
+	themeAttibuteUtils = require('../../../src/core/theme/theme-attribute-utils'),
+	themeToDictionary = require('../../../src/core/theme/theme-to-dictionary'),
 	themeFallBackValues = require('../../../src/core/theme/theme-fallback-values');
 
 describe('Theme', function () {
 	'use strict';
-	let underTest, theme;
+	let underTest, theme, themeDictionary;
 	beforeEach(function () {
 		theme = {
 			name: 'Mike',
@@ -110,6 +112,7 @@ describe('Theme', function () {
 				spacing: 30
 			}
 		};
+		themeDictionary = themeToDictionary(theme);
 		underTest = new Theme(theme);
 	});
 	it('should set the theme name', function () {
@@ -210,35 +213,6 @@ describe('Theme', function () {
 			expect(underTest.nodeTheme(['default']).backgroundColor).toEqual('rgba(255,255,255,0.8)');
 		});
 	});
-	describe('connectorControlPoint', function () {
-		it('should return the default horizontal connector if no style provided', function () {
-			expect(underTest.connectorControlPoint('horizontal')).toEqual({'width': 0, 'height': 1});
-		});
-		it('should return the default horizontal connector if no style provided', function () {
-			expect(underTest.connectorControlPoint('above')).toEqual({'width': 0, 'height': 1.75});
-		});
-
-		it('should return the default horizontal connector if no control point is configured for the connector style', function () {
-			expect(underTest.connectorControlPoint('horizontal', 'green')).toEqual({'width': 0, 'height': 1});
-		});
-		it('should return the default non-horizontal connector if no control point is configured for the connector style', function () {
-			expect(underTest.connectorControlPoint('above', 'green')).toEqual({'width': 0, 'height': 1.75});
-		});
-		['above', 'below'].forEach(function (pos) {
-			it('should return the default ' + pos + ' connector if no style provided', function () {
-				expect(underTest.connectorControlPoint(pos)).toEqual({'width': 0, 'height': 1.75});
-			});
-		});
-		it('should return the configured controlPoint', function () {
-			expect(underTest.connectorControlPoint('horizontal', 'controlPointCurve')).toEqual({'width': 2, 'height': 1});
-			expect(underTest.connectorControlPoint('above', 'controlPointCurve')).toEqual({'width': 0.5, 'height': 2.75});
-			expect(underTest.connectorControlPoint('below', 'controlPointCurve')).toEqual({'width': 0.75, 'height': 0.5});
-		});
-		it('should return the default non-horizontal connector if unconfigured childPosition supplied', function () {
-			expect(underTest.connectorControlPoint('outside', 'controlPointCurve')).toEqual({'width': 0, 'height': 1.75});
-		});
-
-	});
 	describe('linkTheme', function () {
 
 		it('returns the default link theme if no theme is provided', function () {
@@ -284,8 +258,10 @@ describe('Theme', function () {
 
 	});
 	describe('connectorTheme', function () {
-		let childPosition, defaultLabel;
+		let childPosition, defaultLabel, defaultControlPoint;
+
 		beforeEach(function () {
+			defaultControlPoint = { width: 0, height: 1.75 };
 			defaultLabel = {
 				position: {
 					ratio: 0.5
@@ -301,14 +277,12 @@ describe('Theme', function () {
 					}
 				}
 			};
-
-			spyOn(underTest, 'connectorControlPoint').and.returnValue('testControlPoint');
 			childPosition = 'above';
 		});
 		it('should return default line if not configured', function () {
 			expect(underTest.connectorTheme(childPosition, ['no-line'])).toEqual({
 				type: 'no-line-curve',
-				controlPoint: 'testControlPoint',
+				controlPoint: defaultControlPoint,
 				label: defaultLabel,
 				line: {
 					color: '#707070',
@@ -320,7 +294,7 @@ describe('Theme', function () {
 			theme.connector['no-line-curve'].label = 'configuredLabelHere';
 			expect(underTest.connectorTheme(childPosition, ['no-line'])).toEqual({
 				type: 'no-line-curve',
-				controlPoint: 'testControlPoint',
+				controlPoint: defaultControlPoint,
 				label: 'configuredLabelHere',
 				line: {
 					color: '#707070',
@@ -329,14 +303,13 @@ describe('Theme', function () {
 			});
 		});
 		describe('should return the default style', function () {
-			it('should default to a horizontal child position and default style to calculate controlPoint', function () {
-				underTest.connectorTheme();
-				expect(underTest.connectorControlPoint).toHaveBeenCalledWith('horizontal', 'default');
+			it('should default to a horizontal child position and default style to calculate controlPoint', () => {
+				expect(underTest.connectorTheme().controlPoint).toEqual(themeAttibuteUtils.connectorControlPoint(themeDictionary, 'horizontal', 'default'));
 			});
 			it('when childStyles is undefined', function () {
 				expect(underTest.connectorTheme()).toEqual({
 					type: 'top-down-s-curve',
-					controlPoint: 'testControlPoint',
+					controlPoint: themeAttibuteUtils.connectorControlPoint(themeDictionary, 'horizontal', 'default'),
 					label: defaultLabel,
 					line: {
 						color: '#070707',
@@ -348,7 +321,7 @@ describe('Theme', function () {
 			it('when childStyles is empty', function () {
 				expect(underTest.connectorTheme(childPosition, [])).toEqual({
 					type: 'top-down-s-curve',
-					controlPoint: 'testControlPoint',
+					controlPoint: defaultControlPoint,
 					label: defaultLabel,
 					line: {
 						color: '#070707',
@@ -360,7 +333,7 @@ describe('Theme', function () {
 				delete theme.connector.default;
 				expect(underTest.connectorTheme()).toEqual({
 					type: 'quadratic',
-					controlPoint: 'testControlPoint',
+					controlPoint: themeAttibuteUtils.connectorControlPoint(themeDictionary, 'horizontal', 'default'),
 					label: defaultLabel,
 					line: {
 						color: '#707070',
@@ -373,13 +346,12 @@ describe('Theme', function () {
 		[['no parent', undefined], ['a parent with no child style configured', ['sharp']]].forEach(function (args) {
 			describe('when the node has ' + args[0], function () {
 				it('should use the child connector style to calculate the control point', function () {
-					underTest.connectorTheme(childPosition, ['special'], args[1]);
-					expect(underTest.connectorControlPoint).toHaveBeenCalledWith('above', 'green');
+					expect(underTest.connectorTheme(childPosition, ['special'], args[1]).controlPoint).toEqual(themeAttibuteUtils.connectorControlPoint(themeDictionary, 'above', 'green'));
 				});
 				it('should return the default connector style when no connector style configured', function () {
 					expect(underTest.connectorTheme(childPosition, ['sharp'], args[1])).toEqual({
 						type: 'top-down-s-curve',
-						controlPoint: 'testControlPoint',
+						controlPoint: defaultControlPoint,
 						label: defaultLabel,
 						line: {
 							color: '#070707',
@@ -392,7 +364,7 @@ describe('Theme', function () {
 
 					expect(underTest.connectorTheme(childPosition, ['sharp'], args[1])).toEqual({
 						type: 'quadratic',
-						controlPoint: 'testControlPoint',
+						controlPoint: defaultControlPoint,
 						label: defaultLabel,
 						line: {
 							color: '#707070',
@@ -403,7 +375,7 @@ describe('Theme', function () {
 				it('should return the configured connector style when the node has a connector style configured', function () {
 					expect(underTest.connectorTheme(childPosition, ['special'], args[1])).toEqual({
 						type: 'green-curve',
-						controlPoint: 'testControlPoint',
+						controlPoint: defaultControlPoint,
 						label: defaultLabel,
 						line: {
 							color: '#00FF00',
@@ -415,18 +387,16 @@ describe('Theme', function () {
 		});
 		describe('when the node has a parent with a child style configured', function () {
 			it('should use the combined connector style to calculate the control point', function () {
-				underTest.connectorTheme(childPosition, ['special'], ['special']);
-				expect(underTest.connectorControlPoint).toHaveBeenCalledWith('above', 'no-connector.green');
+				expect(underTest.connectorTheme(childPosition, ['special'], ['special']).controlPoint).toEqual(themeAttibuteUtils.connectorControlPoint(themeDictionary, 'above', 'no-connector.green'));
 			});
 			it('should use the parent.childstyle connector style to calculate the control point', function () {
-				underTest.connectorTheme(childPosition, ['sharp'], ['special']);
-				expect(underTest.connectorControlPoint).toHaveBeenCalledWith('above', 'no-connector');
+				expect(underTest.connectorTheme(childPosition, ['sharp'], ['special']).controlPoint).toEqual(themeAttibuteUtils.connectorControlPoint(themeDictionary, 'above', 'no-connector'));
 			});
 
 			it('should return a connector style that matches parentchildstyle.childstyle if it exists', function () {
 				expect(underTest.connectorTheme(childPosition, ['special'], ['special'])).toEqual({
 					type: 'no-connector-green',
-					controlPoint: 'testControlPoint',
+					controlPoint: defaultControlPoint,
 					label: defaultLabel,
 					line: {
 						color: '#FFFF00',
@@ -438,7 +408,7 @@ describe('Theme', function () {
 			it('should return a connector style that matches parentchildstyle if parentchildstyle.childstyle does not exist', function () {
 				expect(underTest.connectorTheme(childPosition, ['sharp'], ['special'])).toEqual({
 					type: 'no-connector',
-					controlPoint: 'testControlPoint',
+					controlPoint: defaultControlPoint,
 					label: defaultLabel,
 					line: {
 						color: '#707070',

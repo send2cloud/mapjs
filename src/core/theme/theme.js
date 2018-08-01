@@ -10,35 +10,23 @@ module.exports = function Theme(themeJson) {
 
 	const self = this,
 		themeDictionary = themeToDictionary(themeJson),
-		getElementForPath = function (object, pathArray) {
-			let remaining = pathArray.slice(0),
-				current = object;
-
-			while (remaining.length > 0) {
-				current = current[remaining[0]];
-				if (current === undefined) {
-					return;
-				}
-				remaining = remaining.slice(1);
-			}
-			return current;
-		};
+		attributeValue = (prefixes, styles, postfixes, fallback) => themeAttributeUtils.themeAttributeValue(themeDictionary, prefixes, styles, postfixes, fallback);
 
 	self.getFontForStyles = function (themeStyles) {
-		const weight = self.attributeValue(['node'], themeStyles, ['text', 'font', 'weight'], 'semibold'),
-			size = self.attributeValue(['node'], themeStyles, ['text', 'font', 'size'], themeFallbackValues.nodeTheme.font.size),
-			lineSpacing = self.attributeValue(['node'], themeStyles, ['text', 'font', 'lineSpacing'], themeFallbackValues.nodeTheme.font.lineSpacing);
+		const weight = attributeValue(['node'], themeStyles, ['text', 'font', 'weight'], 'semibold'),
+			size = attributeValue(['node'], themeStyles, ['text', 'font', 'size'], themeFallbackValues.nodeTheme.font.size),
+			lineSpacing = attributeValue(['node'], themeStyles, ['text', 'font', 'lineSpacing'], themeFallbackValues.nodeTheme.font.lineSpacing);
 		return {size: size, weight: weight, lineGap: lineSpacing};
 	};
 	self.getNodeMargin = function (themeStyles) {
-		return self.attributeValue(['node'], themeStyles, ['text', 'margin'], themeFallbackValues.nodeTheme.margin);
+		return attributeValue(['node'], themeStyles, ['text', 'margin'], themeFallbackValues.nodeTheme.margin);
 	};
 	self.name = themeJson && themeJson.name;
 	self.connectorEditingContext = themeJson && themeJson.connectorEditingContext;
 	//TODO: rempve blockParentConnectorOverride once site has been live for a while
 	self.blockParentConnectorOverride = themeJson && themeJson.blockParentConnectorOverride;
 
-	self.attributeValue = (prefixes, styles, postfixes, fallback) => themeAttributeUtils.themeAttributeValue(themeDictionary, prefixes, styles, postfixes, fallback);
+	self.attributeValue = (prefixes, styles, postfixes, fallback) => attributeValue(prefixes, styles, postfixes, fallback);
 
 	self.nodeStyles = function (nodeLevel, nodeAttr) {
 		const result = ['level_' + nodeLevel, 'default'];
@@ -51,27 +39,20 @@ module.exports = function Theme(themeJson) {
 		return result;
 	};
 	self.nodeTheme = function (styles) {
-		const nodeAttribute = themeAttributeUtils.themeAttributeValue(themeDictionary, ['node'], styles);
+		const nodeAttribute = attributeValue(['node'], styles);
 		return themeAttributeUtils.nodeAttributeToNodeTheme(nodeAttribute);
 	};
 
-	self.connectorControlPoint = function (childPosition, connectorStyle) {
-		const controlPointOffset = childPosition === 'horizontal' ? themeFallbackValues.connectorControlPoint.horizontal : themeFallbackValues.connectorControlPoint.default,
-			defaultControlPoint = {'width': 0, 'height': controlPointOffset},
-			configuredControlPoint = connectorStyle && getElementForPath(themeDictionary, ['connector', connectorStyle, 'controlPoint', childPosition]);
-
-		return (configuredControlPoint && _.extend({}, configuredControlPoint)) || defaultControlPoint;
-	};
 	self.connectorTheme = function (childPosition, childStyles, parentStyles) {
 		const position = childPosition || 'horizontal',
-			childConnectorStyle = self.attributeValue(['node'], childStyles, ['connections', 'style'], 'default'),
-			parentConnectorStyle = parentStyles && self.attributeValue(['node'], parentStyles, ['connections', 'childstyle'], false),
-			childConnector = getElementForPath(themeDictionary, ['connector', childConnectorStyle]),
-			parentConnector = parentConnectorStyle && getElementForPath(themeDictionary, ['connector', parentConnectorStyle]),
+			childConnectorStyle = attributeValue(['node'], childStyles, ['connections', 'style'], 'default'),
+			parentConnectorStyle = parentStyles && attributeValue(['node'], parentStyles, ['connections', 'childstyle'], false),
+			childConnector = themeAttributeUtils.attributeForPath(themeDictionary, ['connector', childConnectorStyle]),
+			parentConnector = parentConnectorStyle && themeAttributeUtils.attributeForPath(themeDictionary, ['connector', parentConnectorStyle]),
 			combinedStyle = parentConnectorStyle && (parentConnectorStyle + '.' + childConnectorStyle),
-			combinedConnector = combinedStyle &&  getElementForPath(themeDictionary, ['connector', combinedStyle]),
+			combinedConnector = combinedStyle &&  themeAttributeUtils.attributeForPath(themeDictionary, ['connector', combinedStyle]),
 			connectorStyle  = (combinedConnector && combinedStyle) || (parentConnector && parentConnectorStyle) || childConnectorStyle || 'default',
-			controlPoint = self.connectorControlPoint(position, connectorStyle),
+			controlPoint = themeAttributeUtils.connectorControlPoint(themeDictionary, position, connectorStyle),
 			connectorDefaults = _.extend({}, themeFallbackValues.connectorTheme),
 			returnedConnector =  _.extend({}, combinedConnector || parentConnector || childConnector || connectorDefaults);
 		if (!returnedConnector.label) {
@@ -82,16 +63,16 @@ module.exports = function Theme(themeJson) {
 		return returnedConnector;
 	};
 	self.linkTheme = function (linkStyle) {
-		const fromCurrentTheme = getElementForPath(themeDictionary, ['link', linkStyle || 'default']),
+		const fromCurrentTheme = themeAttributeUtils.attributeForPath(themeDictionary, ['link', linkStyle || 'default']),
 			fromDefaultTheme = defaultTheme.link.default;
 		return _.extend({}, fromDefaultTheme, fromCurrentTheme);
 	};
 
 	self.noAnimations = () => !!(themeDictionary.noAnimations);
 	self.getLayoutConnectorAttributes = (styles) => {
-		const childConnectorStyle = self.attributeValue(['node'], styles, ['connections', 'style'], 'default'),
+		const childConnectorStyle = attributeValue(['node'], styles, ['connections', 'style'], 'default'),
 			connectorDefaults = _.extend({}, themeFallbackValues.connectorTheme),
-			childConnector = getElementForPath(themeDictionary, ['connector', childConnectorStyle]) || connectorDefaults,
+			childConnector = themeAttributeUtils.attributeForPath(themeDictionary, ['connector', childConnectorStyle]) || connectorDefaults,
 			result = {};
 		if (childConnector && childConnector.line) {
 			result.parentConnector = {
@@ -121,9 +102,9 @@ module.exports = function Theme(themeJson) {
 					index = (numberOfSiblings % autoColors.length);
 				return autoColors[index];
 			},
-			childConnectorStyle = self.attributeValue(['node'], styles, ['connections', 'style'], 'default'),
+			childConnectorStyle = attributeValue(['node'], styles, ['connections', 'style'], 'default'),
 			connectorDefaults = _.extend({}, themeFallbackValues.connectorTheme),
-			childConnector = getElementForPath(themeDictionary, ['connector', childConnectorStyle]) || connectorDefaults,
+			childConnector = themeAttributeUtils.attributeForPath(themeDictionary, ['connector', childConnectorStyle]) || connectorDefaults,
 			autoColor = getAutoColor(),
 			result = {
 				attr: _.pick(_.extend({}, currentAttribs), ['parentConnector']),

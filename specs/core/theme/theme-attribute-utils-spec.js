@@ -104,4 +104,139 @@ describe('themeAttributeUtils', () => {
 			});
 		});
 	});
+	describe('connectorControlPoint', function () {
+		beforeEach(() => {
+			themeDictionary = themeToDictionary({
+				name: 'Mike',
+				autoColors: ['red', 'green', 'blue'],
+				'node': [
+					{
+						'name': 'default',
+						'cornerRadius': 10.0,
+						'backgroundColor': 'transparent'
+
+					},
+					{
+						'name': 'special',
+						'cornerRadius': 1.0,
+						'connections': {
+							childstyle: 'no-connector',
+							style: 'green'
+						}
+					},
+					{
+						'name': 'sharp',
+						'cornerRadius': 0.0
+					},
+					{
+						'name': 'no-line',
+						'connections': {
+							style: 'no-line-curve'
+						}
+					},
+					{
+						'name': 'inherit-color',
+						'connections': {
+							style: 'inherit'
+						}
+					},
+					{
+						'name': 'level_7',
+						'connections': {
+							style: 'autoColor'
+						}
+					}
+				],
+				connector: {
+					default: {
+						type: 'top-down-s-curve',
+						line: {
+							color: '#070707',
+							width: 2.0
+						}
+					},
+					inherit: {
+						type: 'top-down-s-curve',
+						line: {
+							color: 'inherit',
+							width: 2.0
+						}
+					},
+					autoColor: {
+						line: {
+							color: 'theme-auto-color'
+						}
+					},
+					'no-connector': {
+						type: 'no-connector',
+						line: {
+							color: '#707070',
+							width: 0
+						}
+					},
+					green: {
+						type: 'green-curve',
+						line: {
+							color: '#00FF00',
+							width: 3.0
+						}
+					},
+					'no-connector.green': {
+						type: 'no-connector-green',
+						line: {
+							color: '#FFFF00',
+							width: 4.0
+						}
+					},
+					'no-line-curve': {
+						type: 'no-line-curve'
+					},
+					controlPointCurve: {
+						type: 'control-curve',
+						line: {
+							color: '#00FF00',
+							width: 3.0
+						},
+						controlPoint: {
+							'above': {'width': 0.5, 'height': 2.75},
+							'below': {'width': 0.75, 'height': 0.5},
+							'horizontal': {'width': 2, 'height': 1}
+						}
+					}
+
+				},
+				layout: {
+					spacing: 30
+				}
+			});
+		});
+		it('should return the default horizontal connector if no style provided', function () {
+			expect(underTest.connectorControlPoint(themeDictionary, 'horizontal')).toEqual({'width': 0, 'height': 1});
+		});
+		it('should return the default horizontal connector if no style provided', function () {
+			expect(underTest.connectorControlPoint(themeDictionary, 'above')).toEqual({'width': 0, 'height': 1.75});
+		});
+
+		it('should return the default horizontal connector if no control point is configured for the connector style', function () {
+			expect(underTest.connectorControlPoint(themeDictionary, 'horizontal', 'green')).toEqual({'width': 0, 'height': 1});
+		});
+		it('should return the default non-horizontal connector if no control point is configured for the connector style', function () {
+			expect(underTest.connectorControlPoint(themeDictionary, 'above', 'green')).toEqual({'width': 0, 'height': 1.75});
+		});
+		['above', 'below'].forEach(function (pos) {
+			it('should return the default ' + pos + ' connector if no style provided', function () {
+				expect(underTest.connectorControlPoint(themeDictionary, pos)).toEqual({'width': 0, 'height': 1.75});
+			});
+		});
+		it('should return the configured controlPoint', function () {
+			expect(underTest.connectorControlPoint(themeDictionary, 'horizontal', 'controlPointCurve')).toEqual({'width': 2, 'height': 1});
+			expect(underTest.connectorControlPoint(themeDictionary, 'above', 'controlPointCurve')).toEqual({'width': 0.5, 'height': 2.75});
+			expect(underTest.connectorControlPoint(themeDictionary, 'below', 'controlPointCurve')).toEqual({'width': 0.75, 'height': 0.5});
+		});
+		it('should return the default non-horizontal connector if unconfigured childPosition supplied', function () {
+			expect(underTest.connectorControlPoint(themeDictionary, 'outside', 'controlPointCurve')).toEqual({'width': 0, 'height': 1.75});
+		});
+
+	});
+
 });

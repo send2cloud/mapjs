@@ -57,10 +57,19 @@ const deepAssign = require('../deep-assign'),
 		}
 		return result;
 
+	},
+	connectorControlPoint = (themeDictionary, childPosition, connectorStyle) => {
+		'use strict';
+		const controlPointOffset = childPosition === 'horizontal' ? themeFallbackValues.connectorControlPoint.horizontal : themeFallbackValues.connectorControlPoint.default,
+			defaultControlPoint = {'width': 0, 'height': controlPointOffset},
+			configuredControlPoint = connectorStyle && attributeForPath(themeDictionary, ['connector', connectorStyle, 'controlPoint', childPosition]);
+
+		return (configuredControlPoint && Object.assign({}, configuredControlPoint)) || defaultControlPoint;
 	};
 
 module.exports = {
 	attributeForPath: attributeForPath,
 	themeAttributeValue: themeAttributeValue,
-	nodeAttributeToNodeTheme: nodeAttributeToNodeTheme
+	nodeAttributeToNodeTheme: nodeAttributeToNodeTheme,
+	connectorControlPoint: connectorControlPoint
 };
