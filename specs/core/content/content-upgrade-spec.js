@@ -43,9 +43,9 @@ describe('content upgrade', function () {
 			expect(content.title).toBeFalsy();
 		});
 		it('should preserve root attributes on root', function () {
-			const content = {id: 1, title: 'hello', attr: {theme: 'foo', 'measurements-config': 'bar', storyboards: 'foobar', someother: 'foo'}};
+			const content = {id: 1, title: 'hello', attr: {theme: 'foo', themeOverrides: 'bar', 'measurements-config': 'bar', storyboards: 'foobar', someother: 'foo'}};
 			contentUpgrade(content);
-			expect(content.attr).toEqual({theme: 'foo', 'measurements-config': 'bar', storyboards: 'foobar'});
+			expect(content.attr).toEqual({theme: 'foo', themeOverrides: 'bar', 'measurements-config': 'bar', storyboards: 'foobar'});
 		});
 		it('should move non root attributes to new sub idea', function () {
 			const content = {id: 1, title: 'hello', attr: {theme: 'foo', 'measurements-config': 'bar', storyboards: 'foobar', someother: 'foo'}};

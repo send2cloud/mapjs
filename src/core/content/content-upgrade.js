@@ -27,7 +27,7 @@ module.exports = function contentUpgrade(content) {
 		},
 		upgradeV3 = function () {
 			const doUpgrade = function () {
-				const rootAttrKeys = ['theme', 'measurements-config', 'storyboards', 'progress-statuses'],
+				const rootAttrKeys = ['theme', 'themeOverrides', 'measurements-config', 'storyboards', 'progress-statuses'],
 					oldRootAttr = (content && content.attr) || {},
 					newRootAttr = _.pick(oldRootAttr, rootAttrKeys),
 					newRootNodeAttr = _.omit(oldRootAttr, rootAttrKeys),
