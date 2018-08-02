@@ -246,7 +246,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 			return;
 		}
 		if (layoutModel.getLayout().theme !== (idea.attr && idea.attr.theme)) {
-			self.dispatchEvent('themeChanged', idea.attr && idea.attr.theme);
+			self.dispatchEvent('themeChanged', idea.attr && idea.attr.theme, idea.attr && idea.attr.themeOverrides);
 		}
 		updateCurrentLayout(self.reactivate(layoutCalculator(idea)), sessionId);
 	};

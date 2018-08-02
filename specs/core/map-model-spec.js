@@ -196,7 +196,18 @@ describe('MapModel', function () {
 			underTest.addEventListener('themeChanged', listener);
 			layoutAfter.theme = 'new-theme';
 			anIdea.updateAttr(anIdea.id, 'theme', 'new-theme');
-			expect(listener).toHaveBeenCalledWith('new-theme');
+			expect(listener).toHaveBeenCalledWith('new-theme', undefined);
+		});
+		it('should dispatch themeChanged with theme overrides when the theme changes', function () {
+
+			const listener = jasmine.createSpy('themeChanged');
+			underTest.addEventListener('themeChanged', listener);
+			layoutAfter.theme = 'new-theme';
+			anIdea.batch(() => {
+				anIdea.updateAttr(anIdea.id, 'theme', 'new-theme');
+				anIdea.updateAttr(anIdea.id, 'themeOverrides', 'new-theme-overrides');
+			});
+			expect(listener).toHaveBeenCalledWith('new-theme', 'new-theme-overrides');
 		});
 		describe('decorationAction', function () {
 			it('should dispatch decorationActionRequested', function () {
