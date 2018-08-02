@@ -1,6 +1,5 @@
 /*global module, require */
-const _ = require('underscore'),
-	AUTO_COLOR = 'theme-auto-color',
+const AUTO_COLOR = 'theme-auto-color',
 	themeFallbackValues = require('./theme-fallback-values'),
 	themeToDictionary = require('./theme-to-dictionary'),
 	themeAttributeUtils = require('./theme-attribute-utils'),
@@ -53,8 +52,8 @@ module.exports = function Theme(themeJson) {
 			combinedConnector = combinedStyle &&  themeAttributeUtils.attributeForPath(themeDictionary, ['connector', combinedStyle]),
 			connectorStyle  = (combinedConnector && combinedStyle) || (parentConnector && parentConnectorStyle) || childConnectorStyle || 'default',
 			controlPoint = themeAttributeUtils.connectorControlPoint(themeDictionary, position, connectorStyle),
-			connectorDefaults = _.extend({}, themeFallbackValues.connectorTheme),
-			returnedConnector =  _.extend({}, combinedConnector || parentConnector || childConnector || connectorDefaults);
+			connectorDefaults = Object.assign({}, themeFallbackValues.connectorTheme),
+			returnedConnector =  Object.assign({}, combinedConnector || parentConnector || childConnector || connectorDefaults);
 		if (!returnedConnector.label) {
 			returnedConnector.label = connectorDefaults.label;
 		}
@@ -65,13 +64,13 @@ module.exports = function Theme(themeJson) {
 	self.linkTheme = function (linkStyle) {
 		const fromCurrentTheme = themeAttributeUtils.attributeForPath(themeDictionary, ['link', linkStyle || 'default']),
 			fromDefaultTheme = defaultTheme.link.default;
-		return _.extend({}, fromDefaultTheme, fromCurrentTheme);
+		return Object.assign({}, fromDefaultTheme, fromCurrentTheme);
 	};
 
 	self.noAnimations = () => !!(themeDictionary.noAnimations);
 	self.getLayoutConnectorAttributes = (styles) => {
 		const childConnectorStyle = attributeValue(['node'], styles, ['connections', 'style'], 'default'),
-			connectorDefaults = _.extend({}, themeFallbackValues.connectorTheme),
+			connectorDefaults = Object.assign({}, themeFallbackValues.connectorTheme),
 			childConnector = themeAttributeUtils.attributeForPath(themeDictionary, ['connector', childConnectorStyle]) || connectorDefaults,
 			result = {};
 		if (childConnector && childConnector.line) {
@@ -88,7 +87,7 @@ module.exports = function Theme(themeJson) {
 				delete currentAttribs.parentConnector.color;
 			}
 			delete currentAttribs.parentConnector.themeAutoColor;
-			if (_.isEmpty(currentAttribs.parentConnector)) {
+			if (!currentAttribs || !currentAttribs.parentConnector || !Object.keys(currentAttribs.parentConnector).length) {
 				delete currentAttribs.parentConnector;
 			}
 		}
@@ -103,29 +102,29 @@ module.exports = function Theme(themeJson) {
 				return autoColors[index];
 			},
 			childConnectorStyle = attributeValue(['node'], styles, ['connections', 'style'], 'default'),
-			connectorDefaults = _.extend({}, themeFallbackValues.connectorTheme),
+			connectorDefaults = Object.assign({}, themeFallbackValues.connectorTheme),
 			childConnector = themeAttributeUtils.attributeForPath(themeDictionary, ['connector', childConnectorStyle]) || connectorDefaults,
 			autoColor = getAutoColor(),
 			result = {
-				attr: _.pick(_.extend({}, currentAttribs), ['parentConnector']),
+				attr: (currentAttribs && currentAttribs.parentConnector && {parentConnector: currentAttribs.parentConnector}) || {},
 				removed: []
 			};
 
 		if (childConnector && childConnector.line && childConnector.line.color === AUTO_COLOR) {
-			result.attr = _.extend({
+			result.attr = Object.assign({
 				parentConnector: {
 					color: autoColor,
 					themeAutoColor: autoColor
 				}
 			}, result.attr);
 		} else if (result.attr.parentConnector && result.attr.parentConnector.themeAutoColor) {
-			result.attr.parentConnector = _.extend({}, result.attr.parentConnector);
+			result.attr.parentConnector = Object.assign({}, result.attr.parentConnector);
 			if (result.attr.parentConnector.themeAutoColor === result.attr.parentConnector.color) {
 				delete result.attr.parentConnector.color;
 			}
 			delete result.attr.parentConnector.themeAutoColor;
 
-			if (_.isEmpty(result.attr.parentConnector)) {
+			if (!result || !result.attr || !result.attr.parentConnector || !Object.keys(result.attr.parentConnector).length) {
 				result.removed.push('parentConnector');
 				delete result.attr.parentConnector;
 			}
