@@ -17,7 +17,8 @@ const contentUpgrade = require('../content/content-upgrade'),
 			nodes: result,
 			connectors: extractConnectors(idea, result, theme),
 			links: extractLinks(idea, result),
-			theme: idea.attr && idea.attr.theme
+			theme: idea.attr && idea.attr.theme,
+			themeOverrides: Object.assign({}, idea.attr && idea.attr.themeOverrides)
 		};
 	};
 

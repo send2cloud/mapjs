@@ -158,6 +158,26 @@ describe('calculateLayout', function () {
 			result = calculateLayout(idea, dimensionProvider, optional);
 			expect(result.theme).toEqual('blue');
 		});
+		it('should include the shallow cloned theme overrides from the idea', function () {
+			const idea = {
+				id: 'root',
+				formatVersion: 3,
+				attr: { themeOverrides: {overrides: 'here'} },
+				ideas: {
+					1: {
+						title: 'parent',
+						id: 1
+					}
+				}
+			};
+			layouts.standard.and.returnValue({
+				1: {x: 0, y: 0, height: 10, width: 10}
+			});
+			optional.theme = new Theme({layout: {orientation: 'not-top-down'}});
+			result = calculateLayout(idea, dimensionProvider, optional);
+			idea.attr.themeOverrides.mutated = 'wasMutated';
+			expect(result.themeOverrides).toEqual({overrides: 'here'});
+		});
 		describe('connector handling', function () {
 			beforeEach(function () {
 				idea = {

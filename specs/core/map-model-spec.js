@@ -209,6 +209,16 @@ describe('MapModel', function () {
 			});
 			expect(listener).toHaveBeenCalledWith('new-theme', 'new-theme-overrides');
 		});
+		it('should dispatch themeChanged with theme overrides when the theme overrides change', function () {
+
+			const listener = jasmine.createSpy('themeChanged');
+			underTest.addEventListener('themeChanged', listener);
+			anIdea.attr = {theme: 'was-theme'};
+			layoutBefore.theme = 'was-theme';
+			layoutAfter.theme = 'was-theme';
+			anIdea.updateAttr(anIdea.id, 'themeOverrides', 'new-theme-overrides');
+			expect(listener).toHaveBeenCalledWith('was-theme', 'new-theme-overrides');
+		});
 		describe('decorationAction', function () {
 			it('should dispatch decorationActionRequested', function () {
 				const listener = jasmine.createSpy();

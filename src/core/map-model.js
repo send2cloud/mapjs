@@ -72,10 +72,9 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 			});
 			return closestNode && closestNode.id;
 		},
-		updateCurrentLayout = function (newLayout, sessionId) {
+		updateCurrentLayout = function (newLayout, sessionId, themeChanged) {
 			let layoutCompleteOptions;
-			const currentLayout = layoutModel.getLayout(),
-				themeChanged = (currentLayout.theme !== newLayout.theme);
+			const currentLayout = layoutModel.getLayout();
 
 			self.dispatchEvent('layoutChangeStarting', _.size(newLayout.nodes) - _.size(currentLayout.nodes));
 			applyLabels(newLayout);
@@ -245,10 +244,16 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		if (!idea) {
 			return;
 		}
-		if (layoutModel.getLayout().theme !== (idea.attr && idea.attr.theme)) {
+		const currentLayout = layoutModel.getLayout(),
+			themeHasChanged = currentLayout.theme !== (idea.attr && idea.attr.theme),
+			ideaThemeOverrides = idea.attr && idea.attr.themeOverrides,
+			layoutThemeOverrides = currentLayout && currentLayout.themeOverrides,
+			themeOverridesHaveChanged = !_.isEqual(ideaThemeOverrides, layoutThemeOverrides),
+			themeChanged = themeHasChanged || themeOverridesHaveChanged;
+		if (themeChanged) {
 			self.dispatchEvent('themeChanged', idea.attr && idea.attr.theme, idea.attr && idea.attr.themeOverrides);
 		}
-		updateCurrentLayout(self.reactivate(layoutCalculator(idea)), sessionId);
+		updateCurrentLayout(self.reactivate(layoutCalculator(idea)), sessionId, themeChanged);
 	};
 	this.setIdea = function (anIdea, tryKeepingContext) {
 		const oldSelectedIdea = currentlySelectedIdeaId;
