@@ -22,6 +22,21 @@ describe('mergeThemes', () => {
 	it('should return if there are no overrides', () => {
 		expect(underTest(defaultTheme, {})).toEqual(defaultTheme);
 	});
+	it('should return unmerged if the theme has blockThemeOverrides flag', () => {
+		const theme = JSON.parse(JSON.stringify(defaultTheme)),
+			override = {
+				connector: {
+					default: {
+						label: {
+							backgroundColor: 'red'
+						}
+					}
+				}
+			};
+
+		theme.blockThemeOverrides = true;
+		expect(underTest(theme, override)).toEqual(theme);
+	});
 	it('should allow overriding of connectors', () => {
 		const expected = JSON.parse(JSON.stringify(defaultTheme)),
 			override = {
