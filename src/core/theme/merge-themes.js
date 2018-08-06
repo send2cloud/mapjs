@@ -6,7 +6,7 @@ module.exports = function mergeThemes(theme, themeOverride) {
 	if (!isObjectObject(theme) || !isObjectObject(themeOverride)) {
 		throw new Error('invalid-args');
 	}
-	const themeNode = theme.node,
+	const themeNode = theme.node || [],
 		themeOverrideNodes = themeOverride.node,
 		mergedTheme = deepAssign({}, theme, themeOverride);
 	if (themeOverrideNodes && themeOverrideNodes.length) {

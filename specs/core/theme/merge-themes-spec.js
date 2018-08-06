@@ -52,6 +52,36 @@ describe('mergeThemes', () => {
 		expected.link.default.label.position.ratio = 0.75;
 		expect(underTest(defaultTheme, override)).toEqual(expected);
 	});
+	it('should allow overriding of non existing node styles', () => {
+		const toMerge = JSON.parse(JSON.stringify(defaultTheme)),
+			override = {
+				node: [
+					{
+						name: 'level_1',
+						text: {
+							margin: 10.0
+						}
+					},
+					{
+						name: 'activated',
+						border: {
+							line: {
+								color: 'red'
+							}
+						}
+					}
+				]
+			};
+
+		delete toMerge.node;
+		expect(underTest(toMerge, override)).toEqual(Object.assign(toMerge, {node: override.node}));
+	});
+	it('should allow overriding of existing node styles with an empty object', () => {
+		const expected = JSON.parse(JSON.stringify(defaultTheme)),
+			override = {};
+		expect(underTest(defaultTheme, override)).toEqual(expected);
+	});
+
 	it('should allow overriding of existing node styles', () => {
 		const expected = JSON.parse(JSON.stringify(defaultTheme)),
 			override = {
