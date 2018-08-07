@@ -122,18 +122,6 @@ describe('MAPJS.ThemeProcessor', function () {
 				});
 
 			});
-			describe('regular/dark/light colours', function () {
-				it('converts dark/light/regular into separate styles', function () {
-					const result = processWithoutAnimations({node: [{name: 'default',
-						text: {
-							color: '#4F4F4F',
-							lightColor: '#EEEEEE',
-							darkColor: '#000000'
-						}}]});
-					expect(result.css).toEqual('.mapjs-node{color:#4F4F4F;}.mapjs-node.mapjs-node-light{color:#4F4F4F;}.mapjs-node.mapjs-node-dark{color:#EEEEEE;}.mapjs-node.mapjs-node-white{color:#000000;}');
-				});
-			});
-
 		});
 		describe('decorations', function () {
 			beforeEach(function () {

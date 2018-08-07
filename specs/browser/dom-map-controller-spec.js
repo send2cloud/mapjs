@@ -30,6 +30,7 @@ describe('DomMapController', function () {
 		viewPort = jQuery('<div>').appendTo('body');
 		stage = jQuery('<div>').css('overflow', 'scroll').appendTo(viewPort);
 		resourceTranslator = jasmine.createSpy('resourceTranslator');
+
 		themeSource = () => themeFromSource;
 		domMapController = new DomMapController(mapModel, stage, false, resourceTranslator, themeSource);
 	});
@@ -40,6 +41,8 @@ describe('DomMapController', function () {
 	describe('dimensionProvider', function () {
 		let newElement, oldUpdateNodeContent, idea;
 		beforeEach(function () {
+			themeFromSource = new Theme({name: 'test'});
+
 			oldUpdateNodeContent = jQuery.fn.updateNodeContent;
 			idea = {id: 'foo.1', title: 'zeka'};
 		});
@@ -115,18 +118,18 @@ describe('DomMapController', function () {
 				newElement = jQuery('<div>').data({width: 111, textWidth: 132, height: 222}).attr('id', 'node_foo_1').appendTo(stage);
 			});
 			it('looks up a DOM object with the matching node ID and if the node cache mark matches, returns the DOM width without re-applying content', function () {
-				newElement.data('nodeCacheMark', nodeCacheMark(idea));
+				newElement.data('nodeCacheMark', nodeCacheMark(idea, {theme: themeFromSource}));
 				expect(domMapController.dimensionProvider(idea)).toEqual({width: 111, textWidth: 132, height: 222});
 				expect(jQuery.fn.updateNodeContent).not.toHaveBeenCalled();
 			});
 			it('ignores DOM objects where the cache mark does not match', function () {
-				newElement.data('nodeCacheMark', nodeCacheMark(idea));
+				newElement.data('nodeCacheMark', nodeCacheMark(idea, {theme: themeFromSource}));
 				expect(domMapController.dimensionProvider(_.extend(idea, {title: 'not zeka'}))).toEqual({width: 654, textWidth: 123, height: 786});
 				expect(jQuery.fn.updateNodeContent).toHaveBeenCalled();
 			});
 			it('passes the level as an override when finding the cache mark', function () {
 				idea.level = 5;
-				newElement.data('nodeCacheMark', nodeCacheMark(idea));
+				newElement.data('nodeCacheMark', nodeCacheMark(idea, {theme: themeFromSource}));
 				idea.level = undefined;
 				expect(domMapController.dimensionProvider(idea, 5)).toEqual({width: 111, textWidth: 132, height: 222});
 				expect(jQuery.fn.updateNodeContent).not.toHaveBeenCalled();
@@ -139,8 +142,6 @@ describe('DomMapController', function () {
 				let underTest, node, theme;
 
 				beforeEach(function () {
-					theme = new Theme({name: 'test'});
-					setTheme(theme);
 					node = {id: '11.12^13#AB-c', title: 'zeka', x: 10, y: 20, width: 30, height: 40};
 					spyOn(jQuery.fn, 'updateNodeContent').and.callFake(function () {
 						this.data(node);
@@ -172,7 +173,7 @@ describe('DomMapController', function () {
 					expect(underTest.hasClass('mapjs-node')).toBeTruthy();
 				});
 				it('updates the node content', function () {
-					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node, {theme: theme, resourceTranslator: resourceTranslator});
+					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node, themeFromSource, {resourceTranslator: resourceTranslator});
 					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledOnJQueryObject(underTest);
 					expect(jQuery.fn.updateNodeContent.calls.count()).toBe(1);
 				});
@@ -897,8 +898,8 @@ describe('DomMapController', function () {
 					mapModel.dispatchEvent(eventType, node);
 					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledOnJQueryObject(underTest);
 					expect(jQuery.fn.updateNodeContent).toHaveBeenCalledWith(node,
+						themeFromSource,
 						{
-							theme: theme,
 							resourceTranslator: resourceTranslator
 						});
 				});

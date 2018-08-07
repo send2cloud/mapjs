@@ -2,7 +2,6 @@
 const jQuery = require('jquery'),
 	_ = require('underscore'),
 	URLHelper = require('../core/util/url-helper'),
-	foregroundStyle = require('../core/theme/foreground-style'),
 	formattedNodeTitle = require('../core/content/formatted-node-title'),
 	nodeCacheMark = require('./node-cache-mark'),
 	applyIdeaAttributesToNodeTheme = require('../core/content/apply-idea-attributes-to-node-theme'),
@@ -10,13 +9,13 @@ const jQuery = require('jquery'),
 
 require('./set-theme-class-list');
 
-jQuery.fn.updateNodeContent = function (nodeContent, optional) {
+jQuery.fn.updateNodeContent = function (nodeContent, theme, optional) {
 	'use strict';
 	const resourceTranslator = optional && optional.resourceTranslator,
 		forcedLevel = optional && optional.level,
 		nodeTextPadding = (optional && optional.nodeTextPadding) || 11,
 		fixedLayout = (optional && optional.fixedLayout),
-		theme = (optional && optional.theme),
+		// theme = (optional && optional.theme),
 		self = jQuery(this),
 		textSpan = function () {
 			let span = self.find('[data-mapjs-role=title]');
@@ -137,27 +136,14 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 			}
 		},
 		setColors = function (colorText) {
-			let fromStyle = nodeContent.attr && nodeContent.attr.style && nodeContent.attr.style.background;
-			const textColorClasses = {
-				'color': 'mapjs-node-light',
-				'lightColor': 'mapjs-node-dark',
-				'darkColor': 'mapjs-node-white'
-			};
-			if (fromStyle === 'false' || fromStyle === 'transparent') {
-				fromStyle = false;
-			}
-			self.removeClass('mapjs-node-dark mapjs-node-white mapjs-node-light mapjs-node-colortext');
-			self.css({'color': '', 'background-color': ''});
-			if (fromStyle) {
-				if (colorText) {
-					self.css('color', fromStyle);
-				} else {
-					self.css('background-color', fromStyle);
-					self.addClass(textColorClasses[foregroundStyle(fromStyle)]);
-				}
-			}
+			self.removeClass('mapjs-node-colortext mapjs-node-transparent');
+			self.css({'color': nodeTheme.text.color, 'background-color': nodeTheme.backgroundColor});
+
 			if (colorText) {
 				self.addClass('mapjs-node-colortext');
+			}
+			if (!nodeTheme || !nodeTheme.backgroundColor || nodeTheme.backgroundColor === 'transparent') {
+				self.addClass('mapjs-node-transparent');
 			}
 		},
 		setIcon = function (icon) {
@@ -299,7 +285,7 @@ jQuery.fn.updateNodeContent = function (nodeContent, optional) {
 	self.setThemeClassList(effectiveStyles).attr('mapjs-level', nodeLevel);
 
 	self.data(nodeCacheData);
-	self.data('nodeCacheMark', nodeCacheMark(nodeContent, optional));
+	self.data('nodeCacheMark', nodeCacheMark(nodeContent, Object.assign({theme: theme}, optional)));
 	setColors(colorText);
 	setIcon(nodeContent.attr && nodeContent.attr.icon);
 	setCollapseClass();

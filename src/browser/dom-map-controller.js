@@ -270,7 +270,8 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		textBox = dummyTextBox;
 		textBox.appendTo('body').updateNodeContent(
 			idea,
-			{resourceTranslator: translateToPixel, level: level, theme: themeSource(), decorations: ['left', 'right']}
+			themeSource(),
+			{resourceTranslator: translateToPixel, level: level, decorations: ['left', 'right']}
 		);
 		result = {
 			width: textBox.outerWidth(true),
@@ -291,7 +292,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 	mapModel.addEventListener('nodeCreated', function (node) {
 		let currentReorderBoundary;
 		const element = stageElement.createNode(node)
-			.updateNodeContent(node, {resourceTranslator: resourceTranslator, theme: themeSource()})
+			.updateNodeContent(node, themeSource(), {resourceTranslator: resourceTranslator})
 			.nodeResizeWidget(node.id, mapModel, stagePositionForPointEvent)
 			.on('tap', function (evt) {
 
@@ -447,7 +448,7 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 		}).each(ensureSpaceForNode).each(updateScreenCoordinates);
 	});
 	mapModel.addEventListener('nodeTitleChanged nodeAttrChanged nodeLabelChanged', function (n) {
-		stageElement.nodeWithId(n.id).updateNodeContent(n, { resourceTranslator: resourceTranslator, theme: themeSource()}).each(ensureSpaceForNode);
+		stageElement.nodeWithId(n.id).updateNodeContent(n, themeSource(), { resourceTranslator: resourceTranslator}).each(ensureSpaceForNode);
 	});
 
 	mapModel.addEventListener('connectorCreated', function (connector) {

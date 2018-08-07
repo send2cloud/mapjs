@@ -13,8 +13,13 @@ describe('applyIdeaAttributesToNodeTheme', () => {
 				lineSpacing: 3,
 				lineSpacingPx: 5
 			},
+			backgroundColor: 'grey',
+			borderType: 'surround',
 			text: {
-				alignment: 'center'
+				alignment: 'center',
+				color: 'silver',
+				lightColor: 'white',
+				darkColor: 'black'
 			}
 		};
 		idea = {
@@ -48,7 +53,37 @@ describe('applyIdeaAttributesToNodeTheme', () => {
 	it('should set the hasFontMultiplier flag', () => {
 		expect(underTest(idea, nodeTheme).hasFontMultiplier).toBeTruthy();
 	});
+	it('does not change the theme colors when no color is set by user', () => {
+		expect(underTest(idea, nodeTheme).backgroundColor).toEqual('grey');
+		expect(underTest(idea, nodeTheme).text.color).toEqual('silver');
+	});
+	['false', 'transparent'].forEach(color => {
+		it(`does not change the theme colors when the color is set by user as "${color}"`, () => {
+			idea.attr.style.background = color;
+			expect(underTest(idea, nodeTheme).backgroundColor).toEqual('grey');
+			expect(underTest(idea, nodeTheme).text.color).toEqual('silver');
+		});
+	});
+	describe('when user has applied color to the node', () => {
+		beforeEach(() => {
+			idea.attr.style.background = 'red';
+		});
+		it('should use the users defined color as the background color', () => {
+			expect(underTest(idea, nodeTheme).backgroundColor).toEqual('red');
+			expect(underTest(idea, nodeTheme).text.color).toEqual('white');
+		});
+		it('should use the darkColor the text color when the users defined color is light', () => {
+			idea.attr.style.background = '#FFFFFF';
+			expect(underTest(idea, nodeTheme).backgroundColor).toEqual('#FFFFFF');
+			expect(underTest(idea, nodeTheme).text.color).toEqual('black');
+		});
 
+		it('should use the users defined color as thetext color when the border is not surround', () => {
+			nodeTheme.borderType = 'underline';
+			expect(underTest(idea, nodeTheme).backgroundColor).toEqual('grey');
+			expect(underTest(idea, nodeTheme).text.color).toEqual('red');
+		});
+	});
 	['size', 'sizePx', 'lineSpacing', 'lineSpacingPx'].forEach((key) => {
 		it('should not add ' + key + ' when falsy in nodeTheme font', () => {
 			delete nodeTheme.font[key];

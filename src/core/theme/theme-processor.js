@@ -79,30 +79,6 @@ module.exports = function ThemeProcessor() {
 						}
 					});
 				},
-				appendColorVariants = function (styleSelector, nodeStyle) {
-					if (!nodeStyle.text) {
-						return;
-					}
-					if (nodeStyle.text.color) {
-						result.push(styleSelector);
-						result.push('.mapjs-node-light{color:');
-						result.push(nodeStyle.text.color);
-						result.push(';}');
-					}
-					if (nodeStyle.text.lightColor) {
-						result.push(styleSelector);
-						result.push('.mapjs-node-dark{color:');
-						result.push(nodeStyle.text.lightColor);
-						result.push(';}');
-					}
-					if (nodeStyle.text.darkColor) {
-						result.push(styleSelector);
-						result.push('.mapjs-node-white{color:');
-						result.push(nodeStyle.text.darkColor);
-						result.push(';}');
-					}
-
-				},
 				appendSpanStyles = function (styleSelector, nodeStyle) {
 					const maxWidth = nodeStyle.text && nodeStyle.text.maxWidth;
 					if (!maxWidth) {
@@ -161,7 +137,6 @@ module.exports = function ThemeProcessor() {
 				pushProperties(nodeStyle);
 				result.push('}');
 
-				appendColorVariants(styleSelector, nodeStyle);
 				appendDecorationStyles(styleSelector, nodeStyle);
 				appendSpanStyles(styleSelector, nodeStyle);
 			});
