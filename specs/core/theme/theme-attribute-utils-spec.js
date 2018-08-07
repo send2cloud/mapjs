@@ -65,6 +65,14 @@ describe('themeAttributeUtils', () => {
 		it('should not return the fallback value if attribute value is 0', () => {
 			expect(underTest.themeAttributeValue(themeDictionary, ['connector'], ['default'], ['controlPoint', 'above', 'width'], 'fallbackValueHere')).toEqual(0);
 		});
+		it('should return the value when there are no styles and the value is not an object', () => {
+			expect(underTest.themeAttributeValue(themeDictionary, ['name'], [], [], 'fallbackValueHere')).toEqual('MindMup Default');
+
+		});
+		it('should return the fallback value when there are no styles and the value is not an object but there are postfixes', () => {
+			expect(underTest.themeAttributeValue(themeDictionary, ['name'], [], ['propertyHere'], 'fallbackValueHere')).toEqual('fallbackValueHere');
+
+		});
 	});
 	describe('nodeAttributeToNodeTheme', () => {
 		let nodeAttribute;

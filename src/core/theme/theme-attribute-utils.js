@@ -1,6 +1,7 @@
 /*global module, require*/
 const deepAssign = require('../deep-assign'),
 	colorParser = require('./color-parser'),
+	isObjectObject = require('../is-object-object'),
 	themeFallbackValues = require('./theme-fallback-values'),
 	attributeForPath = function (object, pathArray, fallback) {
 		'use strict';
@@ -31,8 +32,12 @@ const deepAssign = require('../deep-assign'),
 		}
 		if (styles && styles.length) {
 			toAssign = toAssign.concat(styles.slice(0).reverse().map(style => rootElement[style]).filter(item => !!item));
-		} else {
+		} else if (isObjectObject(rootElement)) {
 			toAssign.push(rootElement);
+		} else if (!postfixes || !postfixes.length) {
+			return rootElement;
+		} else {
+			return fallback;
 		}
 		return attributeForPath(deepAssign.apply(deepAssign, toAssign), postfixes, fallback);
 	},
