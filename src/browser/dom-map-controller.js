@@ -274,9 +274,9 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 			{resourceTranslator: translateToPixel, level: level, decorations: ['left', 'right']}
 		);
 		result = {
-			width: textBox.outerWidth(true),
-			textWidth: textBox.find('[data-mapjs-role="title"]').outerWidth(true),
-			height: textBox.outerHeight(true)
+			width: Math.ceil(textBox.outerWidth(true)),
+			textWidth: Math.ceil(textBox.find('[data-mapjs-role="title"]').outerWidth(true)),
+			height: Math.ceil(textBox.outerHeight(true))
 		};
 		textBox.detach();
 		return result;

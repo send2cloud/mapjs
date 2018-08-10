@@ -248,7 +248,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 			themeHasChanged = currentLayout.theme !== (idea.attr && idea.attr.theme),
 			ideaThemeOverrides = idea.attr && idea.attr.themeOverrides,
 			layoutThemeOverrides = currentLayout && currentLayout.themeOverrides,
-			themeOverridesHaveChanged = !_.isEqual(ideaThemeOverrides, layoutThemeOverrides),
+			themeOverridesHaveChanged = !_.isEqual(ideaThemeOverrides || {}, layoutThemeOverrides || {}),
 			themeChanged = themeHasChanged || themeOverridesHaveChanged;
 		if (themeChanged) {
 			self.dispatchEvent('themeChanged', idea.attr && idea.attr.theme, idea.attr && idea.attr.themeOverrides);

@@ -209,15 +209,39 @@ describe('MapModel', function () {
 			});
 			expect(listener).toHaveBeenCalledWith('new-theme', 'new-theme-overrides');
 		});
-		it('should dispatch themeChanged with theme overrides when the theme overrides change', function () {
+		it('should dispatch themeChanged with theme overrides when the theme overrides change to a non empty object', function () {
+			const listener = jasmine.createSpy('themeChanged');
+			underTest.addEventListener('themeChanged', listener);
+			anIdea.attr = {theme: 'was-theme', themeOverrides: {override: 'here'}};
+			layoutBefore.theme = 'was-theme';
+			layoutBefore.themeOverrides = {override: 'here'};
+			layoutAfter.theme = 'was-theme';
+			layoutAfter.themeOverrides = {override: 'there'};
+			anIdea.updateAttr(anIdea.id, 'themeOverrides', {override: 'there'});
+			expect(listener).toHaveBeenCalledWith('was-theme', {override: 'there'});
+		});
+
+		it('should dispatch themeChanged with theme overrides when the theme overrides change to empty', function () {
 
 			const listener = jasmine.createSpy('themeChanged');
 			underTest.addEventListener('themeChanged', listener);
-			anIdea.attr = {theme: 'was-theme'};
+			anIdea.attr = {theme: 'was-theme', themeOverrides: {override: 'here'}};
 			layoutBefore.theme = 'was-theme';
+			layoutBefore.themeOverrides = {override: 'here'};
 			layoutAfter.theme = 'was-theme';
-			anIdea.updateAttr(anIdea.id, 'themeOverrides', 'new-theme-overrides');
-			expect(listener).toHaveBeenCalledWith('was-theme', 'new-theme-overrides');
+			layoutAfter.themeOverrides = {};
+			anIdea.updateAttr(anIdea.id, 'themeOverrides', {});
+			expect(listener).toHaveBeenCalledWith('was-theme', undefined);
+		});
+		it('should not dispatch themeChanged with theme overrides when the theme overrides change from falsy to empty', function () {
+			const listener = jasmine.createSpy('themeChanged');
+			underTest.addEventListener('themeChanged', listener);
+			anIdea.attr = {theme: 'was-theme', themeOverrides: {}};
+			layoutBefore.theme = 'was-theme';
+			layoutBefore.themeOverrides = {};
+			layoutAfter.theme = 'was-theme';
+			anIdea.updateAttr(anIdea.id, 'themeOverrides', false);
+			expect(listener).not.toHaveBeenCalled();
 		});
 		describe('decorationAction', function () {
 			it('should dispatch decorationActionRequested', function () {

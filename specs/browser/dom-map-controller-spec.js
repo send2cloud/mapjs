@@ -53,7 +53,7 @@ describe('DomMapController', function () {
 			jQuery.fn.updateNodeContent = oldUpdateNodeContent;
 		});
 		it('calculates the width and height of node by drawing an invisible box with .mapjs-node and detaching it after', function () {
-			newElement = jQuery('<style type="text/css">.mapjs-node { width:456px !important; min-height:789px !important}</style>').appendTo(stage);
+			newElement = jQuery('<style type="text/css">.mapjs-node { width:456px !important; min-height:788.3px !important}</style>').appendTo(stage);
 			expect(domMapController.dimensionProvider(idea)).toEqual({width: 456, textWidth: 29, height: 789});
 			expect(jQuery('.mapjs-node').length).toBe(0);
 		});
@@ -64,7 +64,7 @@ describe('DomMapController', function () {
 			it('should use the width if greater than than the text width', function () {
 				idea.attr = {
 					style: {
-						width: 500
+						width: 499.2
 					}
 				};
 				expect(domMapController.dimensionProvider(idea)).toEqual({width: 500, textWidth: 500, height: 789});
