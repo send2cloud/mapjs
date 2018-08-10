@@ -2,6 +2,7 @@
 const jQuery = require('jquery'),
 	_ = require('underscore'),
 	calculateLayout = require('../core/layout/calculate-layout'),
+	connectorKey = require('../core/util/connector-key'),
 	nodeCacheMark = require('./node-cache-mark');
 
 require('./create-node');
@@ -450,16 +451,15 @@ module.exports = function DomMapController(mapModel, stageElement, touchEnabled,
 	mapModel.addEventListener('nodeTitleChanged nodeAttrChanged nodeLabelChanged', function (n) {
 		stageElement.nodeWithId(n.id).updateNodeContent(n, themeSource(), { resourceTranslator: resourceTranslator}).each(ensureSpaceForNode);
 	});
-
+	mapModel.addEventListener('connectorMoved', function (connector /*, reason*/) {
+		stageElement.findLine(connector).updateConnector({theme: themeSource()});
+	});
 	mapModel.addEventListener('connectorCreated', function (connector) {
 		const connectorOptions = {theme: themeSource()},
 			element = stageElement.find('[data-mapjs-role=svg-container]')
 			.createConnector(connector, connectorOptions)
 			.updateConnector(connectorOptions);
 		stageElement.nodeWithId(connector.from).add(stageElement.nodeWithId(connector.to))
-			.on('mapjs:move', function () {
-				element.updateConnector({theme: themeSource()});
-			})
 			.on('mapjs:resize', function () {
 				element.updateConnector({theme: themeSource()});
 			});

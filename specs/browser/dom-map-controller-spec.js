@@ -139,7 +139,7 @@ describe('DomMapController', function () {
 	describe('event actions', function () {
 		describe('nodeCreated', function () {
 			describe('adds a DIV for the node to the stage', function () {
-				let underTest, node, theme;
+				let underTest, node;
 
 				beforeEach(function () {
 					node = {id: '11.12^13#AB-c', title: 'zeka', x: 10, y: 20, width: 30, height: 40};
@@ -1100,18 +1100,6 @@ describe('DomMapController', function () {
 					expect(mapModel.selectConnector).toHaveBeenCalledWith('mouse', connector, {x: 100, y: 200});
 					expect(stopProp).toHaveBeenCalled();
 				});
-				describe('event wiring for node updates', function () {
-					beforeEach(function () {
-						jQuery.fn.updateConnector.calls.reset();
-					});
-					_.each(['from', 'to'], function (node) {
-						it('moving node ' + node  + ' updates connector', function () {
-							jQuery('#node_1_' + node).trigger('mapjs:move');
-							expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(underTest);
-							expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{theme: theme}]);
-						});
-					});
-				});
 			});
 			describe('connectorRemoved', function () {
 				it('queues fadeout for the element', function () {
@@ -1135,6 +1123,21 @@ describe('DomMapController', function () {
 				it('updates the connector data attributes', function () {
 					mapModel.dispatchEvent('connectorAttrChanged', connector);
 					expect(underTest.data('attr')).toEqual({lovely: false});
+				});
+			});
+			describe('connectorMoved', function () {
+				beforeEach(function () {
+					connector.attr = {lovely: false};
+				});
+				it('updates the connector', function () {
+					jQuery.fn.updateConnector.calls.reset();
+					mapModel.dispatchEvent('connectorMoved', connector);
+					expect(jQuery.fn.updateConnector).toHaveBeenCalledOnJQueryObject(underTest);
+					expect(jQuery.fn.updateConnector.calls.mostRecent().args).toEqual([{theme: theme}]);
+				});
+				it('does not update the connector data attributes', function () {
+					mapModel.dispatchEvent('connectorMoved', connector);
+					expect(underTest.data('attr')).toEqual({lovely: true});
 				});
 			});
 

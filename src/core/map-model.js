@@ -74,7 +74,23 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 		},
 		updateCurrentLayout = function (newLayout, sessionId, themeChanged) {
 			let layoutCompleteOptions;
-			const currentLayout = layoutModel.getLayout();
+			const currentLayout = layoutModel.getLayout(),
+				nodePositionsChanged = (oldNode, newNode) => {
+					if (!oldNode || !newNode) {
+						return false;
+					}
+					return (newNode.x !== oldNode.x || newNode.y !== oldNode.y);
+				},
+				connectorNodeMoved = (oldConnector, newConnector) => {
+					if (!oldConnector || !newConnector || oldConnector.from !== newConnector.from || oldConnector.to !== newConnector.to) {
+						return false;
+					}
+					const oldFromNode = currentLayout.nodes[oldConnector.from],
+						oldToNode = currentLayout.nodes[oldConnector.to],
+						newFromNode = newLayout.nodes[newConnector.from],
+						newToNode = newLayout.nodes[newConnector.to];
+					return nodePositionsChanged(oldFromNode, newFromNode) || nodePositionsChanged(oldToNode, newToNode);
+				};
 
 			self.dispatchEvent('layoutChangeStarting', _.size(newLayout.nodes) - _.size(currentLayout.nodes));
 			applyLabels(newLayout);
@@ -113,7 +129,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 				if (!oldNode) {
 					self.dispatchEvent('nodeCreated', newNode, sessionId);
 				} else {
-					if (newNode.x !== oldNode.x || newNode.y !== oldNode.y) {
+					if (nodePositionsChanged(newNode, oldNode)) {
 						self.dispatchEvent('nodeMoved', newNode, sessionId);
 					}
 					if ((newNode.width !== oldNode.width || newNode.height !== oldNode.height) ||
@@ -134,6 +150,8 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 				const oldConnector = currentLayout.connectors[connectorId];
 				if (oldConnector && !_.isEqual(oldConnector.attr || {}, newConnector.attr || {})) {
 					self.dispatchEvent('connectorAttrChanged', newConnector);
+				} else if (connectorNodeMoved(oldConnector, newConnector)) {
+					self.dispatchEvent('connectorMoved', newConnector);
 				}
 				if (!oldConnector || newConnector.from !== oldConnector.from || newConnector.to !== oldConnector.to) {
 					self.dispatchEvent('connectorCreated', newConnector, sessionId);
@@ -367,6 +385,12 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 					});
 				}
 			},
+			moveConnectors = function (connectors) {
+				if (!connectors) {
+					return;
+				}
+				Object.keys(connectors).forEach(key => self.dispatchEvent('connectorMoved', connectors[key]));
+			},
 			oldContext = contextNode();
 		let newContext = false;
 		analytic('collapse:' + doCollapse, source);
@@ -386,6 +410,7 @@ module.exports = function MapModel(selectAllTitles, defaultReorderMargin, option
 				oldContext.x - newContext.x,
 				oldContext.y - newContext.y
 			);
+			moveConnectors(layoutModel.getLayout().connectors);
 		}
 		self.isInCollapse = false;
 		self.dispatchEvent('layoutChangeComplete');

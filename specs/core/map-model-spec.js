@@ -156,6 +156,17 @@ describe('MapModel', function () {
 
 			expect(nodeMovedListener).toHaveBeenCalledWith(layoutAfter.nodes[2], undefined);
 		});
+		it('should dispatch nodeMoved event when a node is moved because idea is changed', function () {
+			layoutAfter.nodes[1] = layoutBefore.nodes[1];
+			layoutAfter.connectors = Object.assign({}, layoutBefore.connectors);
+			const connectorMovedListener = jasmine.createSpy();
+			underTest.addEventListener('connectorMoved', connectorMovedListener);
+
+			anIdea.dispatchEvent('changed');
+
+			expect(connectorMovedListener).toHaveBeenCalledWith(layoutAfter.connectors[2]);
+		});
+
 		it('should dispatch nodeAttrChanged event when a node width changes', function () {
 			const nodeMovedListener = jasmine.createSpy('nodeMoved'),
 				nodeAttrChangedListener = jasmine.createSpy('nodeAttrChanged');
@@ -478,6 +489,16 @@ describe('MapModel', function () {
 									y: 0,
 									title: 'Second'
 								}
+							},
+							connectors: {
+								1: {
+									from: 1,
+									to: 2
+								},
+								2: {
+									from: 2,
+									to: 1
+								}
 							}
 						},
 						layoutAfter = {
@@ -492,10 +513,23 @@ describe('MapModel', function () {
 									y: 0,
 									title: 'Second'
 								}
+							},
+							connectors: {
+								1: {
+									from: 1,
+									to: 2
+								},
+								2: {
+									from: 2,
+									to: 1
+								}
 							}
 						},
 						anIdea = content({title: 'ttt', attr: { collapsed: true}}),
-						calls  = []; /* can't use a spy because args are passed by ref, so test can't check for canges in the same object*/
+						connectorsMovedListener = jasmine.createSpy('connectorsMovedListener'),
+						calls  = []; /* can't use a spy because args are passed by ref, so test can't check for canges in
+						the same object*/
+
 					underTest.setLayoutCalculator(layoutCalculator);
 					layoutCalculatorLayout = layoutBefore;
 					underTest.setIdea(anIdea);
@@ -503,7 +537,7 @@ describe('MapModel', function () {
 					underTest.addEventListener('nodeMoved', function (node) {
 						calls.push(_.clone(node));
 					});
-
+					underTest.addEventListener('connectorMoved', connectorsMovedListener);
 					layoutCalculatorLayout = layoutAfter;
 					underTest.collapse('test', false);
 
@@ -522,6 +556,9 @@ describe('MapModel', function () {
 							title: 'Second'
 						}
 					]);
+					expect(connectorsMovedListener).toHaveBeenCalledWith(layoutAfter.connectors[1]);
+					expect(connectorsMovedListener).toHaveBeenCalledWith(layoutAfter.connectors[2]);
+					expect(connectorsMovedListener.calls.count()).toEqual(4);
 				});
 			});
 
