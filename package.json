@@ -50,7 +50,7 @@
     "jasmine": "^2.7.0",
     "jasmine-spec-reporter": "^4.2.1",
     "sourcemap-lookup": "0.0.3",
-    "testem": "^1.15.0",
+    "testem": "^2.9.2",
     "webpack": "^2.2.1",
     "webpack-dev-middleware": "^1.10.0",
     "webpack-dev-server": "^2.4.1"
