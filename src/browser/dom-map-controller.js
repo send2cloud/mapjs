@@ -2,7 +2,6 @@
 const jQuery = require('jquery'),
 	_ = require('underscore'),
 	calculateLayout = require('../core/layout/calculate-layout'),
-	connectorKey = require('../core/util/connector-key'),
 	nodeCacheMark = require('./node-cache-mark');
 
 require('./create-node');
