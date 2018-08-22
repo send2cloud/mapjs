@@ -67,7 +67,7 @@ const calcIdeaLevel = require('./calc-idea-level'),
 			return activeContent.pasteMultiple(parentId, contents);
 		}
 		const level = calcIdeaLevel(activeContent, parentId),
-			parent = activeContent.findSubIdeaById(parentId),
+			parent = (parentId && activeContent.findSubIdeaById(parentId)) || activeContent,
 			existingSiblings = (parent.ideas && Object.keys(parent.ideas).length) || 0;
 
 		contents.forEach((idea) => {

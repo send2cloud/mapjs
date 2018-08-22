@@ -220,6 +220,10 @@ describe('autoThemedIdeaUtils', () => {
 			toPaste = [{id: 1, title: 'new1'}, {id: 2, title: 'new2'}];
 			activeContent = content(idea);
 		});
+		it('should paste to root node', () => {
+			const result = underTest.pasteMultiple(activeContent, themeObj, 'root', toPaste);
+			expect(result.length).toEqual(2);
+		});
 		it('should autocolor pasted nodes', () => {
 			const result = underTest.pasteMultiple(activeContent, themeObj, 1, toPaste);
 			expect(activeContent.findSubIdeaById(result[0]).attr).toEqual({
