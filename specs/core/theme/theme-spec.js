@@ -172,13 +172,14 @@ describe('Theme', function () {
 			expect(underTest.nodeStyles(3, {group: ['a', 'b']})).toEqual(['attr_group', 'level_3', 'default']);
 		});
 
-		it('prepends the nodeType attribute before the group', function () {
-			expect(underTest.nodeStyles(3, {nodeType: 'perfect', group: 'blue'})).toEqual(['perfect', 'attr_group_blue', 'attr_group', 'level_3', 'default']);
-			expect(underTest.nodeStyles(3, {nodeType: 'perfect'})).toEqual(['perfect', 'level_3', 'default']);
+		it('prepends the styleNames attribute before the group', function () {
+			expect(underTest.nodeStyles(3, {styleNames: ['perfect'], group: 'blue'})).toEqual(['perfect', 'attr_group_blue', 'attr_group', 'level_3', 'default']);
+			expect(underTest.nodeStyles(3, {styleNames: ['perfect']})).toEqual(['perfect', 'level_3', 'default']);
 		});
-		it('does not explode if the nodeType is not a string', () => {
-			expect(underTest.nodeStyles(3, {nodeType: 1})).toEqual(['1', 'level_3', 'default']);
-			expect(underTest.nodeStyles(3, {nodeType: true})).toEqual(['true', 'level_3', 'default']);
+		it('does not explode if the styleNames attribute is not an array', () => {
+			expect(underTest.nodeStyles(3, {styleNames: 1})).toEqual(['level_3', 'default']);
+			expect(underTest.nodeStyles(3, {styleNames: true})).toEqual(['level_3', 'default']);
+			expect(underTest.nodeStyles(3, {styleNames: 'text'})).toEqual(['level_3', 'default']);
 		});
 	});
 	describe('nodeTheme', function () {
