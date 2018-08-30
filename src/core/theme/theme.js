@@ -35,6 +35,9 @@ module.exports = function Theme(themeJson) {
 				result.unshift('attr_group_' + nodeAttr.group);
 			}
 		}
+		if (nodeAttr && nodeAttr.nodeType) {
+			result.unshift(String(nodeAttr.nodeType));
+		}
 		return result;
 	};
 	self.nodeTheme = function (styles) {

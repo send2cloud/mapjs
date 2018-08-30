@@ -101,6 +101,16 @@ describe('calculateLayout', function () {
 			expect(result.nodes[1].styles).toEqual(['attr_group_blue', 'attr_group', 'level_3', 'default']);
 			expect(result.nodes[4].styles).toEqual(['level_6', 'default']);
 		});
+		it('should attach nodeType attributes', () => {
+			layouts.standard.and.returnValue({
+				1: {level: 3, attr: { nodeType: 'perfect', group: 'blue'}, x: 0, y: 0, height: 10, width: 10 },
+				4: {level: 6, attr: { nodeType: 'local'}, x: 0, y: 0, height: 10, width: 10}
+			});
+			result = calculateLayout(idea, dimensionProvider, optional);
+			expect(result.nodes[1].styles).toEqual(['perfect', 'attr_group_blue', 'attr_group', 'level_3', 'default']);
+			expect(result.nodes[4].styles).toEqual(['local', 'level_6', 'default']);
+
+		});
 		it('should attach root node IDs', function () {
 			const idea = {
 				id: 'root',

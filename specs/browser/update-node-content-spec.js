@@ -38,6 +38,16 @@ describe('updateNodeContent', function () {
 			underTest.updateNodeContent(nodeContent, theme);
 			expect(underTest.data('styles')).toEqual(['attr_group_blue', 'attr_group', 'level_3', 'default']);
 		});
+		it('sets the data styles from the nodeType', () => {
+			nodeContent.attr = {nodeType: 'perfect' };
+			underTest.updateNodeContent(nodeContent, theme);
+			expect(underTest.data('styles')).toEqual(['perfect', 'level_3', 'default']);
+		});
+		it('sets the data styles from the nodeType before the group if both are present', () => {
+			nodeContent.attr = { group: 'blue', nodeType: 'perfect' };
+			underTest.updateNodeContent(nodeContent, theme);
+			expect(underTest.data('styles')).toEqual(['perfect', 'attr_group_blue', 'attr_group', 'level_3', 'default']);
+		});
 	});
 	describe('font size', function () {
 		it('sets a font size on the node if there is a fontMultiplier', () => {
