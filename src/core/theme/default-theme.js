@@ -10,7 +10,8 @@ module.exports = {
 				'type': 'surround',
 				'line': {
 					'color': '#707070',
-					'width': 1.0
+					'width': 1.0,
+					'style': 'solid'
 				}
 			},
 			'shadow': [{

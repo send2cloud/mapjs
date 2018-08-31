@@ -16,6 +16,8 @@ describe('theme-fallback-values', () => {
 			borderType: 'surround',
 			cornerRadius: 10,
 			lineColor: '#707070',
+			lineWidth: 1,
+			lineStyle: 'solid',
 			text: {
 				color: '#4F4F4F',
 				lightColor: '#EEEEEE',

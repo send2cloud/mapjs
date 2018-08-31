@@ -108,8 +108,15 @@ describe('themeAttributeUtils', () => {
 			});
 			it('lineColor', () => {
 				expect(underTest.nodeAttributeToNodeTheme(nodeAttribute).lineColor).toEqual(nodeAttribute.border.line.color);
-
 			});
+			it('lineWidth', () => {
+				expect(underTest.nodeAttributeToNodeTheme(nodeAttribute).lineWidth).toEqual(nodeAttribute.border.line.width);
+			});
+			it('lineStyle', () => {
+				expect(underTest.nodeAttributeToNodeTheme(nodeAttribute).lineStyle).toEqual(nodeAttribute.border.line.style);
+			});
+
+
 		});
 	});
 	describe('connectorControlPoint', function () {

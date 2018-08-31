@@ -206,12 +206,26 @@ describe('Theme', function () {
 				borderType: 'surround',
 				cornerRadius: 10,
 				lineColor: '#707070',
+				lineStyle: 'solid',
+				lineWidth: 1,
 				text: {
 					color: '#4F4F4F',
 					lightColor: '#EEEEEE',
 					darkColor: '#000000'
 				}
 			});
+		});
+		it('should let the node theme override line color and style', () => {
+			theme.node[0].border = {
+				type: 'surround',
+				line: {
+					style: 'dashed',
+					width: 3
+				}
+			};
+			expect(underTest.nodeTheme(['default']).lineWidth).toEqual(3);
+			expect(underTest.nodeTheme(['default']).lineStyle).toEqual('dashed');
+
 		});
 		it('should return background color for background theme object', function () {
 			delete theme.node[0].backgroundColor;

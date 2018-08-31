@@ -13,6 +13,8 @@ module.exports = deepFreeze({
 		borderType: firstNode.border.type,
 		cornerRadius: firstNode.cornerRadius,
 		lineColor: firstNode.border.line.color,
+		lineWidth: firstNode.border.line.width,
+		lineStyle: firstNode.border.line.style,
 		text: {
 			color: firstNode.text.color,
 			lightColor: firstNode.text.lightColor,

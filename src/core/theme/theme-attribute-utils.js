@@ -59,6 +59,8 @@ const deepAssign = require('../deep-assign'),
 			result.backgroundColor = getBackgroundColor() || result.backgroundColor;
 			result.cornerRadius = attributeForPath(nodeAttribute, ['cornerRadius'], result.cornerRadius);
 			result.lineColor = attributeForPath(nodeAttribute, ['border', 'line', 'color'], result.lineColor);
+			result.lineWidth = attributeForPath(nodeAttribute, ['border', 'line', 'width'], result.lineWidth);
+			result.lineStyle = attributeForPath(nodeAttribute, ['border', 'line', 'style'], result.lineStyle);
 		}
 		return result;
 
