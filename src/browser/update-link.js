@@ -40,10 +40,10 @@ jQuery.fn.updateLink = function (optional) {
 			shapeFrom = element.data('nodeFrom'),
 			shapeTo = element.data('nodeTo'),
 			attrs = element.data('attr') || {},
-			applyLabel = function (connection, toBox) {
+			applyLabel = function (connection, fromBox, toBox) {
 				const labelText = attrs.label || '',
 					labelTheme = connection.theme.label,
-					labelCenterPoint = labelText && calcLabelCenterPont(connection.position, toBox, connection.d, labelTheme);
+					labelCenterPoint = labelText && calcLabelCenterPont(connection.position, fromBox, toBox, connection.d, labelTheme);
 				updateConnectorText(
 					element,
 					labelCenterPoint,
@@ -93,7 +93,7 @@ jQuery.fn.updateLink = function (optional) {
 			'stroke-width': connection.lineProps.width + 12
 		});
 		showArrows(connection, element);
-		applyLabel(connection, toBox, pathElement);
+		applyLabel(connection, fromBox, toBox);
 	});
 };
 

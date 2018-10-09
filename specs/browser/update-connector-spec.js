@@ -281,17 +281,44 @@ describe('updateConnector', function () {
 			toNode.css({
 				top: '120px', left: '130px', width: '30px', height: '40px'
 			});
+			fromNode.css({
+				top: '120px', left: '70px', width: '30px', height: '40px'
+			});
 			customTheme.label.position = {aboveEnd: 10};
 			themePath.theme = customTheme;
 			underTest.updateConnector({connectorBuilder: builder});
 			const textField = underTest.find('text'),
 				textG = textField.parent(),
 				textDims = textField[0].getClientRects()[0],
-				expectedX = Math.round(44 - textDims.width / 2),
+				relativeToNodeCenter = 130 + 30 * 0.5 - 101,
+				expectedX = Math.round(relativeToNodeCenter - textDims.width / 2),
 				expectedPadding = 2,
 				expectedY = Math.round(8 - textDims.height) - expectedPadding;
 			// cx = 130 - 101 + 30/2 = 44
 			// cy = 120 - 102 - 10  = 8
+			expect(parseInt(textField.attr('x'))).toEqual(0);
+			expect(parseInt(textField.attr('y'))).toEqual(expectedPadding);
+			expect(textG.attr('style')).toEqual(`transform: translate(${expectedX}px, ${expectedY}px);`);
+		});
+		it('places the label on the ratio between start and end node if both ratio and aboveEnd are set', function () {
+			toNode.css({
+				top: '120px', left: '130px', width: '30px', height: '40px'
+			});
+			fromNode.css({
+				top: '120px', left: '111px', width: '20px', height: '40px'
+			});
+			customTheme.label.position = {aboveEnd: 10, ratio: 0.5};
+			themePath.theme = customTheme;
+			underTest.updateConnector({connectorBuilder: builder});
+			const textField = underTest.find('text'),
+				textG = textField.parent(),
+				textDims = textField[0].getClientRects()[0],
+				//relativeToNodeCenter = 130 + 30 * 0.5 - 101, // 44
+				//relativeFromNodeCenter = 111 + 20 * 0.5 - 101, // 20
+				//positionOnLine = 20 + (44 - 20) / 2 = 32
+				expectedX = Math.round(32 - textDims.width / 2),
+				expectedPadding = 2,
+				expectedY = Math.round(8 - textDims.height) - expectedPadding;
 			expect(parseInt(textField.attr('x'))).toEqual(0);
 			expect(parseInt(textField.attr('y'))).toEqual(expectedPadding);
 			expect(textG.attr('style')).toEqual(`transform: translate(${expectedX}px, ${expectedY}px);`);

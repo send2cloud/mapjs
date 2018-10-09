@@ -31,8 +31,9 @@ jQuery.fn.updateConnector = function (optional) {
 			applyLabel = function () {
 				const labelText = (connectorAttr && connectorAttr.label) || '',
 					shapeTo = labelText && element.data('nodeTo'),
+					shapeFrom = labelText && element.data('nodeFrom'),
 					labelTheme = (connection.theme && connection.theme.label) || defaultTheme.connector.default.label,
-					labelCenterPoint = labelText && calcLabelCenterPont(connection.position, shapeTo.getDataBox(), connection.d, labelTheme);
+					labelCenterPoint = labelText && calcLabelCenterPont(connection.position, shapeFrom.getDataBox(), shapeTo.getDataBox(), connection.d, labelTheme);
 				updateConnectorText(
 					element,
 					labelCenterPoint,
