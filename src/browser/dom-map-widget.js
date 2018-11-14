@@ -104,7 +104,7 @@ $.fn.domMapWidget = function (activityLog, mapModel, touchEnabled, dragContainer
 
 		if (!touchEnabled) {
 			element.scrollWhenDragging(mapModel.getInputEnabled); //no need to do this for touch, this is native
-			element.on('mousedown', function (e) {
+			element.on('mm:start-dragging-shadow', function (e) {
 				if (e.target !== element[0]) {
 					element.css('overflow', 'hidden');
 				}
