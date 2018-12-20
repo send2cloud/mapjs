@@ -42,6 +42,9 @@ const MAPJS = require('../../src/npm-main'),
 			if (messageEvent.data.theme) {
 				updateTheme(messageEvent.data.theme);
 			}
+			if (messageEvent.data.labels) {
+				mapModel.setLabelGenerator(() => messageEvent.data.labels);
+			}
 			if (messageEvent.data.content) {
 				mapModel.setIdea(content(messageEvent.data.content));
 				container.css({overflow: 'visible'});

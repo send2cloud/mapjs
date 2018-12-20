@@ -1,6 +1,6 @@
 /*global require, module */
-const svgMapFixture = require('./svg-map-fixture'),
-	buildMap = function (theme) {
+const mapjsFixture = require('./mapjs-fixture'),
+	buildMap = function () {
 		'use strict';
 		return {
 			formatVersion: 3,
@@ -20,8 +20,7 @@ const svgMapFixture = require('./svg-map-fixture'),
 						}
 					}
 				}
-			},
-			theme: theme
+			}
 		};
 	};
 
@@ -35,6 +34,6 @@ module.exports = function buildSvgMap(themeProps, contextOptions) {
 		link: {}
 	};
 	theme[contextOptions.params['theme-element']][contextOptions.params['theme-element-property']] = themeProps;
-	return svgMapFixture(buildMap(theme));
+	return mapjsFixture(buildMap(), theme);
 };
 

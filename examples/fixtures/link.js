@@ -1,5 +1,5 @@
 /*global require, module  */
-const svgMapFixture = require('./svg-map-fixture'),
+const mapjsFixture = require('./mapjs-fixture'),
 	buildMap = function (linkProps) {
 		'use strict';
 		return {
@@ -44,5 +44,5 @@ const svgMapFixture = require('./svg-map-fixture'),
 
 module.exports = function (linkProps) {
 	'use strict';
-	return svgMapFixture(buildMap(linkProps));
+	return mapjsFixture(buildMap(linkProps));
 };
