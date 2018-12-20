@@ -30,7 +30,10 @@
     "pretest-dev": "npm run pretest",
     "test-dev": "testem -l Chrome",
     "sourcemap": "sourcemap-lookup",
-    "server": "webpack-dev-server"
+    "server": "webpack-dev-server",
+    "appraise": "appraise run --initial-width 500 --initial-height 300",
+    "preappraise": "webpack --config webpack.appraise.config.js",
+    "approve": "appraise approve"
   },
   "main": "src/npm-main.js",
   "dependencies": {
@@ -43,6 +46,7 @@
     "polybooljs": "^1.1.1"
   },
   "devDependencies": {
+    "appraise": "^0.4.0",
     "eslint": "^5.4.0",
     "eslint-config-crockford": "^1.0.0",
     "eslint-config-defaults": "^9.0.0",
